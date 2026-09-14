@@ -427,6 +427,29 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
             );
           })}
 
+          {/* Quick Suggestion Chips inside the scrollable container below welcome message */}
+          {messages.length <= 1 && !isLoading && (
+            <div className="pt-3 pb-1">
+              <div className="text-[11.5px] font-semibold text-[#5A6750] mb-2.5 flex items-center gap-1.5 px-1">
+                <HelpCircle className="w-3.5 h-3.5 text-[#1FA855]" />
+                <span>{serviceContext?.title ? `"${serviceContext.title}" সম্পর্কিত প্রয়োজনীয় প্রশ্ন:` : 'প্রয়োজনীয় প্রশ্নসমূহ:'}</span>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {activePrompts.map((prompt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleSendMessage(prompt)}
+                    className="text-[12px] text-left leading-snug bg-white hover:bg-[#FAF8F5] active:bg-[#F0ECE1] text-[#1E2519] px-3.5 py-2.5 rounded-xl border border-[#D5CFBF] hover:border-[#1FA855] transition-all cursor-pointer shadow-xs hover:-translate-y-0.5 active:scale-[0.99] flex items-center justify-between group"
+                  >
+                    <span>{prompt}</span>
+                    <span className="text-[#1FA855] text-xs font-semibold opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all ml-2 shrink-0">→</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Loading Typing Indicator */}
           {isLoading && (
             <div className="flex gap-2.5 justify-start items-start">
@@ -446,28 +469,6 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
           <div ref={messagesEndRef} />
         </div>
-
-        {/* Quick Suggestion Chips (if few messages) */}
-        {messages.length <= 3 && !isLoading && (
-          <div className="px-3.5 py-2.5 bg-[#FAF8F5] border-t border-[#EAE5DA] flex-shrink-0">
-            <div className="text-[11px] font-medium text-[#727E6A] mb-2 flex items-center gap-1">
-              <HelpCircle className="w-3.5 h-3.5 text-[#1FA855]" />
-              <span>{serviceContext?.title ? `"${serviceContext.title}" সম্পর্কিত জরুরি প্রশ্ন:` : 'প্রয়োজনীয় প্রশ্নসমূহ:'}</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {activePrompts.map((prompt, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleSendMessage(prompt)}
-                  className="text-[11.5px] bg-white hover:bg-[#F0ECE1] text-[#2C3524] px-3 py-1 rounded-lg border border-[#D5CFBF] transition-all cursor-pointer shadow-xs text-left"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Input Bar */}
         <div className="p-3 bg-[#FAF8F5] border-t border-[#EAE5DA] flex-shrink-0">

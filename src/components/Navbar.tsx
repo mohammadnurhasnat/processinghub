@@ -2,12 +2,7 @@ import React from 'react';
 import { 
   Menu, 
   X, 
-  ChevronRight, 
   PhoneCall, 
-  Compass, 
-  MapPin, 
-  MessageSquare, 
-  ShieldCheck, 
   MessageCircle 
 } from 'lucide-react';
 import { CONFIG } from '../config';
@@ -86,67 +81,35 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
             
-            {/* Nav Menu Items - Clean, Uncluttered List */}
-            <div className="flex flex-col gap-1 py-4">
+            {/* Nav Menu Items - Simple, Clean & Elegant (English Only) */}
+            <div className="flex flex-col gap-2 py-4">
               <a 
                 href="#services" 
                 onClick={() => setIsMobileNavOpen(false)}
-                className="group flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-[#EFECE3] transition-all text-[#1E2519]"
+                className="px-4 py-3 rounded-xl bg-white/80 hover:bg-white border border-[#E8E2D3] hover:border-[#1FA855]/50 text-[#1E2519] hover:text-[#1FA855] text-[15px] font-semibold tracking-wide transition-all shadow-xs block"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#EBF7EE] text-[#1FA855] flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Compass className="w-4 h-4" />
-                  </div>
-                  <span className="text-sm font-semibold text-[#1E2519] group-hover:text-[#1FA855] transition-colors">
-                    Services (সেবাসমূহ)
-                  </span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#A0AA98] group-hover:text-[#1FA855] group-hover:translate-x-0.5 transition-all" />
+                Services
               </a>
 
               <a 
                 href="#destinations" 
                 onClick={() => setIsMobileNavOpen(false)}
-                className="group flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-[#EFECE3] transition-all text-[#1E2519]"
+                className="px-4 py-3 rounded-xl bg-white/80 hover:bg-white border border-[#E8E2D3] hover:border-[#1FA855]/50 text-[#1E2519] hover:text-[#1FA855] text-[15px] font-semibold tracking-wide transition-all shadow-xs block"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#FAF0E6] text-[#C05621] flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <span className="text-sm font-semibold text-[#1E2519] group-hover:text-[#C05621] transition-colors">
-                    Destinations (গন্তব্য)
-                  </span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#A0AA98] group-hover:text-[#C05621] group-hover:translate-x-0.5 transition-all" />
+                Destinations
               </a>
 
               <a 
                 href="#contact" 
                 onClick={() => setIsMobileNavOpen(false)}
-                className="group flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-[#EFECE3] transition-all text-[#1E2519]"
+                className="px-4 py-3 rounded-xl bg-white/80 hover:bg-white border border-[#E8E2D3] hover:border-[#1FA855]/50 text-[#1E2519] hover:text-[#1FA855] text-[15px] font-semibold tracking-wide transition-all shadow-xs block"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <MessageSquare className="w-4 h-4" />
-                  </div>
-                  <span className="text-sm font-semibold text-[#1E2519] group-hover:text-[#4F46E5] transition-colors">
-                    Contact (যোগাযোগ)
-                  </span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#A0AA98] group-hover:text-[#4F46E5] group-hover:translate-x-0.5 transition-all" />
+                Contact
               </a>
             </div>
 
-            {/* Simple Clean Info Badge */}
-            <div className="mt-auto mb-4 px-3.5 py-2.5 rounded-xl bg-[#F0EDE4] border border-[#E3DEC3]/70 text-[11px] text-[#5A6C58] flex flex-col gap-1">
-              <div className="flex items-center justify-between font-medium">
-                <span>অফিস: ঢাকা, বাংলাদেশ</span>
-                <span className="text-[#1FA855] font-semibold">সকাল ৯টা - রাত ১০টা</span>
-              </div>
-            </div>
-
             {/* Bottom Actions */}
-            <div className="pt-3 border-t border-[#E8E2D3] flex flex-col gap-2.5">
+            <div className="mt-auto pt-3 border-t border-[#E8E2D3] flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={() => {

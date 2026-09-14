@@ -1,5 +1,5 @@
 import React from 'react';
-import { PhoneCall, MessageCircle, ArrowUpRight, Clock } from 'lucide-react';
+import { PhoneCall, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { CONFIG } from '../config';
 
 export const Footer: React.FC = () => {
@@ -9,10 +9,6 @@ export const Footer: React.FC = () => {
         <div className="max-w-[340px]">
           <div className="brand">{CONFIG.brandName}</div>
           <p>বিশ্বস্ত ইন্ডিয়ান ভিসা প্রসেসিং, আইভ্যাক স্লট কনফার্মেশন ও ডকুমেন্টেশন কনসালটেন্সি সার্ভিস।</p>
-          <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-[#8B937E]">
-            <Clock className="w-3 h-3 text-[#1FA855]" />
-            <span>সাপোর্ট সময়: প্রতিদিন সকাল ৯টা - রাত ১০টা</span>
-          </div>
         </div>
 
         <div className="footer-links">

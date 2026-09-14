@@ -69,19 +69,75 @@ nav.scrolled {
 
 .nav-links {
   display: flex;
-  gap: 34px;
+  gap: 12px;
   align-items: center;
-  font-size: 0.95rem;
-  font-weight: 500;
 }
 
 .nav-links a {
-  opacity: 0.85;
-  transition: opacity .2s;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 22px;
+  border-radius: 999px;
+  color: #1E2519;
+  font-weight: 600;
+  font-size: 0.90rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.70),
+    inset 0 -1px 6px rgba(255, 255, 255, 0.12),
+    0 4px 14px rgba(0, 0, 0, 0.05);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.nav-links a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.05) 80%, rgba(255, 255, 255, 0) 100%);
+  border-radius: 999px 999px 0 0;
+  pointer-events: none;
 }
 
 .nav-links a:hover {
-  opacity: 1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.14) 100%);
+  border-color: rgba(255, 255, 255, 0.85);
+  color: #14381C;
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.90),
+    inset 0 -1px 6px rgba(255, 255, 255, 0.20),
+    0 6px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1.5px);
+}
+
+.nav-links a:active {
+  transform: translateY(1px);
+  background: rgba(255, 255, 255, 0.30);
+}
+
+nav.scrolled .nav-links a {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.18) 100%);
+  border-color: rgba(213, 207, 191, 0.7);
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+nav.scrolled .nav-links a:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.40) 100%);
+  border-color: rgba(31, 168, 85, 0.4);
 }
 
 .nav-cta {
