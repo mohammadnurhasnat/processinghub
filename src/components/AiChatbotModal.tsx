@@ -10,10 +10,11 @@ import {
   Copy, 
   MessageCircle,
   Search,
-  ChevronDown
+  Tag
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { CONFIG } from '../config';
+import { VisaService } from '../types';
 
 interface ChatMessage {
   id: string;
@@ -28,25 +29,89 @@ interface AiChatbotModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenWhatsAppDirect?: () => void;
+  serviceContext?: VisaService | null;
+  onClearServiceContext?: () => void;
 }
 
-const QUICK_PROMPTS = [
+const DEFAULT_QUICK_PROMPTS = [
   'ট্যুরিস্ট ভিসার প্রয়োজনীয় ডকুমেন্টস কি কি?',
   'মেডিকেল ভিসার ইনভাইটেশন লেটার কিভাবে পাব?',
   'আইভ্যাক স্লট বুকিং ফি ও সময় কত?',
   'ব্যাংক স্টেটমেন্ট ও ছবির সঠিক নিয়ম কি?'
 ];
 
+const getContextualQuickPrompts = (service: VisaService | null | undefined): string[] => {
+  if (!service) return DEFAULT_QUICK_PROMPTS;
+  
+  const title = service.title.toLowerCase();
+  if (title.includes('medical') || title.includes('মেডিকেল')) {
+    return [
+      'মেডিকেল ইনভাইটেশন লেটার কিভাবে সংগ্রহ করব?',
+      'রোগী ও অ্যাটেনডেন্টের কি কি ডকুমেন্টস লাগে?',
+      'মেডিকেল ভিসার প্রসেসিং ফি ও আইভ্যাক স্লট চার্জ কত?',
+      'জরুরি চিকিৎসার জন্য কত দ্রুত স্লট পাওয়া সম্ভব?'
+    ];
+  }
+  if (title.includes('tourist') || title.includes('ট্যুরিস্ট')) {
+    return [
+      'ট্যুরিস্ট ভিসায় ব্যাংক ব্যালেন্স কত থাকা লাগে?',
+      'চাকুরিজীবী ও ব্যবসায়ীদের কি কি কাগজপত্র লাগবে?',
+      'ট্যুরিস্ট ভিসা প্রসেসিং ও আইভ্যাক ফি কত?',
+      'আইভ্যাকে জমা দেওয়ার কত দিন পর পাসপোর্ট ডেলিভারি হয়?'
+    ];
+  }
+  if (title.includes('double') || title.includes('ডাবল') || title.includes('transit')) {
+    return [
+      'ডাবল এন্ট্রি ভিসার জন্য ট্রানজিট টিকেট কিভাবে দেব?',
+      'এম্বাসি অ্যাপয়েন্টমেন্ট লেটার কিভাবে সাবমিট করব?',
+      'ডাবল এন্ট্রি ভিসা প্রসেসিং চার্জ কত?',
+      'কাদের জন্য ডাবল এন্ট্রি ভিসা প্রযোজ্য?'
+    ];
+  }
+  if (title.includes('business') || title.includes('বিজনেস')) {
+    return [
+      'ইন্ডিয়ান কোম্পানি ইনভাইটেশন লেটার কিভাবে দিতে হয়?',
+      'ট্রেড লাইসেন্স ও ট্যাক্স সার্টিফিকেট সংক্রান্ত নিয়ম কি?',
+      'বিজনেস ভিসা প্রসেসিং ফি কত?',
+      'বিজনেস ভিসার আইভ্যাক স্লট কত দিনে পাওয়া যায়?'
+    ];
+  }
+  if (service.isSlotBooking || title.includes('slot') || title.includes('স্লট')) {
+    return [
+      'ঢাকা আইভ্যাক সেন্টারে দ্রুত স্লট বুকিং কিভাবে করব?',
+      'ট্যুরিস্ট ও মেডিকেল স্লটের মোট ফি কত?',
+      'পাসপোর্টের কি কি তথ্য স্লট বুকিংয়ের জন্য লাগবে?',
+      'সিলেট/চট্টগ্রাম সেন্টারে স্লট পাওয়া যাবে?'
+    ];
+  }
+
+  return [
+    `${service.title} এর প্রয়োজনীয় ডকুমেন্টস কি কি?`,
+    `${service.title} এর মোট খরচ ও সময় কত?`,
+    'আইভ্যাক স্লট বুকিং এর নিয়ম কি?',
+    'সরাসরি প্রসেসিং শুরু করার ধাপগুলো কি কি?'
+  ];
+};
+
+const getWelcomeMessage = (service: VisaService | null | undefined): string => {
+  if (service?.title) {
+    return `আসসালামু আলাইকুম! আমি **MOHAMMAD** — প্রসেসিং হাবের সিনিয়র ভিসা ও ট্রাভেল কনসালটেন্ট।\n\nআপনি বর্তমানে আমাদের **"${service.title}"** সার্ভিসটি পর্যালোচনা করছেন।\n\nএই ক্যাটাগরির প্রয়োজনীয় কাগজপত্র চেকলিস্ট, অফিসিয়াল ফি (${service.price}), আইভ্যাক স্লট বুকিং বা ফাইল প্রস্তুত নিয়ে আপনার যেকোনো প্রশ্ন আমাকে করতে পারেন।`;
+  }
+  return 'আসসালামু আলাইকুম! আমি **MOHAMMAD** — প্রসেসিং হাবে আপনাকে স্বাগতম।\n\nইন্ডিয়ান ট্যুরিস্ট, মেডিকেল, বিজনেস বা ডাবল এন্ট্রি ভিসা প্রসেসিং, আইভ্যাক (IVAC) স্লট বুকিং, প্রয়োজনীয় ডকুমেন্টস যাচাই বা যেকোনো পরামর্শের জন্য সরাসরি আমাকে লিখতে পারেন। আমি সার্বক্ষণিক আপনার সেবায় নিয়োজিত আছি।';
+};
+
 export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({ 
   isOpen, 
   onClose,
-  onOpenWhatsAppDirect 
+  onOpenWhatsAppDirect,
+  serviceContext,
+  onClearServiceContext
 }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: 'welcome-1',
       role: 'assistant',
-      text: 'আসসালামু আলাইকুম! আমি **MOHAMMAD** — প্রসেসিং হাবে আপনাকে স্বাগতম।\n\nইন্ডিয়ান ট্যুরিস্ট, মেডিকেল, বিজনেস বা ডাবল এন্ট্রি ভিসা প্রসেসিং, আইভ্যাক (IVAC) স্লট বুকিং, প্রয়োজনীয় ডকুমেন্টস যাচাই বা যেকোনো পরামর্শের জন্য সরাসরি আমাকে লিখতে পারেন। আমি সার্বক্ষণিক আপনার সেবায় নিয়োজিত আছি।',
+      text: getWelcomeMessage(serviceContext),
       time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }),
     }
   ]);
@@ -56,6 +121,22 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevServiceRef = useRef<string | undefined>(serviceContext?.id);
+
+  // When active service context changes, reset welcome message
+  useEffect(() => {
+    if (serviceContext?.id !== prevServiceRef.current) {
+      prevServiceRef.current = serviceContext?.id;
+      setMessages([
+        {
+          id: `welcome-${Date.now()}`,
+          role: 'assistant',
+          text: getWelcomeMessage(serviceContext),
+          time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }),
+        }
+      ]);
+    }
+  }, [serviceContext]);
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -94,6 +175,16 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
             role: m.role,
             text: m.text,
           })),
+          serviceContext: serviceContext ? {
+            id: serviceContext.id,
+            title: serviceContext.title,
+            category: serviceContext.category,
+            price: serviceContext.price,
+            per: serviceContext.per,
+            description: serviceContext.description,
+            documents: serviceContext.documents,
+            isSlotBooking: serviceContext.isSlotBooking,
+          } : undefined,
         }),
       });
 
@@ -132,7 +223,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       {
         id: `welcome-${Date.now()}`,
         role: 'assistant',
-        text: 'আসসালামু আলাইকুম! আমি **MOHAMMAD**। নতুন করে কথোপকথন শুরু করা হলো। ভিসা বা ভ্রমণ সংক্রান্ত আপনার যেকোনো প্রশ্ন আমাকে জানান।',
+        text: getWelcomeMessage(serviceContext),
         time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }),
       }
     ]);
@@ -143,6 +234,8 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
+
+  const activePrompts = getContextualQuickPrompts(serviceContext);
 
   if (!isOpen) return null;
 
@@ -209,6 +302,28 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           </div>
         </div>
 
+        {/* Active Page Service Context Focus Ribbon (if active) */}
+        {serviceContext?.title && (
+          <div className="bg-[#242D1E] border-b border-[#3D4C33] px-3.5 py-1.5 flex items-center justify-between text-[11px] text-[#DCE6D2] flex-shrink-0">
+            <div className="flex items-center gap-1.5 truncate">
+              <Tag className="w-3.5 h-3.5 text-[#9AE6B4] shrink-0" />
+              <span className="font-medium text-[#A3B899]">ফোকাস:</span>
+              <span className="font-bold text-white truncate max-w-[180px] sm:max-w-[220px]">{serviceContext.title}</span>
+              <span className="text-[#A7F3D0] font-semibold">({serviceContext.price})</span>
+            </div>
+            {onClearServiceContext && (
+              <button
+                type="button"
+                onClick={onClearServiceContext}
+                className="text-[10px] text-[#A8BCA0] hover:text-white underline cursor-pointer shrink-0 ml-2"
+                title="সাধারণ পরামর্শে ফিরুন"
+              >
+                সাধারণ মোড
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Direct WhatsApp Quick-Bar Banner */}
         <div className="bg-[#EBF7EE] border-b border-[#CDE5D5] px-3.5 py-2 flex items-center justify-between text-xs text-[#1E522C] flex-shrink-0">
           <span className="flex items-center gap-1.5 font-medium truncate">
@@ -216,7 +331,11 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
             সরাসরি সিনিয়র কনসালটেন্টের সাথে কথা বলুন
           </span>
           <a
-            href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I am contacting you for Indian Visa Assistance.')}`}
+            href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
+              serviceContext?.title
+                ? `Hello Mohammad (Processing Hub), I need direct consultation regarding ${serviceContext.title}.`
+                : 'Hello Processing Hub, I am contacting you for Indian Visa Assistance.'
+            )}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={onOpenWhatsAppDirect}
@@ -333,10 +452,10 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           <div className="px-3.5 py-2.5 bg-[#FAF8F5] border-t border-[#EAE5DA] flex-shrink-0">
             <div className="text-[11px] font-medium text-[#727E6A] mb-2 flex items-center gap-1">
               <HelpCircle className="w-3.5 h-3.5 text-[#1FA855]" />
-              <span>প্রয়োজনীয় প্রশ্নসমূহ:</span>
+              <span>{serviceContext?.title ? `"${serviceContext.title}" সম্পর্কিত জরুরি প্রশ্ন:` : 'প্রয়োজনীয় প্রশ্নসমূহ:'}</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {QUICK_PROMPTS.map((prompt, i) => (
+              {activePrompts.map((prompt, i) => (
                 <button
                   key={i}
                   type="button"
@@ -364,7 +483,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="আপনার প্রশ্ন লিখুন (বাংলা বা ইংরেজি)..."
+              placeholder={serviceContext?.title ? `${serviceContext.title} সংক্রান্ত প্রশ্ন লিখুন...` : 'আপনার প্রশ্ন লিখুন (বাংলা বা ইংরেজি)...'}
               disabled={isLoading}
               className="flex-1 bg-white border border-[#D5CFBF] focus:border-[#1FA855] rounded-lg px-4 py-2.5 text-sm text-[#1E2519] placeholder-[#8A9582] focus:outline-none transition-all shadow-xs"
             />

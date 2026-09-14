@@ -73,7 +73,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
                   className="gear-book-btn"
                 >
                   <span>বুক করুন</span>
-                  <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                  <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
                 </button>
               </div>
             </div>

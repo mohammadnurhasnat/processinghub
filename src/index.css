@@ -324,7 +324,7 @@ section {
 
 .gear-footer {
   margin-top: auto;
-  padding: 16px 20px;
+  padding: 12px 18px;
   background: rgba(250, 249, 245, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -332,25 +332,26 @@ section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
 }
 
 .gear-book-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 18px;
+  gap: 4px;
+  padding: 6px 12px;
   background-color: #546E4E;
   color: #ffffff;
-  font-size: 0.84rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  box-shadow: 0 4px 0 #33452E, 0 4px 10px rgba(38, 48, 31, 0.15);
+  width: auto;
+  box-shadow: 0 2px 0 #33452E, 0 2px 5px rgba(38, 48, 31, 0.12);
   transition: all 0.15s ease;
   position: relative;
 }
@@ -358,13 +359,13 @@ section {
 .gear-book-btn:hover {
   background-color: #4A6244;
   transform: translateY(-1px);
-  box-shadow: 0 5px 0 #33452E, 0 6px 14px rgba(38, 48, 31, 0.2);
+  box-shadow: 0 3px 0 #33452E, 0 4px 8px rgba(38, 48, 31, 0.16);
   color: #ffffff;
 }
 
 .gear-book-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #33452E, 0 2px 4px rgba(38, 48, 31, 0.12);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #33452E, 0 1px 3px rgba(38, 48, 31, 0.1);
 }
 
 /* SERVICE CHECKLIST MODAL */
@@ -768,15 +769,15 @@ section {
 footer {
   background: var(--ink);
   color: #EDEFE7;
-  padding: 60px 6% 30px;
+  padding: 36px 6% 18px;
 }
 
 .footer-top {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 40px;
-  padding-bottom: 40px;
+  gap: 24px;
+  padding-bottom: 22px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
 }
 
@@ -787,43 +788,47 @@ footer {
 .footer-top p {
   color: #B7BEAB;
   max-width: 320px;
-  margin-top: 10px;
-  font-size: 0.92rem;
+  margin-top: 6px;
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .footer-links {
   display: flex;
-  gap: 60px;
+  gap: 36px;
   flex-wrap: wrap;
 }
 
 .footer-links h4 {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #93A084;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
-.footer-links a {
+.footer-links .footer-text-link {
   display: block;
   color: #DEE2D6;
-  font-size: 0.92rem;
-  margin-bottom: 10px;
+  font-size: 0.88rem;
+  margin-bottom: 6px;
   opacity: 0.9;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
-.footer-links a:hover {
+.footer-links .footer-text-link:hover {
   opacity: 1;
+  color: #ffffff;
 }
 
 .footer-bottom {
-  padding-top: 24px;
+  padding-top: 14px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  font-size: 0.82rem;
+  gap: 8px;
+  font-size: 0.8rem;
   color: #8B937E;
 }
 
@@ -896,6 +901,7 @@ footer {
   background-color: #1FA855;
   color: #ffffff;
   border: none;
+  border-radius: 9999px;
   box-shadow: 0 4px 0 #136B35, 0 5px 10px rgba(19, 107, 53, 0.2);
   transition: all 0.15s ease;
   position: relative;
@@ -918,6 +924,7 @@ footer {
   background-color: #DC352B;
   color: #ffffff;
   border: none;
+  border-radius: 9999px;
   box-shadow: 0 4px 0 #8F1F17, 0 5px 10px rgba(143, 31, 23, 0.2);
   transition: all 0.15s ease;
   position: relative;
@@ -940,6 +947,7 @@ footer {
   background-color: #546E4E;
   color: #ffffff;
   border: none;
+  border-radius: 9999px;
   box-shadow: 0 4px 0 #33452E, 0 5px 10px rgba(38, 48, 31, 0.18);
   transition: all 0.15s ease;
   position: relative;
@@ -962,6 +970,7 @@ footer {
   background-color: #FAF8F2;
   color: #2F4029;
   border: 1px solid #D5CFBF;
+  border-radius: 9999px;
   box-shadow: 0 3px 0 #BDB39E, 0 4px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.15s ease;
   position: relative;

@@ -17,12 +17,17 @@ import { updateMetaForService } from './utils/metaTags';
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedService, setSelectedService] = useState<VisaService | null>(null);
+  const [activeServiceContext, setActiveServiceContext] = useState<VisaService | null>(null);
+  const [isForcedChatbotOpen, setIsForcedChatbotOpen] = useState(false);
   const [isQuickBookOpen, setIsQuickBookOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Dynamically update Open Graph meta tags when a service is opened/focused
   useEffect(() => {
     updateMetaForService(selectedService);
+    if (selectedService) {
+      setActiveServiceContext(selectedService);
+    }
   }, [selectedService]);
 
   // Lock background scrolling completely when any main modal or drawer is open
@@ -72,7 +77,12 @@ export default function App() {
       <Hero />
 
       {/* Visa Services & Packages */}
-      <ServicesSection onOpenModal={(service) => setSelectedService(service)} />
+      <ServicesSection 
+        onOpenModal={(service) => {
+          setSelectedService(service);
+          setActiveServiceContext(service);
+        }} 
+      />
 
       {/* Popular Travel Routes */}
       <DestinationsSection />
@@ -83,8 +93,13 @@ export default function App() {
       {/* Footer */}
       <Footer />
 
-      {/* Floating WhatsApp Action Button */}
-      <FloatingWhatsApp />
+      {/* Floating WhatsApp Action Button with dynamic service context */}
+      <FloatingWhatsApp 
+        serviceContext={activeServiceContext}
+        onClearServiceContext={() => setActiveServiceContext(null)}
+        isChatbotForcedOpen={isForcedChatbotOpen}
+        onCloseForcedChatbot={() => setIsForcedChatbotOpen(false)}
+      />
 
       {/* Quick Booking Service List & Callback Modal */}
       <QuickBookModal

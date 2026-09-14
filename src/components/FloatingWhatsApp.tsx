@@ -1,16 +1,32 @@
 import React, { useState } from 'react';
 import { X, MessagesSquare } from 'lucide-react';
 import { CONFIG } from '../config';
+import { VisaService } from '../types';
 import { CustomMessageMenuModal } from './CustomMessageMenuModal';
 import { AiChatbotModal } from './AiChatbotModal';
 
-export const FloatingWhatsApp: React.FC = () => {
+interface FloatingWhatsAppProps {
+  serviceContext?: VisaService | null;
+  onClearServiceContext?: () => void;
+  isChatbotForcedOpen?: boolean;
+  onCloseForcedChatbot?: () => void;
+}
+
+export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
+  serviceContext,
+  onClearServiceContext,
+  isChatbotForcedOpen,
+  onCloseForcedChatbot
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isInternalChatbotOpen, setIsInternalChatbotOpen] = useState(false);
+
+  const isChatbotOpen = isChatbotForcedOpen !== undefined ? isChatbotForcedOpen || isInternalChatbotOpen : isInternalChatbotOpen;
 
   const handleToggleMenu = () => {
     if (isChatbotOpen) {
-      setIsChatbotOpen(false);
+      setIsInternalChatbotOpen(false);
+      onCloseForcedChatbot?.();
       return;
     }
     setIsMenuOpen(prev => !prev);
@@ -18,12 +34,19 @@ export const FloatingWhatsApp: React.FC = () => {
 
   const handleOpenChatbot = () => {
     setIsMenuOpen(false);
-    setIsChatbotOpen(true);
+    setIsInternalChatbotOpen(true);
+  };
+
+  const handleCloseChatbot = () => {
+    setIsInternalChatbotOpen(false);
+    onCloseForcedChatbot?.();
   };
 
   const handleDirectWhatsApp = () => {
     const waUrl = `https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
-      'Hello Processing Hub, I have an inquiry about Indian Visa Processing.'
+      serviceContext?.title
+        ? `Hello Processing Hub, I have an inquiry about ${serviceContext.title}.`
+        : 'Hello Processing Hub, I have an inquiry about Indian Visa Processing.'
     )}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
@@ -40,7 +63,7 @@ export const FloatingWhatsApp: React.FC = () => {
             className="hidden sm:inline-flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-[#D5CFBF] text-[#1E2519] px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-md hover:bg-white hover:border-[#1FA855] transition-all cursor-pointer animate-in fade-in slide-in-from-right-2"
           >
             <span className="w-2 h-2 rounded-full bg-[#1FA855] animate-pulse" />
-            <span>সহায়তা ও কনসালটেন্সি</span>
+            <span>{serviceContext?.title ? `${serviceContext.title} পরামর্শ` : 'সহায়তা ও কনসালটেন্সি'}</span>
           </button>
         )}
 
@@ -80,8 +103,10 @@ export const FloatingWhatsApp: React.FC = () => {
       {/* Support Chat Modal */}
       <AiChatbotModal
         isOpen={isChatbotOpen}
-        onClose={() => setIsChatbotOpen(false)}
+        onClose={handleCloseChatbot}
         onOpenWhatsAppDirect={handleDirectWhatsApp}
+        serviceContext={serviceContext}
+        onClearServiceContext={onClearServiceContext}
       />
     </>
   );
