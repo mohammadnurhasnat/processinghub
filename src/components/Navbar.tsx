@@ -24,7 +24,19 @@ export const Navbar: React.FC<NavbarProps> = ({
     <>
       {/* MAIN NAVIGATION */}
       <nav id="mainNav" className={isScrolled ? 'scrolled' : ''}>
-        <div id="brand-logo" className="brand">{CONFIG.brandName}</div>
+        <a 
+          href="#" 
+          id="brand-logo" 
+          className="brand-btn"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          title={CONFIG.brandName}
+        >
+          <span className="brand-text">{CONFIG.brandName}</span>
+        </a>
+
         <div className="nav-links">
           <a href="#services">Services</a>
           <a href="#destinations">Destinations</a>

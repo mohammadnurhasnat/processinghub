@@ -1,7 +1,7 @@
 export const CONFIG = {
   brandName: 'Processing Hub',
   phone: '8801577464706',
-  phoneDisplay: '+8801577464706',
+  phoneDisplay: '01577464706',
   email: 'support@processinghub.com',
   address: 'ঢাকা, বাংলাদেশ',
   fallbackImage: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80',
