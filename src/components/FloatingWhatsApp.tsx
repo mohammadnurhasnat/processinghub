@@ -1,19 +1,88 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { X, MessagesSquare } from 'lucide-react';
 import { CONFIG } from '../config';
+import { CustomMessageMenuModal } from './CustomMessageMenuModal';
+import { AiChatbotModal } from './AiChatbotModal';
 
 export const FloatingWhatsApp: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+
+  const handleToggleMenu = () => {
+    if (isChatbotOpen) {
+      setIsChatbotOpen(false);
+      return;
+    }
+    setIsMenuOpen(prev => !prev);
+  };
+
+  const handleOpenChatbot = () => {
+    setIsMenuOpen(false);
+    setIsChatbotOpen(true);
+  };
+
+  const handleDirectWhatsApp = () => {
+    const waUrl = `https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
+      'Hello Processing Hub, I have an inquiry about Indian Visa Processing.'
+    )}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
-    <a 
-      id="whatsapp-floating-button"
-      className="wa-float" 
-      href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I have an inquiry about Indian Visa Processing.')}`}
-      target="_blank" 
-      rel="noopener noreferrer"
-      aria-label="Chat on WhatsApp"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M17.6 6.32A7.85 7.85 0 0 0 12.02 4C7.66 4 4.13 7.53 4.13 11.89c0 1.4.37 2.76 1.06 3.96L4 20l4.27-1.12a7.9 7.9 0 0 0 3.75.95h.01c4.36 0 7.89-3.53 7.89-7.89 0-2.11-.82-4.09-2.32-5.62zm-5.58 12.1h-.01a6.55 6.55 0 0 1-3.34-.92l-.24-.14-2.49.65.67-2.43-.16-.25a6.56 6.56 0 0 1-1.01-3.5c0-3.63 2.96-6.58 6.6-6.58 1.76 0 3.42.69 4.66 1.94a6.55 6.55 0 0 1 1.93 4.65c0 3.63-2.96 6.58-6.61 6.58zm3.6-4.93c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.44.1-.13.2-.5.64-.62.77-.11.13-.23.14-.42.05-.2-.1-.83-.31-1.58-.98-.58-.52-.98-1.16-1.09-1.36-.11-.2-.01-.3.09-.4.09-.09.2-.23.3-.35.1-.11.13-.2.2-.33.07-.13.03-.25-.02-.35-.05-.1-.44-1.06-.6-1.45-.16-.38-.32-.33-.44-.33-.11-.01-.24-.01-.37-.01s-.35.05-.53.25c-.18.2-.7.68-.7 1.66s.72 1.93.82 2.06c.1.13 1.41 2.15 3.42 3.02.48.21.85.33 1.14.42.48.15.92.13 1.26.08.38-.06 1.17-.48 1.34-.94.16-.46.16-.86.11-.94-.05-.09-.18-.14-.38-.24z" />
-      </svg>
-    </a>
+    <>
+      {/* Floating Action Trigger Button */}
+      <div className="fixed bottom-6 right-6 sm:bottom-6 sm:right-6 z-60 flex items-center gap-2">
+        {/* Tooltip Pill (visible on desktop) */}
+        {!isMenuOpen && !isChatbotOpen && (
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(true)}
+            className="hidden sm:inline-flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-[#D5CFBF] text-[#1E2519] px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-md hover:bg-white hover:border-[#1FA855] transition-all cursor-pointer animate-in fade-in slide-in-from-right-2"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#1FA855] animate-pulse" />
+            <span>সহায়তা ও কনসালটেন্সি</span>
+          </button>
+        )}
+
+        <button
+          id="support-floating-button"
+          type="button"
+          onClick={handleToggleMenu}
+          className={`wa-float cursor-pointer border-none outline-none ${
+            isMenuOpen || isChatbotOpen ? 'bg-[#1E2519] hover:bg-[#2C3524]' : ''
+          }`}
+          aria-label={isMenuOpen || isChatbotOpen ? 'Close support options' : 'Open live support and contact options'}
+          aria-expanded={isMenuOpen || isChatbotOpen}
+        >
+          {isMenuOpen || isChatbotOpen ? (
+            <X className="w-6 h-6 text-white stroke-[2.5]" />
+          ) : (
+            <div className="relative flex items-center justify-center w-full h-full">
+              <MessagesSquare className="w-[26px] h-[26px] sm:w-[28px] sm:h-[28px] text-white stroke-[2.2]" />
+              {/* Subtle active status indicator positioned on border */}
+              <span className="absolute top-0 right-0 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#A7F3D0] border-2 border-[#128C7E]" />
+              </span>
+            </div>
+          )}
+        </button>
+      </div>
+
+      {/* Pop-up Options Window */}
+      <CustomMessageMenuModal
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onSelectChatbot={handleOpenChatbot}
+        onSelectWhatsApp={handleDirectWhatsApp}
+      />
+
+      {/* Support Chat Modal */}
+      <AiChatbotModal
+        isOpen={isChatbotOpen}
+        onClose={() => setIsChatbotOpen(false)}
+        onOpenWhatsAppDirect={handleDirectWhatsApp}
+      />
+    </>
   );
 };

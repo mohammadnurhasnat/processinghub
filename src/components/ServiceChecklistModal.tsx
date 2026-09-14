@@ -86,7 +86,6 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
     >
       <div 
         className="service-modal-card"
-        style={{ boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)' }}
       >
         {/* Modal Header */}
         <div className="service-modal-header">
@@ -114,10 +113,10 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
             type="button"
             id="modal-close-btn"
             onClick={onClose}
-            className="p-2 text-[#727C6B] hover:text-[#1E2519] hover:bg-[#ECE8DC] rounded-lg transition-colors cursor-pointer flex-shrink-0"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[#D5CFBF] bg-white hover:bg-[#F0ECE1] text-[#4E5C46] hover:text-[#1E2519] flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
             aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
           </button>
         </div>
 
@@ -268,7 +267,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               onClick={handleDownloadChecklist}
               disabled={isDownloadingPdf}
               title="আপনার সিলেক্টেড ডকুমেন্টস সহ চেকলিস্ট ডাউনলোড করুন"
-              className="btn-3d-matte-secondary flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg whitespace-nowrap text-center"
+              className="btn-3d-matte-secondary flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap text-center"
             >
               {isDownloadingPdf ? (
                 <>
@@ -285,7 +284,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="btn-3d-matte-red flex-1 sm:flex-initial px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg whitespace-nowrap text-center"
+              className="btn-3d-matte-red flex-1 sm:flex-initial px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap text-center"
             >
               বন্ধ করুন
             </button>
@@ -298,7 +297,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-3d-matte-green flex-[1.2] sm:flex-initial inline-flex items-center justify-center px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-lg whitespace-nowrap text-center"
+              className="btn-3d-matte-green flex-[1.2] sm:flex-initial inline-flex items-center justify-center px-3.5 sm:px-4.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center"
             >
               <span>WhatsApp-এ পাঠান</span>
             </a>

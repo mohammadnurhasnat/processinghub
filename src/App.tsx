@@ -9,12 +9,25 @@ import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { QuickBookModal } from './components/QuickBookModal';
 import { ServiceChecklistModal } from './components/ServiceChecklistModal';
+import { WhatsAppProvider } from './context/WhatsAppContext';
+import { WhatsAppConfirmModal } from './components/WhatsAppConfirmModal';
+import { useBodyScrollLock } from './hooks/useBodyScrollLock';
+import { updateMetaForService } from './utils/metaTags';
 
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedService, setSelectedService] = useState<VisaService | null>(null);
   const [isQuickBookOpen, setIsQuickBookOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Dynamically update Open Graph meta tags when a service is opened/focused
+  useEffect(() => {
+    updateMetaForService(selectedService);
+  }, [selectedService]);
+
+  // Lock background scrolling completely when any main modal or drawer is open
+  const isAnyModalOpen = Boolean(selectedService || isQuickBookOpen || isMobileNavOpen);
+  useBodyScrollLock(isAnyModalOpen);
 
   // Scroll listener for sticky header background
   useEffect(() => {
@@ -26,7 +39,7 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle escape key & background body scroll lock
+  // Handle escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -36,21 +49,17 @@ export default function App() {
       }
     };
 
-    if (selectedService || isQuickBookOpen || isMobileNavOpen) {
+    if (isAnyModalOpen) {
       window.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
     }
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
     };
-  }, [selectedService, isQuickBookOpen, isMobileNavOpen]);
+  }, [isAnyModalOpen]);
 
   return (
-    <>
+    <WhatsAppProvider>
       {/* Navigation Header & Mobile Drawer */}
       <Navbar
         isScrolled={isScrolled}
@@ -88,6 +97,9 @@ export default function App() {
         service={selectedService}
         onClose={() => setSelectedService(null)}
       />
-    </>
+
+      {/* WhatsApp Confirmation & Redirection Popup Modal */}
+      <WhatsAppConfirmModal />
+    </WhatsAppProvider>
   );
 }
