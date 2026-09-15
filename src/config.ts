@@ -1,8 +1,10 @@
 export const CONFIG = {
   brandName: 'Processing Hub',
+  domain: 'processinghub.fun',
+  websiteUrl: 'https://processinghub.fun',
   phone: '8801577464706',
   phoneDisplay: '01577464706',
-  email: 'support@processinghub.com',
+  email: 'support@processinghub.fun',
   address: 'ঢাকা, বাংলাদেশ',
   fallbackImage: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80',
   telegram: {

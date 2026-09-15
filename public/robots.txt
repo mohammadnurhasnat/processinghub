@@ -1,0 +1,44 @@
+# Robots.txt for Processing Hub - Indian Visa Processing & IVAC Service
+# Domain: processinghub.fun
+User-agent: *
+Allow: /
+
+# Directives for All Global AI Crawlers & LLMs
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+# Host specification
+Host: processinghub.fun
+
+# XML Sitemap
+Sitemap: https://processinghub.fun/sitemap.xml

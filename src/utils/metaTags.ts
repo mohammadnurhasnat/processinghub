@@ -1,10 +1,10 @@
 import { VisaService } from '../types';
 
 const DEFAULT_META = {
-  title: 'Processing Hub — Indian Visa Processing Service',
-  description: 'পেশাদার ইন্ডিয়ান ভিসা অ্যাপ্লিকেশন, আইভ্যাক (IVAC) অ্যাপয়েন্টমেন্ট স্লট বুকিং, ডকুমেন্টস ভেরিফিকেশন ও কনসালটেন্সি সহায়তা।',
+  title: 'Processing Hub — বিশ্বস্ত ইন্ডিয়ান ভিসা প্রসেসিং ও আইভ্যাক (IVAC) স্লট সার্ভিস',
+  description: 'বাংলাদেশ থেকে দ্রুত ও বিশ্বস্ত ইন্ডিয়ান ভিসা প্রসেসিং সার্ভিস। আইভ্যাক (IVAC) স্লট বুকিং, ট্যুরিস্ট, মেডিকেল, ডাবল এন্ট্রি ও বিজনেস ভিসা ফাইল প্রস্তুত। হটলাইন: 01577464706',
   image: 'https://images.moondeveloper.com/attractions/2024/11/25/67446493a8fde.jpg',
-  url: 'https://processinghub.com/',
+  url: 'https://processinghub.fun/',
 };
 
 function setMetaTag(selector: string, attr: string, value: string) {
@@ -24,10 +24,10 @@ export function updateMetaForService(service: VisaService | null) {
   if (typeof document === 'undefined') return;
 
   if (service) {
-    const title = `${service.title} — Processing Hub`;
-    const description = `${service.description} সার্ভিস ফি: ${service.price}। আইভ্যাক ফাইল প্রসেসিং ও ডকুমেন্টস ভেরিফিকেশন সহায়তা।`;
+    const title = `${service.title} প্রসেসিং — Processing Hub`;
+    const description = `${service.description} সার্ভিস ফি: ${service.price}। আইভ্যাক (IVAC) ফাইল প্রসেসিং ও জরুরি স্লট কনফার্মেশন সহায়তা। হটলাইন: 01577464706`;
     const image = service.image || DEFAULT_META.image;
-    const url = `https://processinghub.com/#${service.id}`;
+    const url = `https://processinghub.fun/#${service.id}`;
 
     document.title = title;
     setMetaTag('meta[name="description"]', 'content', description);
