@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { VisaService } from './types';
+import { VISA_SERVICES } from './data/visaData';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ServicesSection } from './components/ServicesSection';
@@ -63,6 +64,12 @@ export default function App() {
     };
   }, [isAnyModalOpen]);
 
+  const handleOpenSlotBooking = () => {
+    const slotService = VISA_SERVICES.find(s => s.id === 'visa-slot-booking' || s.isSlotBooking) || VISA_SERVICES[0];
+    setSelectedService(slotService);
+    setActiveServiceContext(slotService);
+  };
+
   return (
     <WhatsAppProvider>
       {/* Navigation Header & Mobile Drawer */}
@@ -71,6 +78,7 @@ export default function App() {
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
         onOpenQuickBook={() => setIsQuickBookOpen(true)}
+        onOpenSlotBooking={handleOpenSlotBooking}
       />
 
       {/* Hero Banner */}

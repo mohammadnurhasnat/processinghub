@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Headphones, Bot } from 'lucide-react';
+import { X, MessageSquareQuote, MessagesSquare, HelpCircle } from 'lucide-react';
 import { CONFIG } from '../config';
 import { VisaService } from '../types';
 import { AiChatbotModal } from './AiChatbotModal';
@@ -119,12 +119,12 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
               id="popup-ai-support-btn"
               onClick={handleOpenChatbot}
               className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-white border border-[#D5CFBF] hover:border-[#1E2519] hover:bg-[#F7F5EE] transition-all duration-200 cursor-pointer group shadow-xs hover:-translate-y-0.5 active:scale-95"
-              title="এআই অ্যাসিস্ট্যান্ট / লাইভ চ্যাট"
+              title="ভিসা কনসালটেন্সি ও লাইভ চ্যাট"
             >
               <div className="w-12 h-12 rounded-full bg-[#1E2519] text-[#A7F3D0] flex items-center justify-center shadow-[0_4px_12px_rgba(30,37,25,0.25)] group-hover:scale-108 transition-transform">
-                <Headphones className="w-6 h-6 stroke-[2.2]" />
+                <MessagesSquare className="w-6 h-6 stroke-[2]" />
               </div>
-              <span className="text-[11px] font-semibold text-[#1E2519]">এআই সাপোর্ট</span>
+              <span className="text-[11px] font-semibold text-[#1E2519]">লাইভ সাপোর্ট</span>
             </button>
           </div>
         </div>
@@ -143,13 +143,13 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           }`}
           aria-label={isPopupOpen || isChatbotOpen ? 'Close support menu' : 'Open support options'}
           aria-expanded={isPopupOpen}
-          title="সাপোর্ট ও যোগাযোগ"
+          title="ভিসা পরামর্শ ও সহায়তা"
         >
           {isPopupOpen || isChatbotOpen ? (
             <X className="w-6 h-6 stroke-[2.5]" />
           ) : (
             <div className="relative flex items-center justify-center">
-              <Headphones className="w-[26px] h-[26px] stroke-[2.2]" />
+              <MessagesSquare className="w-[26px] h-[26px] stroke-[2]" />
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#1FA855] border-2 border-[#1E2519]" />
             </div>
           )}

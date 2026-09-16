@@ -13,6 +13,13 @@ export function useBodyScrollLock(isLocked: boolean) {
     const originalBodyOverflow = document.body.style.overflow;
     const originalOverscrollBehavior = document.documentElement.style.overscrollBehavior;
 
+    // Immediately stop any momentum or active smooth scrolling cleanly
+    try {
+      window.scrollTo({ top: window.scrollY, behavior: 'instant' as ScrollBehavior });
+    } catch {
+      // fallback
+    }
+
     // Lock page root
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';

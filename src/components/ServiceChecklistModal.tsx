@@ -271,22 +271,15 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
             >
               {isDownloadingPdf ? (
                 <>
-                  <span className="w-3.5 h-3.5 border-2 border-[#3D5237] border-t-transparent rounded-full animate-spin"></span>
+                  <span className="w-3.5 h-3.5 border-2 border-[var(--periwinkle-dark)] border-t-transparent rounded-full animate-spin"></span>
                   <span className="text-[11px] sm:text-xs">তৈরি হচ্ছে...</span>
                 </>
               ) : (
                 <>
-                  <Download className="w-3.5 h-3.5 text-[#546E4E] flex-shrink-0" />
+                  <Download className="w-3.5 h-3.5 text-[var(--periwinkle-dark)] flex-shrink-0" />
                   <span>চেকলিস্ট</span>
                 </>
               )}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-3d-matte-red flex-1 sm:flex-initial px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap text-center"
-            >
-              বন্ধ করুন
             </button>
             <a
               id="modal-whatsapp-submit-btn"

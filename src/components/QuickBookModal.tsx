@@ -96,13 +96,13 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
         {/* Modal Header */}
         <div className="service-modal-header">
           <div>
-            <span className="inline-block text-[11px] font-semibold text-[#4E5C46] bg-[#ECE8DC] px-2.5 py-0.5 rounded mb-2">
+            <span className="inline-block text-[11px] font-semibold text-[#4A5AB8] bg-[#EEF1FE] border border-[#CCD3FB] px-2.5 py-0.5 rounded-full mb-2">
               বুকিং সার্ভিস নির্বাচন
             </span>
-            <h3 className="text-lg sm:text-xl font-bold font-['Space_Grotesk'] text-[#1E2519] leading-snug">
+            <h3 className="text-lg sm:text-xl font-bold font-['Space_Grotesk'] text-[#161D28] leading-snug">
               আপনার কাঙ্ক্ষিত সেবা নির্বাচন করুন
             </h3>
-            <p className="text-xs text-[#6B7563] mt-1.5">
+            <p className="text-xs text-[#5A6474] mt-1.5">
               নিচের যেকোনো সার্ভিসে ক্লিক করলে তাৎক্ষণিক তথ্যসহ WhatsApp-এ যুক্ত হয়ে যাবেন:
             </p>
           </div>
@@ -111,7 +111,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
             type="button"
             id="quick-book-close-btn"
             onClick={onClose}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[#D5CFBF] bg-white hover:bg-[#F0ECE1] text-[#4E5C46] hover:text-[#1E2519] flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[var(--periwinkle-border)] bg-white hover:bg-[var(--periwinkle-light)] text-[var(--periwinkle-dark)] flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
             aria-label="Close modal"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
@@ -121,14 +121,14 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
         {/* Modal Body - Service List with WhatsApp redirect or Callback Tab */}
         <div className="service-modal-body">
           {/* Tab Selector */}
-          <div className="flex rounded-lg bg-[#EFECE4] p-1 mb-3.5 text-xs font-semibold border border-[#D5CFBF]">
+          <div className="flex rounded-xl bg-[var(--periwinkle-light)] p-1 mb-3.5 text-xs font-semibold border border-[var(--periwinkle-border)]">
             <button
               type="button"
               onClick={() => setQuickBookTab('services')}
-              className={`flex-1 py-1.5 rounded-md transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer ${
                 quickBookTab === 'services' 
-                  ? 'bg-white text-[#1E2519] border border-[#D5CFBF] font-bold shadow-xs' 
-                  : 'text-[#65715D] hover:text-[#1E2519]'
+                  ? 'bg-white text-[var(--periwinkle-dark)] border border-[var(--periwinkle-border)] font-bold shadow-xs' 
+                  : 'text-[var(--periwinkle-text)] hover:text-[#161D28]'
               }`}
             >
               সার্ভিস লিস্ট (WhatsApp)
@@ -136,10 +136,10 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
             <button
               type="button"
               onClick={() => setQuickBookTab('callback')}
-              className={`flex-1 py-1.5 rounded-md transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer ${
                 quickBookTab === 'callback' 
-                  ? 'bg-white text-[#1E2519] border border-[#D5CFBF] font-bold shadow-xs' 
-                  : 'text-[#65715D] hover:text-[#1E2519]'
+                  ? 'bg-white text-[var(--periwinkle-dark)] border border-[var(--periwinkle-border)] font-bold shadow-xs' 
+                  : 'text-[var(--periwinkle-text)] hover:text-[#161D28]'
               }`}
             >
               ফোন কল অনুরোধ (Call Back)
@@ -158,17 +158,17 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#EFF4EC] flex items-center justify-center text-[#5F7758] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--mint-light)] flex items-center justify-center text-[var(--mint-dark)] border border-[var(--mint-border)] flex-shrink-0">
                     <Compass className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#1E2519]">Tourist Visa (ট্যুরিস্ট ভিসা)</h4>
-                    <p className="text-xs text-[#6E7866]">ফরম পূরণ, আইভ্যাক স্লট ও ফাইল প্রসেসিং</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Tourist Visa (ট্যুরিস্ট ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">ফরম পূরণ, আইভ্যাক স্লট ও ফাইল প্রসেসিং</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[#4E5C46] bg-[#F2F6EF] px-2 py-0.5 rounded block">৳১,৫০০</span>
-                  <span className="text-[10px] text-[#86907E] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳১,৫০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -182,17 +182,17 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#EFF4EC] flex items-center justify-center text-[#5F7758] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--periwinkle-light)] flex items-center justify-center text-[var(--periwinkle-dark)] border border-[var(--periwinkle-border)] flex-shrink-0">
                     <Stethoscope className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#1E2519]">Medical Visa (মেডিকেল ভিসা)</h4>
-                    <p className="text-xs text-[#6E7866]">হাসপাতাল ইনভাইটেশন লেটার ও মেডিকেল ফাইল</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Medical Visa (মেডিকেল ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">হাসপাতাল ইনভাইটেশন লেটার ও মেডিকেল ফাইল</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[#4E5C46] bg-[#F2F6EF] px-2 py-0.5 rounded block">৳৪,০০০</span>
-                  <span className="text-[10px] text-[#86907E] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৪,০০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -206,17 +206,17 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#EFF4EC] flex items-center justify-center text-[#5F7758] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--mint-light)] flex items-center justify-center text-[var(--mint-dark)] border border-[var(--mint-border)] flex-shrink-0">
                     <Briefcase className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#1E2519]">Business Visa (বিজনেস ভিসা)</h4>
-                    <p className="text-xs text-[#6E7866]">ইনভাইটেশন পেপারস ও ট্রেড ডকুমেন্টস ফাইল</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Business Visa (বিজনেস ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">ইনভাইটেশন পেপারস ও ট্রেড ডকুমেন্টস ফাইল</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[#4E5C46] bg-[#F2F6EF] px-2 py-0.5 rounded block">৳৫,০০০</span>
-                  <span className="text-[10px] text-[#86907E] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৫,০০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -230,17 +230,17 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#EFF4EC] flex items-center justify-center text-[#5F7758] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--periwinkle-light)] flex items-center justify-center text-[var(--periwinkle-dark)] border border-[var(--periwinkle-border)] flex-shrink-0">
                     <Layers className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#1E2519]">Double Entry Visa (ডবল এন্ট্রি ভিসা)</h4>
-                    <p className="text-xs text-[#6E7866]">নেপাল/ভুটান ট্রানজিট ও দুইবার প্রবেশ সুবিধা</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Double Entry Visa (ডবল এন্ট্রি ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">নেপাল/ভুটান ট্রানজিট ও দুইবার প্রবেশ সুবিধা</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[#4E5C46] bg-[#F2F6EF] px-2 py-0.5 rounded block">৳৩,০০০</span>
-                  <span className="text-[10px] text-[#86907E] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৩,০০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -254,17 +254,17 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#EFF4EC] flex items-center justify-center text-[#5F7758] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--mint-light)] flex items-center justify-center text-[var(--mint-dark)] border border-[var(--mint-border)] flex-shrink-0">
                     <Ticket className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#1E2519]">Ticket Booking (টিকেট বুকিং)</h4>
-                    <p className="text-xs text-[#6E7866]">এয়ার টিকেট ও ভিসা ট্রানজিট কনফার্মড টিকেট</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Ticket Booking (টিকেট বুকিং)</h4>
+                    <p className="text-xs text-[#5A6474]">এয়ার টিকেট ও ভিসা ট্রানজিট কনফার্মড টিকেট</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[#4E5C46] bg-[#F2F6EF] px-2 py-0.5 rounded block">৳১,০০০</span>
-                  <span className="text-[10px] text-[#86907E] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳১,০০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -278,17 +278,17 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#EFF4EC] flex items-center justify-center text-[#5F7758] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--periwinkle-light)] flex items-center justify-center text-[var(--periwinkle-dark)] border border-[var(--periwinkle-border)] flex-shrink-0">
                     <CalendarClock className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#1E2519]">Slot Booking (ভিসার স্লট বুকিং)</h4>
-                    <p className="text-xs text-[#6E7866]">আইভ্যাক ফি ১৫০০৳ + নির্ধারিত ক্যাটাগরি ফি</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Slot Booking (ভিসার স্লট বুকিং)</h4>
+                    <p className="text-xs text-[#5A6474]">আইভ্যাক ফি ১৫০০৳ + নির্ধারিত ক্যাটাগরি ফি</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[#4E5C46] bg-[#F2F6EF] px-2 py-0.5 rounded block">১৫০০৳ + ফি</span>
-                  <span className="text-[10px] text-[#86907E] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">১৫০০৳ + ফি</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
             </div>
@@ -375,17 +375,6 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               )}
             </div>
           )}
-        </div>
-
-        {/* Modal Footer */}
-        <div className="service-modal-footer">
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn-3d-matte-red px-5 py-2 text-sm font-semibold rounded-full"
-          >
-            বন্ধ করুন
-          </button>
         </div>
       </div>
     </div>

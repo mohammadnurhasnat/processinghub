@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Headphones, 
+  MessagesSquare, 
   Send, 
   X, 
   RotateCcw, 
@@ -261,7 +261,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
         <div className="bg-[#1E2519] text-[#FAF8F5] px-4 py-3 flex items-center justify-between border-b border-[#2C3524] flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative w-9 h-9 rounded-full bg-[#2E7D32]/35 border border-[#4CAF50]/50 flex items-center justify-center text-[#A7F3D0] shadow-xs">
-              <Headphones className="w-5 h-5" />
+              <MessagesSquare className="w-5 h-5 stroke-[2]" />
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#1FA855] border-2 border-[#1E2519]" />
             </div>
             <div>
@@ -357,7 +357,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
               >
                 {!isUser && (
                   <div className="w-7 h-7 rounded-full bg-[#1E2519] text-[#9AE6B4] flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                    <Headphones className="w-3.5 h-3.5" />
+                    <MessagesSquare className="w-3.5 h-3.5" />
                   </div>
                 )}
 
@@ -454,7 +454,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           {isLoading && (
             <div className="flex gap-2.5 justify-start items-start">
               <div className="w-7 h-7 rounded-full bg-[#1E2519] text-[#9AE6B4] flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                <Headphones className="w-3.5 h-3.5" />
+                <MessagesSquare className="w-3.5 h-3.5" />
               </div>
               <div className="bg-white border border-[#E3DEC3] rounded-xl rounded-tl-xs px-4 py-3 shadow-xs flex items-center gap-2">
                 <span className="text-xs text-[#636F5A] font-medium">উত্তর প্রস্তুত করা হচ্ছে...</span>

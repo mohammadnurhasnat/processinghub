@@ -3,8 +3,7 @@ import {
   Menu, 
   X, 
   PhoneCall, 
-  MessageCircle,
-  ChevronRight
+  MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
@@ -14,13 +13,15 @@ interface NavbarProps {
   isMobileNavOpen: boolean;
   setIsMobileNavOpen: (isOpen: boolean) => void;
   onOpenQuickBook: () => void;
+  onOpenSlotBooking?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   isScrolled,
   isMobileNavOpen,
   setIsMobileNavOpen,
-  onOpenQuickBook
+  onOpenQuickBook,
+  onOpenSlotBooking
 }) => {
   // Mobile history back gesture/button handler
   useEffect(() => {
@@ -52,16 +53,34 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
   }, [isMobileNavOpen, setIsMobileNavOpen]);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>, 
+    href: string,
+    action?: () => void
+  ) => {
     e.preventDefault();
     setIsMobileNavOpen(false);
-    if (href === '#') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // If an action is provided (such as opening Slot Booking modal), invoke it immediately
+    // without triggering an unnecessary background smooth scroll that causes browser redraw flickering
+    if (action) {
+      action();
       return;
     }
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
+
+    if (href === '#') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const target = document.querySelector(href);
+      if (target) {
+        const headerOffset = 70;
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
   };
 
@@ -81,9 +100,45 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
 
           <div className="nav-links">
-            <a href="#services">Services</a>
-            <a href="#destinations">Destinations</a>
-            <a href="#contact">Contact</a>
+            <a 
+              href="#hero-section" 
+              id="desktop-link-home"
+              onClick={(e) => handleNavClick(e, '#hero-section')}
+            >
+              Home
+            </a>
+            <span className="nav-link-separator" aria-hidden="true">|</span>
+            <a 
+              href="#services" 
+              id="desktop-link-services"
+              onClick={(e) => handleNavClick(e, '#services')}
+            >
+              Services
+            </a>
+            <span className="nav-link-separator" aria-hidden="true">|</span>
+            <a 
+              href="#destinations" 
+              id="desktop-link-destinations"
+              onClick={(e) => handleNavClick(e, '#destinations')}
+            >
+              Destinations
+            </a>
+            <span className="nav-link-separator" aria-hidden="true">|</span>
+            <a 
+              href="#services" 
+              id="desktop-link-slot-booking"
+              onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
+            >
+              Slot Booking
+            </a>
+            <span className="nav-link-separator" aria-hidden="true">|</span>
+            <a 
+              href="#contact" 
+              id="desktop-link-contact"
+              onClick={(e) => handleNavClick(e, '#contact')}
+            >
+              Contact Us
+            </a>
           </div>
 
           <div className="flex items-center gap-2">
@@ -103,93 +158,129 @@ export const Navbar: React.FC<NavbarProps> = ({
               aria-expanded={isMobileNavOpen}
               aria-label={isMobileNavOpen ? "Close mobile menu" : "Open mobile menu"}
             >
-              {isMobileNavOpen ? (
-                <X className="w-5 h-5 stroke-[2.2]" />
-              ) : (
-                <Menu className="w-5 h-5 stroke-[2.2]" />
-              )}
+              <AnimatePresence mode="wait" initial={false}>
+                {isMobileNavOpen ? (
+                  <motion.span
+                    key="close-icon"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="flex items-center justify-center"
+                  >
+                    <X className="w-5 h-5 stroke-[2.2]" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="menu-icon"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="flex items-center justify-center"
+                  >
+                    <Menu className="w-5 h-5 stroke-[2.2]" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
           </div>
         </nav>
 
-        {/* MOBILE TOP DROPDOWN MENU */}
+        {/* MOBILE FLOATING DROPDOWN CARD (MATCHING REFERENCE IMAGE) */}
         <AnimatePresence>
           {isMobileNavOpen && (
             <motion.div
               key="mobile-nav-dropdown"
               id="mobile-nav-dropdown"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+              initial={{ opacity: 0, y: -16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -14, scale: 0.96 }}
               transition={{ 
-                height: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
-                opacity: { duration: 0.2 }
+                duration: 0.26, 
+                ease: [0.16, 1, 0.3, 1] 
               }}
-              className="mobile-dropdown-menu md:hidden"
+              style={{ willChange: 'transform, opacity' }}
+              className="mobile-floating-card md:hidden"
             >
-              <div className="mobile-dropdown-content">
-                {/* Nav Links */}
+              {/* Centered navigation links */}
+              <div className="mobile-card-links">
+                <a 
+                  href="#hero-section"
+                  id="mobile-link-home"
+                  onClick={(e) => handleNavClick(e, '#hero-section')}
+                  className="mobile-card-link"
+                >
+                  Home
+                </a>
+
+                <div className="mobile-menu-divider" aria-hidden="true" />
+
                 <a 
                   href="#services"
+                  id="mobile-link-services"
                   onClick={(e) => handleNavClick(e, '#services')}
-                  className="mobile-dropdown-link"
+                  className="mobile-card-link"
                 >
-                  <span>Services</span>
-                  <ChevronRight className="w-4 h-4 text-[#7C9473]" />
+                  Services
                 </a>
+
+                <div className="mobile-menu-divider" aria-hidden="true" />
 
                 <a 
                   href="#destinations"
+                  id="mobile-link-destinations"
                   onClick={(e) => handleNavClick(e, '#destinations')}
-                  className="mobile-dropdown-link"
+                  className="mobile-card-link"
                 >
-                  <span>Destinations</span>
-                  <ChevronRight className="w-4 h-4 text-[#7C9473]" />
+                  Destinations
                 </a>
+
+                <div className="mobile-menu-divider" aria-hidden="true" />
+
+                <a 
+                  href="#services"
+                  id="mobile-link-slot-booking"
+                  onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
+                  className="mobile-card-link"
+                >
+                  Slot Booking
+                </a>
+
+                <div className="mobile-menu-divider" aria-hidden="true" />
 
                 <a 
                   href="#contact"
+                  id="mobile-link-contact"
                   onClick={(e) => handleNavClick(e, '#contact')}
-                  className="mobile-dropdown-link"
+                  className="mobile-card-link"
                 >
-                  <span>Contact</span>
-                  <ChevronRight className="w-4 h-4 text-[#7C9473]" />
+                  Contact Us
+                </a>
+              </div>
+
+              {/* Secondary Quick Contact Pills */}
+              <div className="mobile-card-secondary-row">
+                <a
+                  href={`tel:${CONFIG.phone}`}
+                  id="mobile-call-pill"
+                  className="mobile-pill-call"
+                >
+                  <PhoneCall className="w-3.5 h-3.5 text-[#374492]" />
+                  <span>Call Now</span>
                 </a>
 
-                {/* Actions */}
-                <div className="mobile-dropdown-actions">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMobileNavOpen(false);
-                      onOpenQuickBook();
-                    }}
-                    className="btn-3d-matte-primary w-full py-2.5 text-sm font-semibold rounded-xl text-center cursor-pointer shadow-xs"
-                  >
-                    Book Now (বুক করুন)
-                  </button>
-
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    <a
-                      href={`tel:${CONFIG.phone}`}
-                      className="btn-3d-matte-secondary py-2 px-2 text-xs font-semibold rounded-lg text-center flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <PhoneCall className="w-3.5 h-3.5 text-[#1FA855]" />
-                      <span>Call Now</span>
-                    </a>
-
-                    <a
-                      href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I am contacting you for Indian Visa Assistance.')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsMobileNavOpen(false)}
-                      className="btn-3d-matte-green py-2 px-2 text-xs font-bold rounded-lg text-center flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>WhatsApp</span>
-                    </a>
-                  </div>
-                </div>
+                <a
+                  href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I am contacting you for Indian Visa Assistance.')}`}
+                  id="mobile-whatsapp-pill"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMobileNavOpen(false)}
+                  className="mobile-pill-whatsapp"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>WhatsApp</span>
+                </a>
               </div>
             </motion.div>
           )}
@@ -204,7 +295,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
             className="mobile-dropdown-backdrop md:hidden"
             onClick={() => setIsMobileNavOpen(false)}
             aria-hidden="true"
