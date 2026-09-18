@@ -122,10 +122,10 @@ export const VISA_SERVICES: VisaService[] = [
     title: 'Ticket Booking (টিকেট বুকিং)',
     category: 'ভ্রমণ ও যাতায়াত',
     image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=800&q=80',
-    description: 'ভারত ও আন্তর্জাতিক রুটের এয়ার টিকেট, ডাবল এন্ট্রি ট্রানজিট টিকেট এবং কনফার্মড রিটার্ন টিকেট বুকিং সেবা।',
-    price: '৳১,০০০',
+    description: 'দেশ ও বিদেশের সকল ধরনের এয়ার টিকিট, ওয়ান-ওয়ে, রাউন্ড ট্রিপ, ট্রানজিট টিকিট ও কনফার্মড রিটার্ন টিকিট সহ সমস্ত ধরনের টিকিট বুকিং সেবা প্রদান করা হয়।',
+    price: '৳১,৫০০',
     per: '/ সার্ভিস চার্জ',
-    waText: 'Hello Processing Hub, I want to book Air / Travel Ticket Booking service.',
+    waText: 'Hello Processing Hub, I want to book Air / Travel Ticket Booking service (Charge: ৳1,500).',
     documents: [
       'ভ্রমণকারীর মূল পাসপোর্টের তথ্য পাতার পরিষ্কার কপি',
       'ভ্রমণের সম্ভাব্য তারিখ ও যাত্রার সময়সূচি',
