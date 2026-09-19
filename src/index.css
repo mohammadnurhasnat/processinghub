@@ -722,15 +722,20 @@ section {
 /* DESTINATIONS - horizontal scroll */
 .dest-scroll {
   display: flex;
-  gap: 26px;
+  gap: 20px;
   overflow-x: auto;
-  padding: 20px 6% 24px;
+  padding: 12px 6% 16px;
   margin: 0 -6%;
   scroll-snap-type: x mandatory;
 }
 
 .dest-scroll::-webkit-scrollbar {
-  height: 6px;
+  height: 5px;
+}
+
+.dest-scroll::-webkit-scrollbar-track {
+  background: rgba(220, 215, 202, 0.4);
+  border-radius: 10px;
 }
 
 .dest-scroll::-webkit-scrollbar-thumb {
@@ -738,21 +743,35 @@ section {
   border-radius: 10px;
 }
 
+.dest-scroll::-webkit-scrollbar-thumb:hover {
+  background: #A3D69B;
+}
+
 .polaroid {
-  flex: 0 0 240px;
-  background: #fff;
-  padding: 14px 14px 44px;
-  border-radius: 8px;
-  border: 1px solid rgba(204, 211, 251, 0.45);
-  box-shadow: 0 12px 28px rgba(74, 90, 184, 0.10);
+  flex: 0 0 270px;
+  width: 270px;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(213, 207, 191, 0.75);
+  box-shadow: 0 6px 18px rgba(30, 37, 25, 0.06);
   scroll-snap-align: start;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.polaroid:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(30, 37, 25, 0.12);
+  border-color: #A3D69B;
 }
 
 .polaroid img {
   width: 100%;
-  height: 230px;
+  height: 180px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 10px;
 }
 
 .polaroid p {
@@ -760,7 +779,7 @@ section {
   font-size: 0.9rem;
   font-weight: 600;
   text-align: center;
-  margin-top: 14px;
+  margin-top: 10px;
   color: var(--ink);
 }
 

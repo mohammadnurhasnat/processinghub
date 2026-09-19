@@ -69,7 +69,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
                 জনপ্রিয় পর্যটন গন্তব্য
               </span>
               <h3 className="text-lg sm:text-2xl font-bold font-['Space_Grotesk'] text-white mt-1.5 leading-snug drop-shadow-sm">
-                {destination.name}
+                {destination.name} {destination.nameBn ? `— ${destination.nameBn}` : ''}
               </h3>
               <p className="text-xs sm:text-sm text-gray-200 flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3.5 h-3.5 text-[#A3D69B]" />

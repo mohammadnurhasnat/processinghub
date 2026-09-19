@@ -66,13 +66,15 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#141B10] via-black/40 to-transparent" />
             
-            {/* City Badge & Rating */}
+            {/* City Badge, Brand Logo & Details */}
             <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-2">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#2A7E3B] text-white shadow-xs">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {hospital.city}
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#2A7E3B] text-white shadow-xs">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {hospital.city}
+                  </span>
+                </div>
                 <h3 className="text-lg sm:text-2xl font-bold font-['Space_Grotesk'] text-white mt-1.5 leading-snug drop-shadow-sm">
                   {hospital.name}
                 </h3>

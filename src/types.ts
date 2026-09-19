@@ -22,6 +22,7 @@ export interface SlotType {
 export interface Destination {
   id: string;
   name: string;
+  nameBn?: string;
   location: string;
   image: string;
   rotate: string;
@@ -36,6 +37,9 @@ export interface Hospital {
   location: string;
   city: string;
   image: string;
+  logo?: string;
+  logoUrl?: string;
+  brandColor?: string;
   rotate?: string;
   specialties: string[];
   departments: string[];
