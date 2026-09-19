@@ -11,12 +11,19 @@ interface ServicesSectionProps {
 
 export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal }) => {
   return (
-    <section id="services">
-      <div className="section-head">
-        <span>Our Services</span>
-        <h2>ইন্ডিয়ান ভিসা ক্যাটাগরি ও সার্ভিস</h2>
-        <p>সঠিক ডকুমেন্টস চেকলিস্ট ও আইভ্যাক (IVAC) নিয়মানুযায়ী আপনার ভিসা ফাইল প্রস্তুত করতে আমাদের দক্ষ টিমের সহায়তা নিন।</p>
+    <section id="services" className="relative">
+      <div className="section-head max-w-2xl mb-10">
+        <span className="text-xs font-bold uppercase tracking-wider text-[#1E743B] bg-[#EBF7EE] px-3 py-1 rounded-full border border-[#CDE5D5]">
+          Our Service Packages
+        </span>
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1E2519] tracking-tight mt-3">
+          ভিসা ক্যাটাগরি ও সার্ভিসসমূহ
+        </h2>
+        <p className="text-[#4E5C46] text-sm sm:text-base leading-relaxed mt-2">
+          সঠিক ডকুমেন্টস চেকলিস্ট ও আইভ্যাক (IVAC) নিয়মানুযায়ী আপনার প্রয়োজনীয় ভিসা ক্যাটাগরি বেছে নিন এবং সরাসরি কনসালটেন্সি বা বুকিং গ্রহণ করুন।
+        </p>
       </div>
+
       <div className="gear-grid">
         {VISA_SERVICES.map((service, index) => (
           <motion.div

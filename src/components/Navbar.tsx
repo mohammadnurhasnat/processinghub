@@ -61,27 +61,28 @@ export const Navbar: React.FC<NavbarProps> = ({
     e.preventDefault();
     setIsMobileNavOpen(false);
 
-    // If an action is provided (such as opening Slot Booking modal), invoke it immediately
-    // without triggering an unnecessary background smooth scroll that causes browser redraw flickering
     if (action) {
       action();
       return;
     }
 
-    if (href === '#') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      const target = document.querySelector(href);
-      if (target) {
-        const headerOffset = 70;
-        const elementPosition = target.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
+    // Small delay to allow any mobile transition/render to settle cleanly
+    setTimeout(() => {
+      if (href === '#' || href === '#hero-section') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const target = document.querySelector(href);
+        if (target) {
+          const headerOffset = 70;
+          const elementPosition = target.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
       }
-    }
+    }, 40);
   };
 
   return (
@@ -106,6 +107,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={(e) => handleNavClick(e, '#hero-section')}
             >
               Home
+            </a>
+            <span className="nav-link-separator" aria-hidden="true">|</span>
+            <a 
+              href="#our-commitment" 
+              id="desktop-link-commitment"
+              onClick={(e) => handleNavClick(e, '#our-commitment')}
+            >
+              Our Commitment
             </a>
             <span className="nav-link-separator" aria-hidden="true">|</span>
             <a 
@@ -212,6 +221,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="mobile-card-link"
                 >
                   Home
+                </a>
+
+                <div className="mobile-menu-divider" aria-hidden="true" />
+
+                <a 
+                  href="#our-commitment"
+                  id="mobile-link-commitment"
+                  onClick={(e) => handleNavClick(e, '#our-commitment')}
+                  className="mobile-card-link"
+                >
+                  Our Commitment
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />

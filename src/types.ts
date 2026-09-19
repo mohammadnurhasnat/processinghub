@@ -20,7 +20,26 @@ export interface SlotType {
 }
 
 export interface Destination {
+  id: string;
   name: string;
+  location: string;
   image: string;
   rotate: string;
+  attractions: string[];
+  bestTime: string;
+  description: string;
+}
+
+export interface Hospital {
+  id: string;
+  name: string;
+  location: string;
+  city: string;
+  image: string;
+  rotate?: string;
+  specialties: string[];
+  departments: string[];
+  highlights: string[];
+  description: string;
+  ayushSupport?: boolean;
 }

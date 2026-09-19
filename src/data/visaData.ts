@@ -1,4 +1,4 @@
-import { VisaService, SlotType, Destination } from '../types';
+import { VisaService, SlotType, Destination, Hospital } from '../types';
 
 export const SLOT_TYPES: SlotType[] = [
   {
@@ -156,28 +156,433 @@ export const VISA_SERVICES: VisaService[] = [
 
 export const DESTINATIONS: Destination[] = [
   {
+    id: 'kolkata',
     name: 'Kolkata (কলকাতা)',
-    image: 'https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=500&q=80',
-    rotate: '-3deg'
+    location: 'West Bengal, India',
+    image: 'https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=600&q=80',
+    rotate: '-2.5deg',
+    attractions: ['ভিক্টোরিয়া মেমোরিয়াল', 'হাওড়া ব্রিজ', 'দক্ষিণেশ্বর ও বেলুড় মঠ', 'নিউ মার্কেট শপিং', 'সায়েন্স সিটি'],
+    bestTime: 'অক্টোবর থেকে মার্চ (শীত ও উৎসবের সেরা সময়)',
+    description: 'বাংলাদেশি পর্যটক ও চিকিৎসা গ্রহণকারীদের সবচেয়ে সহজ ও জনপ্রিয় প্রবেশদ্বার। ঐতিহাসিক স্থাপত্য, কেনাকাটা, ঐতিহ্যবাহী বাঙালি খাবার এবং উন্নত হাসপাতালগুলোর জন্য সুপরিচিত।'
   },
   {
+    id: 'delhi-agra',
     name: 'Delhi & Agra (দিল্লি ও আগ্রা)',
-    image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=500&q=80',
-    rotate: '2deg'
+    location: 'Delhi NCR & Uttar Pradesh',
+    image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=600&q=80',
+    rotate: '2deg',
+    attractions: ['তাজমহল (আগ্রা)', 'লালকেল্লা ও কুতুব মিনার', 'ইন্ডিয়া গেট', 'হুমায়ুনের সমাধি', 'চাঁদনি চক বাজার'],
+    bestTime: 'নভেম্বর থেকে ফেব্রুয়ারি',
+    description: 'মুঘল ঐতিহ্যের প্রতীক বিশ্বের সপ্তম আশ্চর্যের একটি তাজমহল এবং ভারতের রাজধানী দিল্লির ঐতিহ্যবাহী প্রাচীন দুর্গ ও দর্শনীয় স্থান।'
   },
   {
+    id: 'kashmir',
     name: 'Kashmir Valley (কাশ্মীর)',
-    image: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=500&q=80',
-    rotate: '-1.5deg'
+    location: 'Jammu & Kashmir, India',
+    image: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=600&q=80',
+    rotate: '-1.5deg',
+    attractions: ['ডাল লেক ও হাউসবোট', 'গুলমার্গ গন্ডোলা ক্যাবল কার', 'পেহেলগাম ভ্যালি', 'সোনামার্গ গ্লেসিয়ার', 'টিউলিপ গার্ডেন'],
+    bestTime: 'মার্চ থেকে অক্টোবর (গ্রীষ্ম ও বরফের সিজন)',
+    description: 'ভূস্বর্গ নামে খ্যাত কাশ্মীর উপত্যকা। তুষারাবৃত পর্বতমালা, পাইন বন, ডাল লেকের শিকারা ভ্রমণ এবং শান্ত সবুজ প্রকৃতির অনন্য অভিজ্ঞতা।'
   },
   {
+    id: 'chennai',
     name: 'Chennai (মেডিকেল হাব চেন্নাই)',
-    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=500&q=80',
-    rotate: '3deg'
+    location: 'Tamil Nadu, South India',
+    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80',
+    rotate: '2.5deg',
+    attractions: ['মেরিনা বিচ', 'কপালীশ্বর মন্দির', 'সান থম ব্যাসিলিকা', 'মায়াপুরের ঐতিহ্যবাহী বাজার', 'মমল্লপুরম শোর টেম্পল'],
+    bestTime: 'নভেম্বর থেকে ফেব্রুয়ারি',
+    description: 'দক্ষিণ ভারতের প্রধান চিকিৎসা ও কালচারাল রাজধানী। উন্নত মেডিকেল কেয়ার, আন্তর্জাতিক মানের হাসপাতাল এবং সমৃদ্ধ দ্রাবিড় ঐতিহ্যের সংমিশ্রণ।'
   },
   {
+    id: 'darjeeling-sikkim',
     name: 'Darjeeling & Sikkim (দার্জিলিং)',
-    image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=500&q=80',
-    rotate: '-2deg'
+    location: 'West Bengal & Sikkim',
+    image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80',
+    rotate: '-2deg',
+    attractions: ['কাঞ্চনজঙ্ঘা সানরাইজ (টাইগার হিল)', 'দার্জিলিং হিমালয়ান টয় ট্রেন', 'চা বাগান ও রক গার্ডেন', 'গ্যাংটক ও নাথু লা পাস', 'সোমগো লেক'],
+    bestTime: 'মার্চ থেকে মে এবং অক্টোবর থেকে ডিসেম্বর',
+    description: 'পাহাড়ের রানী দার্জিলিং ও মেঘের রাজ্য সিকিম। বরফে ঢাকা কাঞ্চনজঙ্ঘার দিগন্তজোড়া রূপ, সবুজ চা বাগান ও মনোরম পাহাড়ি আবহাওয়া।'
   }
 ];
+
+export const HOSPITALS: Hospital[] = [
+  {
+    id: 'medanta-gurugram',
+    name: 'Medanta – The Medicity',
+    location: 'Gurugram, Delhi-NCR',
+    city: 'দিল্লি / গুরুগ্রাম',
+    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80',
+    rotate: '-2deg',
+    specialties: [
+      '❤️ হৃদরোগ ও হার্ট সার্জারি',
+      '🎗️ ক্যান্সার (Oncology)',
+      '🧠 নিউরোলজি ও নিউরোসার্জারি',
+      '🫀 কিডনি/লিভার ও অর্গান ট্রান্সপ্লান্ট',
+      '🦴 Orthopedics & Joint Replacement',
+      'Gastroenterology & GI Surgery'
+    ],
+    departments: ['Cardiology', 'Oncology', 'Neurology', 'Organ Transplant', 'Orthopedics', 'Gastroenterology'],
+    highlights: [
+      'বিশ্বমানের রোবোটিক সার্জারি ও কার্ডিয়াক কেয়ার',
+      'লিভার ও কিডনি প্রতিস্থাপনে ভারতের অন্যতম শীর্ষ প্রতিষ্ঠান',
+      'আন্তর্জাতিক রোগীদের জন্য ডেডিকেটেড হেল্পডেস্ক'
+    ],
+    description: 'ভারতের সর্বাধুনিক মাল্টি-সুপারস্পেশালিটি হাসপাতালগুলোর একটি, যেখানে ডাঃ নরেশ ত্রেহানের নেতৃত্বে বিশ্বমানের হৃদরোগ, নিউরো ও অঙ্গ প্রতিস্থাপন চিকিৎসা প্রদান করা হয়।',
+    ayushSupport: true
+  },
+  {
+    id: 'desun-kolkata',
+    name: 'Desun Hospital & Heart Institute',
+    location: 'EM Bypass, Kolkata',
+    city: 'কলকাতা',
+    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80',
+    rotate: '1.5deg',
+    specialties: [
+      '❤️ হৃদরোগ ও হার্ট সার্জারি',
+      '🧠 নিউরোলজি ও ব্রেন ট্রিটমেন্ট',
+      '🎗️ ক্যান্সার কেয়ার',
+      '🫁 Critical Care & ICU Support',
+      '🦴 Orthopedics & Trauma',
+      'General & Multi-speciality Treatment'
+    ],
+    departments: ['Cardiology', 'Neurology', 'Oncology', 'Critical Care', 'Orthopedics', 'General Surgery'],
+    highlights: [
+      'কলকাতায় বাংলাদেশিদের জন্য দ্রুত ও সহজ যাতায়াত ব্যবস্থা',
+      '২৪/৭ অ্যাডভান্সড কার্ডিয়াক ইমার্জেন্সি ও ট্রমা সেন্টার',
+      'সুলভ ও নির্ভরযোগ্য প্যাকেজে আধুনিক চিকিৎসা'
+    ],
+    description: 'কলকাতার অন্যতম প্রধান কার্ডিয়াক ও মাল্টি-স্পেশালিটি হাসপাতাল। জরুরি হার্ট অ্যাটাক ও ক্রিটিক্যাল কেয়ার চিকিৎসায় অত্যন্ত সুপরিচিত।',
+    ayushSupport: true
+  },
+  {
+    id: 'peerless-kolkata',
+    name: 'Peerless Hospital',
+    location: 'Panchasayar, EM Bypass, Kolkata',
+    city: 'কলকাতা',
+    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    rotate: '-1.5deg',
+    specialties: [
+      '❤️ Cardiology',
+      '🎗️ Oncology',
+      '🧠 Neurology & Neurosurgery',
+      '🦴 Orthopedics & Spine',
+      'Gastroenterology',
+      'Nephrology & Urology',
+      'General Surgery'
+    ],
+    departments: ['Cardiology', 'Oncology', 'Neurology', 'Orthopedics', 'Gastroenterology', 'Nephrology'],
+    highlights: [
+      'বাংলাদেশি রোগীদের জন্য বিশেষ সহায়তা সেল',
+      'অভিজ্ঞ ক্লিনিক্যাল টিম ও আধুনিক ডায়াগনস্টিক সুবিধা',
+      'সাশ্রয়ী খরচে সমন্বিত চিকিৎসা ব্যবস্থা'
+    ],
+    description: 'কলকাতার ইএম বাইপাসের পার্শ্ববর্তী অন্যতম দীর্ঘদিনের আস্থাশীল হাসপাতাল। গ্যাস্ট্রোএন্টারোলজি, কার্ডিওলজি ও অর্থোপেডিকসে নিয়মিত হাজারো বাংলাদেশি সেবা নেন।',
+    ayushSupport: true
+  },
+  {
+    id: 'apollo-hospitals',
+    name: 'Apollo Hospitals, India',
+    location: 'Chennai / Delhi / Kolkata / Hyderabad',
+    city: 'চেন্নাই / কলকাতা / দিল্লি',
+    image: 'https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=600&q=80',
+    rotate: '2deg',
+    specialties: [
+      '❤️ Cardiology & Heart Surgery',
+      '🎗️ Cancer Treatment (Proton Therapy)',
+      '🧠 Neurology & Neurosurgery',
+      '🫀 Kidney/Liver Transplant',
+      '🦴 Orthopedics & Joint Replacement',
+      'Gastroenterology & Hepatology',
+      'Urology & Nephrology',
+      'Pediatrics & Gynecology'
+    ],
+    departments: ['Cardiology', 'Oncology', 'Neurology', 'Organ Transplant', 'Orthopedics', 'Gastroenterology', 'Urology', 'Pediatrics'],
+    highlights: [
+      'প্রোটন বিম থেরাপিসহ এশিয়ার সর্বাধুনিক ক্যান্সার কেয়ার',
+      'অর্গান ট্রান্সপ্লান্টে বিশ্বখ্যাত আন্তর্জাতিক নেটওয়ার্ক',
+      'JCI স্বীকৃত আন্তর্জাতিক মানের প্রিমিয়াম হসপিটাল'
+    ],
+    description: 'এশিয়ার বৃহত্তম এবং সবচেয়ে নির্ভরযোগ্য স্বাস্থ্যসেবা নেটওয়ার্ক। জটিল হার্ট সার্জারি, রোবোটিক ক্যান্সার চিকিৎসা এবং লিভার ট্রান্সপ্লান্টে শীর্ষস্থানীয়।',
+    ayushSupport: true
+  },
+  {
+    id: 'fortis-hospital',
+    name: 'Fortis Hospital',
+    location: 'Kolkata, Delhi-NCR, Bengaluru',
+    city: 'কলকাতা / দিল্লি / ব্যাঙ্গালোর',
+    image: 'https://images.unsplash.com/photo-1512678080530-7760d81faba6?auto=format&fit=crop&w=600&q=80',
+    rotate: '-2.5deg',
+    specialties: [
+      '❤️ Cardiology & Cardiac Surgery',
+      '🧠 Neurology & Neurosurgery',
+      '🎗️ Oncology (ক্যান্সার কেয়ার)',
+      '🫀 Kidney/Liver Transplant',
+      '🦴 Orthopedics & Spine Surgery',
+      'Gastroenterology',
+      'Nephrology & Dialysis'
+    ],
+    departments: ['Cardiology', 'Neurology', 'Oncology', 'Organ Transplant', 'Orthopedics', 'Gastroenterology', 'Nephrology'],
+    highlights: [
+      'অত্যাধুনিক কার্ডিয়াক ও নিউরো কেয়ার পরিকাঠামো',
+      'আন্তর্জাতিক রোগী সহায়তা ও দ্রুত ভিসা ইনভাইটেশন টিম',
+      'রোবোটিক জয়েন্ট রিপ্লেসমেন্ট প্রযুক্তি'
+    ],
+    description: 'ভারতের অন্যতম অগ্রণী মাল্টি-স্পেশালিটি হাসপাতাল চেইন। কিডনি ট্রান্সপ্লান্ট, হার্ট ও নিউরো সার্জারিতে সর্বোচ্চ সাফল্যের হার রয়েছে।',
+    ayushSupport: true
+  },
+  {
+    id: 'yashoda-hospitals',
+    name: 'Yashoda Hospitals',
+    location: 'Somajiguda, Secunderabad, Hyderabad',
+    city: 'হায়দ্রাবাদ',
+    image: 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=600&q=80',
+    rotate: '1.5deg',
+    specialties: [
+      '🎗️ ক্যান্সার (Medical, Surgical & Radiation Oncology)',
+      '❤️ হৃদরোগ ও ভাস্কুলার সার্জারি',
+      '🧠 নিউরোলজি ও নিউরোসার্জারি',
+      '🫀 কিডনি/লিভার ট্রান্সপ্লান্ট',
+      'Gastroenterology & Hepatology',
+      'Orthopedics & Joint Reconstruction',
+      'Urology'
+    ],
+    departments: ['Oncology', 'Cardiology', 'Neurology', 'Organ Transplant', 'Gastroenterology', 'Orthopedics', 'Urology'],
+    highlights: [
+      'ভারতে ৩টি ডেডিকেটেড ক্যান্সার ইনস্টিটিউট ও দ্রুত চিকিৎসা',
+      'কম খরচে উন্নত কোয়ালিটির জটিল অপারেশন',
+      'হায়দ্রাবাদে বাংলাদেশিদের জন্য বিশেষ হেল্পলাইন'
+    ],
+    description: 'হায়দ্রাবাদের অন্যতম বৃহত্তম হাসপাতাল গোষ্ঠী। বিশেষ করে অ্যাডভান্সড ক্যান্সার থেরাপি, ইন্টারভেনশনাল পালমোনোলজি ও ট্রান্সপ্লান্টেশনে আন্তর্জাতিক মানের।',
+    ayushSupport: true
+  },
+  {
+    id: 'mgm-healthcare',
+    name: 'MGM Healthcare',
+    location: 'Nelson Manickam Road, Aminjikarai, Chennai',
+    city: 'চেন্নাই',
+    image: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=600&q=80',
+    rotate: '-2deg',
+    specialties: [
+      '❤️ Cardiology & Cardiac Surgery',
+      '🧠 Neurology & Neurosurgery',
+      '🎗️ Oncology',
+      '🫀 Organ Transplant (Heart, Lung, Liver, Kidney)',
+      'Gastroenterology',
+      'Orthopedics',
+      'Women & Child Care'
+    ],
+    departments: ['Cardiology', 'Neurology', 'Oncology', 'Organ Transplant', 'Gastroenterology', 'Orthopedics', 'Women Care'],
+    highlights: [
+      'হার্ট ও ফুসফুস (Lung) ট্রান্সপ্লান্টে এশিয়ার অন্যতম সেরা টিম',
+      'ভারতে প্রথম ইউএসজিবিসি LEED প্লাটিনাম সার্টিফাইড গ্রিন হাসপাতাল',
+      'অত্যাধুনিক মডুলার আইসিইউ ও ওটি সুবিধা'
+    ],
+    description: 'চেন্নাইয়ের অত্যাধুনিক বিশ্বমানের সুপার স্পেশালিটি হাসপাতাল। ডাঃ কে আর বালাকৃষ্ণানের নেতৃত্বে হার্ট ট্রান্সপ্লান্টেশনে অসাধারণ খ্যাতির অধিকারী।',
+    ayushSupport: true
+  },
+  {
+    id: 'miot-international',
+    name: 'MIOT International',
+    location: 'Manapakkam, Chennai',
+    city: 'চেন্নাই',
+    image: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=600&q=80',
+    rotate: '2deg',
+    specialties: [
+      '🦴 Orthopedics & Joint Replacement (Knee/Hip)',
+      '🫀 Organ Transplant',
+      '❤️ Cardiac Sciences',
+      '🎗️ Oncology (ক্যান্সার কেয়ার)',
+      '🧠 Neurology & Spine',
+      'Gastroenterology & Liver Care',
+      'Trauma & Critical Care'
+    ],
+    departments: ['Orthopedics', 'Organ Transplant', 'Cardiology', 'Oncology', 'Neurology', 'Gastroenterology', 'Critical Care'],
+    highlights: [
+      'অর্থোপেডিকস ও জয়েন্ট রিপ্লেসমেন্টে ভারতের শীর্ষ কেন্দ্র',
+      'শূন্য-সংক্রমণ (Zero Infection) যুক্ত ওটি পরিবেশ',
+      'বাংলাদেশি রোগীদের জন্য বিশেষ লজিস্টিক সাপোর্ট'
+    ],
+    description: 'চেন্নাইয়ের বিখ্যাত প্রিমিয়ার ইনস্টিটিউট। বিশেষত অর্থোপেডিক সার্জারি, জটিল জয়েন্ট রিপ্লেসমেন্ট এবং স্পোর্টস মেডিসিনে বিশ্বব্যাপী সুনামধারী।',
+    ayushSupport: true
+  },
+  {
+    id: 'narayana-superspeciality',
+    name: 'Narayana Superspeciality Hospital',
+    location: 'Andul Road, Howrah / Kolkata',
+    city: 'কলকাতা / হাওড়া',
+    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80',
+    rotate: '-1.5deg',
+    specialties: [
+      '❤️ Cardiology & Heart Surgery',
+      '🎗️ Cancer Care (Comprehensive Oncology)',
+      '🧠 Neurology & Neurosurgery',
+      'Nephrology & Dialysis',
+      'Gastroenterology',
+      'Orthopedics',
+      'General & Multi-speciality Treatment'
+    ],
+    departments: ['Cardiology', 'Oncology', 'Neurology', 'Nephrology', 'Gastroenterology', 'Orthopedics'],
+    highlights: [
+      'ডাঃ দেবী শেঠির নারায়ণা হেলথ চেইনের অন্যতম ফ্ল্যাগশিপ হসপিটাল',
+      'পূর্ব ভারতের অন্যতম বড় ক্যান্সার ও কার্ডিয়াক সেন্টার',
+      'বাংলাদেশি রোগীদের জন্য সবচেয়ে সুবিধাজনক অবস্থান'
+    ],
+    description: 'হাওড়া ও কলকাতায় অবস্থিত ডাঃ দেবী প্রসাদ শেঠির নারায়ণা গ্রুপের নির্ভরযোগ্য সুপার স্পেশালিটি সেন্টার। সাধ্যের মধ্যে উন্নত চিকিৎসা নিশ্চিত করে।',
+    ayushSupport: true
+  },
+  {
+    id: 'rtiics-kolkata',
+    name: 'Rabindranath Tagore Hospital (RTIICS)',
+    location: 'Mukundapur, EM Bypass, Kolkata',
+    city: 'কলকাতা',
+    image: 'https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&w=600&q=80',
+    rotate: '2.5deg',
+    specialties: [
+      '❤️ Cardiology ও Cardiac Surgery',
+      'Interventional Cardiology & Cath Lab',
+      'Pediatric Cardiology (শিশু হার্ট সার্জারি)',
+      'Heart Transplant & Advanced HF Clinic',
+      'Electrophysiology & Pacemaker',
+      'Critical Care Medicine'
+    ],
+    departments: ['Cardiology', 'Pediatric Cardiology', 'Organ Transplant', 'Critical Care', 'Cardiac Surgery'],
+    highlights: [
+      'পূর্ব ভারতে শিশুদের এবং বয়স্কদের হার্ট অপারেশনে ১ নম্বর কেন্দ্র',
+      'হাজার হাজার সফল বাইপাস ও ভালভ রিপ্লেসমেন্ট সার্জারি',
+      'বাংলাদেশ থেকে প্রতিদিন সবচেয়ে বেশি রোগী ভ্রমণ করেন'
+    ],
+    description: 'আর এন টেগোর (RTIICS) কলকাতার অন্যতম শীর্ষ কার্ডিয়াক সেন্টার। হার্ট ফেইলিউর, পেডিয়াট্রিক কার্ডিওলজি ও জটিল কার্ডিয়াক অপারেশনে অত্যন্ত জনপ্রিয়।',
+    ayushSupport: true
+  },
+  {
+    id: 'ganga-ram-hospital',
+    name: 'Sir Ganga Ram Hospital',
+    location: 'Rajinder Nagar, New Delhi',
+    city: 'নতুন দিল্লি',
+    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80',
+    rotate: '-2deg',
+    specialties: [
+      '❤️ Cardiology',
+      '🧠 Neurology & Neurosurgery',
+      '🎗️ Oncology',
+      'Gastroenterology & Hepatobiliary',
+      'Nephrology & Renal Transplant',
+      'Orthopedics',
+      'General & Advanced Minimal Access Surgery'
+    ],
+    departments: ['Cardiology', 'Neurology', 'Oncology', 'Gastroenterology', 'Nephrology', 'Orthopedics', 'General Surgery'],
+    highlights: [
+      'ভারতের ঐতিহাসিক ও অন্যতম বিশ্বস্ত মাল্টি-স্পেশালিটি হাসপাতাল',
+      'ল্যাপারোস্কোপিক ও রোবোটিক সার্জারিতে ভারতের প্রথম দিকের পথপ্রদর্শক',
+      'প্রতিটি বিভাগের প্রবীণ ও বিশিষ্ট প্রফেসর চিকিৎসকমণ্ডলী'
+    ],
+    description: 'নতুন দিল্লির ঐতিহাসিক এবং অন্যতম শীর্ষস্থানীয় টারশিয়ারি কেয়ার হাসপাতাল। জটিল রোগ নির্ণয় ও নিখুঁত চিকিৎসায় সমগ্র দক্ষিণ এশিয়ায় সুপরিচিত।',
+    ayushSupport: true
+  },
+  {
+    id: 'manipal-hospital',
+    name: 'Manipal Hospital',
+    location: 'Old Airport Road, Bengaluru / Kolkata / Delhi',
+    city: 'ব্যাঙ্গালোর / কলকাতা / দিল্লি',
+    image: 'https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=600&q=80',
+    rotate: '1.5deg',
+    specialties: [
+      '❤️ Cardiology',
+      '🎗️ Oncology (ক্যান্সার সেন্টার)',
+      '🧠 Neurology & Neurosurgery',
+      '🫀 Organ Transplant',
+      'Gastroenterology',
+      'Orthopedics',
+      'Nephrology',
+      'Pediatrics'
+    ],
+    departments: ['Cardiology', 'Oncology', 'Neurology', 'Organ Transplant', 'Gastroenterology', 'Orthopedics', 'Nephrology', 'Pediatrics'],
+    highlights: [
+      '৭০ বছরেরও বেশি অভিজ্ঞতাসম্পন্ন ভারতের শীর্ষ হেলথকেয়ার গ্রুপ',
+      'জটিল ব্রেন ও স্পাইন সার্জারিতে উন্নত নিউরো-নেভিগেশন সিস্টেম',
+      'ক্যান্সার চিকিৎসায় ব্যাপক সাফল্য ও প্রিমিয়াম কেয়ার'
+    ],
+    description: 'ভারতের শীর্ষস্থানীয় মাল্টি-স্পেশালিটি হাসপাতাল নেটওয়ার্ক। ব্যাঙ্গালোর, দিল্লি ও কলকাতায় রোগীদের জন্য সর্বোচ্চ আধুনিক চিকিৎসা সেবা প্রদান করে।',
+    ayushSupport: true
+  },
+  {
+    id: 'artemis-hospitals',
+    name: 'Artemis Hospitals',
+    location: 'Sector 51, Gurugram, Delhi-NCR',
+    city: 'গুরুগ্রাম / দিল্লি-এনসিআর',
+    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    rotate: '-2.5deg',
+    specialties: [
+      '❤️ Heart & Cardiac Surgery',
+      '🎗️ Cancer Care (Comprehensive Institute)',
+      '🧠 Neurology & Neurosurgery',
+      '🫀 Liver/Kidney/Bone Marrow Transplant',
+      '🦴 Orthopedics',
+      'Gastro Sciences',
+      'Women & Child Care'
+    ],
+    departments: ['Cardiology', 'Oncology', 'Neurology', 'Organ Transplant', 'Orthopedics', 'Gastroenterology', 'Women Care'],
+    highlights: [
+      'দিল্লি-এনসিআরের প্রথম JCI ও NABH অনুমোদিত হাসপাতাল',
+      'বোন ম্যারো এবং অর্গান ট্রান্সপ্লান্টে বিশ্বস্ত ফলাফল',
+      'রোগীবান্ধব আধুনিক আর্কিটেকচার ও উন্নত পরিবেশ'
+    ],
+    description: 'দিল্লি-এনসিআরের অন্যতম প্রধান অত্যাধুনিক টারশিয়ারি কেয়ার হাসপাতাল। বোন ম্যারো ট্রান্সপ্লান্ট, হার্ট ও ক্যান্সার চিকিৎসায় প্রখ্যাত।',
+    ayushSupport: true
+  },
+  {
+    id: 'max-healthcare',
+    name: 'Max Super Speciality Hospital',
+    location: 'Saket, New Delhi & NCR',
+    city: 'নতুন দিল্লি / সাকেত',
+    image: 'https://images.unsplash.com/photo-1512678080530-7760d81faba6?auto=format&fit=crop&w=600&q=80',
+    rotate: '2deg',
+    specialties: [
+      '🎗️ Cancer Care (Max Institute of Cancer Care)',
+      '❤️ Cardiology & Cardiac Surgery',
+      '🧠 Neurology & Neurosurgery',
+      '🫀 Kidney/Liver Transplant',
+      'Gastroenterology',
+      'Orthopedics & Joint Replacement',
+      'Nephrology'
+    ],
+    departments: ['Oncology', 'Cardiology', 'Neurology', 'Organ Transplant', 'Gastroenterology', 'Orthopedics', 'Nephrology'],
+    highlights: [
+      'আন্তর্জাতিক রোগী সেবায় ভারতের শীর্ষ হাসপাতালের তালিকায় স্থান',
+      'রোবোটিক হার্ট ও অনকোলজি সার্জারি ইউনিট',
+      'দ্রুত ভিসা সাপোর্ট ও সার্বক্ষণিক সাহায্য'
+    ],
+    description: 'দিল্লি সাকেতের ম্যাক্স সুপার স্পেশালিটি অত্যন্ত উচ্চমানের চিকিৎসা প্রযুক্তি ও স্বনামধন্য ডাক্তারদের সমন্বয়ে গঠিত অন্যতম শীর্ষ হাসপাতাল।',
+    ayushSupport: true
+  },
+  {
+    id: 'aiims-delhi',
+    name: 'AIIMS – All India Institute of Medical Sciences',
+    location: 'Ansari Nagar, New Delhi',
+    city: 'নতুন দিল্লি',
+    image: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=600&q=80',
+    rotate: '-1.5deg',
+    specialties: [
+      '🧠 Neurology & Neurosurgery',
+      '❤️ Cardiology & Cardiac Surgery',
+      '🎗️ Oncology (Dr. BRA IRCH)',
+      '🫀 Organ Transplant',
+      'Gastroenterology',
+      'Nephrology',
+      'Orthopedics',
+      'Pediatrics',
+      'Rare & Complex Diseases'
+    ],
+    departments: ['Neurology', 'Cardiology', 'Oncology', 'Organ Transplant', 'Gastroenterology', 'Nephrology', 'Orthopedics', 'Pediatrics'],
+    highlights: [
+      'ভারতের ১ নম্বর জাতীয় চিকিৎসা ও গবেষণা প্রতিষ্ঠান',
+      'সবচেয়ে জটিল ও বিরল রোগের নির্ভুল চিকিৎসা ও রেফারাল কেন্দ্র',
+      'দেশের শীর্ষ বিশেষজ্ঞ প্রবীণ প্রফেসর ও সার্জনমণ্ডলী'
+    ],
+    description: 'ভারতের সর্বোচ্চ মর্যাদাপূর্ণ জাতীয় মেডিকেল ইনস্টিটিউট। যেকোনো জটিল ও দীর্ঘমেয়াদী জটিল রোগ চিকিৎসায় সমগ্র ভারতের প্রধান রেফারেল কেন্দ্র।',
+    ayushSupport: true
+  }
+];
+

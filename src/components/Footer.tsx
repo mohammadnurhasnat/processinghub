@@ -18,6 +18,9 @@ export const Footer: React.FC = () => {
           <div className="footer-col-services">
             <h4 className="footer-heading">সার্ভিসসমূহ</h4>
             <div className="footer-services-list">
+              <a href="#our-commitment" className="footer-service-btn">
+                আমাদের অঙ্গীকার
+              </a>
               <a href="#services" className="footer-service-btn">
                 ভিসা সেবাসমূহ
               </a>

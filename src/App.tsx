@@ -3,6 +3,7 @@ import { VisaService } from './types';
 import { VISA_SERVICES } from './data/visaData';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
+import { OurCommitmentSection } from './components/OurCommitmentSection';
 import { ServicesSection } from './components/ServicesSection';
 import { DestinationsSection } from './components/DestinationsSection';
 import { CtaStrip } from './components/CtaStrip';
@@ -31,8 +32,8 @@ export default function App() {
     }
   }, [selectedService]);
 
-  // Lock background scrolling completely when any main modal or drawer is open
-  const isAnyModalOpen = Boolean(selectedService || isQuickBookOpen || isMobileNavOpen);
+  // Lock background scrolling completely when main full-screen modals are open
+  const isAnyModalOpen = Boolean(selectedService || isQuickBookOpen);
   useBodyScrollLock(isAnyModalOpen);
 
   // Scroll listener for sticky header background
@@ -55,14 +56,14 @@ export default function App() {
       }
     };
 
-    if (isAnyModalOpen) {
+    if (isAnyModalOpen || isMobileNavOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isAnyModalOpen]);
+  }, [isAnyModalOpen, isMobileNavOpen]);
 
   const handleOpenSlotBooking = () => {
     const slotService = VISA_SERVICES.find(s => s.id === 'visa-slot-booking' || s.isSlotBooking) || VISA_SERVICES[0];
@@ -83,6 +84,9 @@ export default function App() {
 
       {/* Hero Banner */}
       <Hero />
+
+      {/* Our Commitment & Professional Approach Section */}
+      <OurCommitmentSection />
 
       {/* Visa Services & Packages */}
       <ServicesSection 
