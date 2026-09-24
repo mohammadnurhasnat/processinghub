@@ -5,7 +5,7 @@ export const CtaStrip: React.FC = () => {
   return (
     <div id="cta-strip" className="cta-strip">
       <h2>জরুরি ভিসা প্রসেসিং বা তথ্যের প্রয়োজন?</h2>
-      <p>সরাসরি আমাদের WhatsApp-এ যোগাযোগ করুন — আপনার ফাইল রিভিউ ও প্রয়োজনীয় দিকনির্দেশনা দেওয়া হবে অবিলম্বে।</p>
+      <p>আমাদের অভিজ্ঞ ভিসা স্পেশালিস্টদের সাথে সরাসরি হোয়াটসঅ্যাপে কথা বলে আপনার ফাইল যাচাই করে নিন।</p>
       <a 
         id="cta-whatsapp-btn"
         className="btn-primary" 
@@ -13,7 +13,7 @@ export const CtaStrip: React.FC = () => {
         target="_blank" 
         rel="noopener noreferrer"
       >
-        WhatsApp
+        হোয়াটসঅ্যাপে কথা বলুন
       </a>
     </div>
   );

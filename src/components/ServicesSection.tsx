@@ -14,13 +14,13 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
     <section id="services" className="relative">
       <div className="section-head max-w-2xl mb-10">
         <span className="text-xs font-bold uppercase tracking-wider text-[#1E743B] bg-[#EBF7EE] px-3 py-1 rounded-full border border-[#CDE5D5]">
-          Our Service Packages
+          ভিসা ক্যাটাগরি ও সার্ভিস
         </span>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1E2519] tracking-tight mt-3">
-          ভিসা ক্যাটাগরি ও সার্ভিসসমূহ
+          আপনার প্রয়োজনীয় ভিসা বেছে নিন
         </h2>
         <p className="text-[#4E5C46] text-sm sm:text-base leading-relaxed mt-2">
-          সঠিক ডকুমেন্টস চেকলিস্ট ও আইভ্যাক (IVAC) নিয়মানুযায়ী আপনার প্রয়োজনীয় ভিসা ক্যাটাগরি বেছে নিন এবং সরাসরি কনসালটেন্সি বা বুকিং গ্রহণ করুন।
+          ট্যুরিস্ট, মেডিকেল কিংবা বিজনেস—প্রতিটি ভিসার জন্য রয়েছে আমাদের ডেডিকেটেড এক্সপার্ট টিম ও সহজ প্রসেসিং ব্যবস্থা।
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
                   onClick={() => onOpenModal(service)}
                   className="gear-book-btn"
                 >
-                  <span>বুক করুন</span>
+                  <span>প্রসেস শুরু করুন</span>
                   <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
                 </button>
               </div>

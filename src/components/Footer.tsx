@@ -11,7 +11,7 @@ export const Footer: React.FC = () => {
           <div className="footer-brand">
             <div className="brand">{CONFIG.brandName}</div>
             <p className="footer-brand-desc">
-              বিশ্বস্ত ইন্ডিয়ান ভিসা প্রসেসিং, আইভ্যাক স্লট কনফার্মেশন ও ফাইল ডকুমেন্টেশন সহায়তা।
+              অভিজ্ঞ কনসালট্যান্ট ও সম্পূর্ণ লিগ্যাল প্রক্রিয়ায় দ্রুততম সময়ে ইন্ডিয়ান ভিসা প্রসেসিং এবং ভারতীয় শীর্ষ হাসপাতালে উন্নত চিকিৎসার জন্য স্পেশালিস্ট ডক্টরস ইনভাইটেশন ও অ্যাপয়েন্টমেন্ট সার্ভিস।
             </p>
           </div>
 
@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
                   <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </a>
                 <a href="#services" className="footer-service-btn group">
-                  <span>ভিসা সেবাসমূহ</span>
+                  <span>ভিসা সার্ভিসসমূহ</span>
                   <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </a>
                 <a href="#destinations" className="footer-service-btn group">
@@ -34,7 +34,7 @@ export const Footer: React.FC = () => {
                   <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </a>
                 <a href="#hero-section" className="footer-service-btn group">
-                  <span>ফ্রি কনসালটেশন</span>
+                  <span>ফ্রি পরামর্শ</span>
                   <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </a>
               </div>
@@ -54,7 +54,7 @@ export const Footer: React.FC = () => {
                     <PhoneCall className="w-3.5 h-3.5" />
                   </div>
                   <div className="contact-item-info">
-                    <span className="contact-item-sub">কল করুন</span>
+                    <span className="contact-item-sub">সরাসরি কল</span>
                     <span className="contact-item-val">{CONFIG.phoneDisplay}</span>
                   </div>
                 </a>
@@ -98,8 +98,8 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="footer-bottom">
-          <span>© 2026 {CONFIG.brandName}. All rights reserved.</span>
-          <span className="footer-bottom-tag">বিশ্বস্ত ভিসা প্রসেসিং ও কনসালটেন্সি সার্ভিস</span>
+          <span>© 2026 {CONFIG.brandName}. সর্বস্বত্ব সংরক্ষিত।</span>
+          <span className="footer-bottom-tag">বিশ্বস্ত ও নির্ভরযোগ্য ইন্ডিয়ান ভিসা কনসালটেন্সি সার্ভিস</span>
         </div>
       </div>
     </footer>

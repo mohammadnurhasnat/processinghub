@@ -16,17 +16,17 @@ export const OurCommitmentSection: React.FC = () => {
           {/* Top Badge */}
           <div className="inline-flex items-center gap-1.5 bg-[#EBF7EE] text-[#1E743B] border border-[#CDE5D5] px-3 py-1 rounded-full text-xs sm:text-[13px] font-semibold tracking-wide mb-2.5 sm:mb-3 shadow-xs">
             <ShieldCheck className="w-3.5 h-3.5 text-[#1FA855]" />
-            <span>আমাদের প্রাতিষ্ঠানিক লক্ষ্য ও অঙ্গীকার</span>
+            <span>আমাদের অঙ্গীকার ও সেবা নীতি</span>
           </div>
 
           {/* Heading */}
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1E2519] tracking-tight leading-snug mb-2.5 sm:mb-3">
-            আমাদের লক্ষ্য ও সেবার মূলনীতি
+            স্বচ্ছতা, পেশাদারিত্ব ও শতভাগ নির্ভরযোগ্য ভিসা সেবা
           </h2>
 
           {/* 3-4 Lines Formal Natural Paragraph */}
           <p className="text-sm sm:text-base md:text-[16.5px] text-[#4E5C46] leading-relaxed md:leading-[1.75] font-normal text-center w-full max-w-4xl mx-auto">
-            আমাদের লক্ষ্য প্রতিটি আবেদনকারীর জন্য ভিসা প্রসেসিং প্রক্রিয়াকে সহজ, স্বচ্ছ ও সম্পূর্ণ নিয়মতান্ত্রিক করে তোলা। ভারতীয় হাইকমিশন ও আইভ্যাক (IVAC)-এর সর্বশেষ অফিশিয়াল নীতিমালা অনুযায়ী আমরা প্রতিটি ফাইল সতর্কতার সাথে প্রস্তুত ও যাচাই করি। তথ্যের গোপনীয়তা ও পেশাদারিত্ব বজায় রেখে গ্রাহককে সঠিক দিকনির্দেশনা প্রদান করাই আমাদের প্রধান অঙ্গীকার।
+            আমরা কোনো প্রকার অতিরঞ্জিত বা অবাস্তব প্রতিশ্রুতি দিই না। ভারতীয় ভিসা আবেদনের প্রতিটি ধাপে প্রতিটি ডকুমেন্ট পুঙ্খানুপুঙ্খ যাচাই করে নির্ভুল তথ্য উপস্থাপন করাই আমাদের মূল দায়িত্ব। আমাদের লক্ষ্য কোনো ফাঁকা আশ্বাস দেওয়া নয়, বরং সঠিক ও পূর্ণাঙ্গ ফাইল প্রসেসিংয়ের মাধ্যমে আপনার ভিসা প্রাপ্তির সর্বোচ্চ নিশ্চয়তা তৈরি করা।
           </p>
         </motion.div>
       </div>

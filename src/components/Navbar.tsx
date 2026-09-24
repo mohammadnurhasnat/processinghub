@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="desktop-link-home"
               onClick={(e) => handleNavClick(e, '#hero-section')}
             >
-              Home
+              হোম
             </a>
             <span className="nav-link-separator" aria-hidden="true">|</span>
             <a 
@@ -114,7 +114,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="desktop-link-commitment"
               onClick={(e) => handleNavClick(e, '#our-commitment')}
             >
-              Our Commitment
+              আমাদের অঙ্গীকার
             </a>
             <span className="nav-link-separator" aria-hidden="true">|</span>
             <a 
@@ -122,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="desktop-link-services"
               onClick={(e) => handleNavClick(e, '#services')}
             >
-              Services
+              ভিসা সার্ভিসসমূহ
             </a>
             <span className="nav-link-separator" aria-hidden="true">|</span>
             <a 
@@ -130,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="desktop-link-destinations"
               onClick={(e) => handleNavClick(e, '#destinations')}
             >
-              Destinations
+              জনপ্রিয় গন্তব্য
             </a>
             <span className="nav-link-separator" aria-hidden="true">|</span>
             <a 
@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="desktop-link-slot-booking"
               onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
             >
-              Slot Booking
+              স্লট বুকিং
             </a>
             <span className="nav-link-separator" aria-hidden="true">|</span>
             <a 
@@ -146,7 +146,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="desktop-link-contact"
               onClick={(e) => handleNavClick(e, '#contact')}
             >
-              Contact Us
+              যোগাযোগ
             </a>
           </div>
 
@@ -157,7 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="nav-cta cursor-pointer border-0" 
               onClick={onOpenQuickBook}
             >
-              Book Now
+              বুকিং করুন
             </button>
             <button
               type="button"
@@ -220,7 +220,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#hero-section')}
                   className="mobile-card-link"
                 >
-                  Home
+                  হোম
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -231,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#our-commitment')}
                   className="mobile-card-link"
                 >
-                  Our Commitment
+                  আমাদের অঙ্গীকার
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -242,7 +242,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#services')}
                   className="mobile-card-link"
                 >
-                  Services
+                  ভিসা সার্ভিসসমূহ
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -253,7 +253,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#destinations')}
                   className="mobile-card-link"
                 >
-                  Destinations
+                  জনপ্রিয় গন্তব্য
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -264,7 +264,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
                   className="mobile-card-link"
                 >
-                  Slot Booking
+                  স্লট বুকিং
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -275,7 +275,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#contact')}
                   className="mobile-card-link"
                 >
-                  Contact Us
+                  যোগাযোগ
                 </a>
               </div>
 
