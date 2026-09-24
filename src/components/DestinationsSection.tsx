@@ -122,21 +122,21 @@ export const DestinationsSection: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-2.5 flex flex-col flex-1 justify-between text-left">
-                <div>
-                  <h4 className="font-['Space_Grotesk'] text-[14px] font-bold text-[#1E2519] group-hover:text-[#2A6A26] transition-colors leading-tight">
+              <div className="mt-2.5 flex flex-col flex-1 justify-between text-left items-start">
+                <div className="w-full text-left">
+                  <h4 className="font-['Space_Grotesk'] text-[14px] font-bold text-[#1E2519] group-hover:text-[#2A6A26] transition-colors leading-tight text-left">
                     {dest.name}
                   </h4>
-                  <p className="text-[12px] font-semibold text-[#2E7D32] mt-0.5 leading-tight">
+                  <p className="text-[12px] font-semibold text-[#2E7D32] mt-0.5 leading-tight text-left">
                     {dest.nameBn || dest.name}
                   </p>
-                  <p className="text-[11px] text-[#65715D] flex items-center gap-1 mt-1 line-clamp-1">
+                  <p className="text-[11px] text-[#65715D] flex items-center justify-start gap-1 mt-1 line-clamp-1 text-left">
                     <MapPin className="w-3 h-3 text-[#8C9685] flex-shrink-0" />
-                    <span>{dest.location}</span>
+                    <span className="text-left">{dest.location}</span>
                   </p>
                 </div>
 
-                <div className="mt-2.5 pt-2 border-t border-[#EFEBE0] flex items-center justify-between text-[11px] font-bold text-[#2A6A26]">
+                <div className="w-full mt-2.5 pt-2 border-t border-[#EFEBE0] flex items-center justify-between text-[11px] font-bold text-[#2A6A26]">
                   <span>ভ্রমণ নির্দেশিকা</span>
                   <span className="text-[#2A6A26] group-hover:translate-x-0.5 transition-transform">→</span>
                 </div>
@@ -345,23 +345,23 @@ export const DestinationsSection: React.FC = () => {
                 </div>
 
                 {/* Hospital Info & Specialties */}
-                <div className="mt-2.5 flex flex-col flex-1 justify-between text-left">
-                  <div>
+                <div className="mt-2.5 flex flex-col flex-1 justify-between text-left items-start">
+                  <div className="w-full text-left">
                     {/* Hospital Name: Fixed 2-line height for aligned cards */}
-                    <h4 className="font-['Space_Grotesk'] text-[14px] font-bold text-[#1E2519] group-hover:text-[#2E7D32] transition-colors line-clamp-2 min-h-[38px] flex items-center leading-snug">
+                    <h4 className="font-['Space_Grotesk'] text-[14px] font-bold text-[#1E2519] group-hover:text-[#2E7D32] transition-colors line-clamp-2 min-h-[38px] flex items-start text-left leading-snug">
                       {hospital.name}
                     </h4>
-                    <p className="text-[11px] text-[#65715D] flex items-center gap-1 mt-0.5 line-clamp-1">
+                    <p className="text-[11px] text-[#65715D] flex items-center justify-start gap-1 mt-0.5 line-clamp-1 text-left">
                       <Building2 className="w-3 h-3 text-[#8C9685] flex-shrink-0" />
-                      <span>{hospital.location}</span>
+                      <span className="text-left truncate">{hospital.location}</span>
                     </p>
 
                     {/* Top 2 Specialities Pills */}
-                    <div className="mt-2 flex flex-wrap gap-1">
+                    <div className="mt-2 flex flex-wrap gap-1 justify-start text-left">
                       {hospital.specialties.slice(0, 2).map((spec, i) => (
                         <span 
                           key={i}
-                          className="text-[10px] font-medium bg-[#F0ECE1] text-[#3D4737] px-2 py-0.5 rounded line-clamp-1 max-w-full"
+                          className="text-[10px] font-medium bg-[#F0ECE1] text-[#3D4737] px-2 py-0.5 rounded line-clamp-1 max-w-full text-left"
                         >
                           {spec.replace(/^[^\w\u0980-\u09FF]+/, '')}
                         </span>
@@ -370,7 +370,7 @@ export const DestinationsSection: React.FC = () => {
                   </div>
 
                   {/* Clean Bottom Action Tag (Zero dead space) */}
-                  <div className="mt-2.5 pt-2 border-t border-[#EFEBE0] flex items-center justify-between text-[11px] font-bold text-[#2E7D32]">
+                  <div className="w-full mt-2.5 pt-2 border-t border-[#EFEBE0] flex items-center justify-between text-[11px] font-bold text-[#2E7D32]">
                     <span>অ্যাপয়েন্টমেন্ট ও তথ্য</span>
                     <span className="text-[#2E7D32] group-hover:translate-x-0.5 transition-transform">→</span>
                   </div>

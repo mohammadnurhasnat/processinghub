@@ -28,6 +28,12 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
 User-agent: Twitterbot
 Allow: /
 
@@ -42,3 +48,6 @@ Host: processinghub.fun
 
 # XML Sitemap
 Sitemap: https://processinghub.fun/sitemap.xml
+
+# LLM & AI Engine Content Specification
+# https://processinghub.fun/llms.txt

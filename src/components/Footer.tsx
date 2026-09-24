@@ -1,5 +1,5 @@
 import React from 'react';
-import { PhoneCall, MessageCircle, ArrowUpRight } from 'lucide-react';
+import { PhoneCall, MessageCircle, Facebook } from 'lucide-react';
 import { CONFIG } from '../config';
 
 export const Footer: React.FC = () => {
@@ -68,6 +68,23 @@ export const Footer: React.FC = () => {
                   <span className="contact-item-val">{CONFIG.phoneDisplay}</span>
                 </div>
               </a>
+
+              {/* Facebook Page বাটন */}
+              <a 
+                href={CONFIG.facebookUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="footer-contact-item facebook-item"
+                title="আমাদের অফিসিয়াল ফেসবুক পেজে যুক্ত হোন"
+              >
+                <div className="contact-icon-wrapper fb-icon-bg">
+                  <Facebook className="w-3.5 h-3.5 fill-current" />
+                </div>
+                <div className="contact-item-info">
+                  <span className="contact-item-sub">Facebook</span>
+                  <span className="contact-item-val">/processinghubbd</span>
+                </div>
+              </a>
             </div>
           </div>
         </div>
@@ -80,5 +97,3 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
-
-

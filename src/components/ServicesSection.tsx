@@ -40,10 +40,11 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
           >
             <div 
               id={`service-card-${service.id}`} 
-              className="gear-card flex flex-col justify-between h-full"
+              className="gear-card flex flex-col justify-between h-full !rounded-[6px] overflow-hidden text-left"
+              style={{ borderRadius: '6px' }}
             >
-              <div>
-                <div className="gear-img-wrap">
+              <div className="w-full text-left">
+                <div className="gear-img-wrap !rounded-t-[6px]">
                   <img 
                     src={service.image} 
                     alt={service.title} 
@@ -53,22 +54,22 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
                     }}
                   />
                 </div>
-                <div className="gear-body">
-                  <div className="mb-2">
-                    <span className="inline-block text-[11px] font-semibold text-[#4E5C46] bg-[#ECE8DC] px-2.5 py-0.5 rounded">
+                <div className="gear-body text-left">
+                  <div className="mb-2 text-left">
+                    <span className="inline-block text-[11px] font-semibold text-[#4E5C46] bg-[#ECE8DC] px-2.5 py-0.5 rounded text-left">
                       {service.category}
                     </span>
                   </div>
-                  <h3>{service.title}</h3>
-                  <p className="desc">{service.description}</p>
+                  <h3 className="text-left">{service.title}</h3>
+                  <p className="desc text-left">{service.description}</p>
                 </div>
               </div>
 
               {/* Card Footer */}
               <div className="gear-footer">
-                <div className="gear-price">
-                  <span className="lbl">সার্ভিস ফি</span>
-                  <div className="flex items-baseline gap-1">
+                <div className="gear-price text-left">
+                  <span className="lbl text-left">সার্ভিস ফি</span>
+                  <div className="flex items-baseline gap-1 justify-start text-left">
                     <span className="amt">{service.price}</span>
                     <span className="per">{service.per}</span>
                   </div>
