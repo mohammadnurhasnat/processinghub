@@ -41,17 +41,17 @@ You are MOHAMMAD (মোহাম্মদ), the Senior Visa & Travel Consultant
 - Speak naturally, respectfully, and empathetically in first person ("আমি মোহাম্মদ", "আমাদের প্রসেসিং হাব টিম", "আমরা").
 - Avoid rigid robotic phrases. Talk like a caring, experienced senior consultant helping a valued client.
 
-### CRITICAL GREETING & CONVERSATIONAL POLITE OPENINGS & CLOSINGS:
-- NEVER use words like "নমস্কার" (Namaskar), "আদাব" (Adab), or any non-prescribed greetings under any condition.
-- ALWAYS use "আসসালামু আলাইকুম" (Assalamu Alaikum) or "আপনাকে স্বাগতম" (Welcome).
-- **Conversation Openings (কথোপকথনের সূচনা ও প্রশ্ন চলাকালীন)**:
-  * কাস্টমার শুরুতে যখন কোনো সেবা বা প্রশ্ন নিয়ে জানতে চাইবে, তখন তার প্রশ্ন ও আগ্রহকে সম্মান জানিয়ে শুরু করবেন।
-  * শুরুতে কখনোই "সার্ভিসটি নেওয়ার জন্য ধন্যবাদ" বলবেন না; কারণ ইউজার এখনও সেবা নেয়নি, সে কেবল তথ্য জানতে চাইছে।
-  * শুরুতে বলবেন: "আসসালামু আলাইকুম! [সার্ভিসের নাম] সম্পর্কে তথ্য জানতে চাওয়ার জন্য আপনাকে ধন্যবাদ।" অথবা "আপনার সুন্দর জিজ্ঞাসার জন্য ধন্যবাদ।"
-- **Conversation Closings (কনভারসেশন সমাপ্তি ও সার্ভিস নেওয়ার পরবর্তী বার্তা)**:
-  * যখন ইউজার জানাবে যে তার কাজ শেষ হয়েছে, সার্ভিস নেওয়া সম্পন্ন হয়েছে, সে সন্তুষ্ট, অথবা বিদায় নেবে (যেমন: "ধন্যবাদ", "থ্যাংক ইউ", "কাজ হয়ে গেছে", "সার্ভিস নেওয়া হয়েছে", "বুঝেছি", "বিদায়", "আল্লাহ হাফেজ", "বাই", "সব ক্লিয়ার"):
-  * তখন বিনম্র ও আন্তরিকভাবে বিদায় জানাবেন এবং সার্ভিস নেওয়ার জন্য আন্তরিক কৃতজ্ঞতা প্রকাশ করবেন।
-  * যেমন: "প্রসেসিং হাব থেকে সেবা ও পরামর্শ নেওয়ার জন্য আপনাকে আন্তরিক ধন্যবাদ! ভবিষ্যতে যে কোনো ভিসা বা ট্রাভেল প্রয়োজনে আমরা আপনার পাশে আছি। আপনার দিনটি শুভ হোক, আল্লাহ হাফেজ।"
+### CRITICAL GREETING & CONVERSATIONAL RULES (সালাম ও সম্ভাষণের স্বাভাবিক নিয়ম):
+- **সালাম ও অভিবাদনের স্বাভাবিক ব্যবহার (Natural Greeting Exchange)**:
+  * সাধারণ মানুষের কথোপকথনে যেভাবে স্বাভাবিক নিয়মে সালাম আদান-প্রদান হয়, ঠিক সেভাবেই কথা বলুন।
+  * চ্যাটের শুরুতে প্রথম মেসেজে, অথবা ইউজার নিজে যখন সালাম দেয় বা অভিবাদন জানায়, কেবল তখনই সালাম ("আসসালামু আলাইকুম" বা "ওয়ালাইকুম আসসালাম") বা স্বাগতম জানাবেন।
+  * **কঠোরভাবে নিষিদ্ধ**: চলমান কথোপকথনের মাঝে বা প্রতিটা উত্তরের শুরুতে বারবার "আসসালামু আলাইকুম" বলা সম্পূর্ণ নিষেধ। এতে কথা বলা কৃত্রিম ও অস্বস্তিকর লাগে। ইউজার কোনো তথ্য, ফি, ডকুমেন্ট বা ফলো-আপ প্রশ্ন করলে সরাসরি সম্মানসূচক ও সাবলীল ভাষায় মূল উত্তর দিন (যেমন: "জি, এই সেবার সরকারি ফি...", "প্রয়োজনীয় কাগজপত্র নিচে দেওয়া হলো:", "আপনার অবগতির জন্য জানাচ্ছি...").
+  * সালামের বিকল্প হিসেবে "নমস্কার", "আদাব" কোনো অবস্থাতেই ব্যবহার করবেন না।
+- **Conversation Openings (কথোপকথনের সূচনা)**:
+  * শুরুতে কাস্টমারকে সম্মান জানিয়ে স্বাভাবিকভাবে কথা শুরু করবেন। শুরুতে কখনোই "সার্ভিসটি নেওয়ার জন্য ধন্যবাদ" বলবেন না; কারণ ইউজার এখনও সেবা নেয়নি, সে কেবল তথ্য জানতে চাইছে।
+- **Conversation Closings (কনভারসেশন সমাপ্তি ও বিদায়)**:
+  * যখন ইউজার জানাবে যে তার কাজ শেষ হয়েছে, সার্ভিস নেওয়া সম্পন্ন হয়েছে, সে সন্তুষ্ট, অথবা বিদায় নেবে (যেমন: "ধন্যবাদ", "থ্যাংক ইউ", "কাজ হয়ে গেছে", "সার্ভিস নেওয়া হয়েছে", "বুঝেছি", "বিদায়", "আল্লাহ হাফেজ", "বাই"):
+  * তখন বিনম্র ও আন্তরিকভাবে বিদায় জানাবেন এবং কৃতজ্ঞতা প্রকাশ করবেন (যেমন: "প্রসেসিং হাব থেকে সেবা ও পরামর্শ নেওয়ার জন্য আপনাকে আন্তরিক ধন্যবাদ! ভবিষ্যতে যেকোনো ভিসা প্রয়োজনে আমরা আপনার পাশে আছি। আল্লাহ হাফেজ।")।
 
 ### CORE COMMUNICATION RULES:
 1. **Human & Courteous Tone (মানুষের মতো আন্তরিক ও মার্জিত ভাষা)**:
@@ -149,6 +149,16 @@ H. **Processing Hub Services & Official Charges**:
    • Ticket Booking: ৳১,৫০০ (যেকোনো এয়ার টিকিট ও সকল ধরনের টিকিট বুকিং)
    • IVAC Slot Booking: ট্যুরিস্ট মোট ৫৫০০ (আইভ্যাক ১৫০০ + স্লট ৪০০০), মেডিকেল মোট ৫৫০০ (আইভ্যাক ১৫০০ + স্লট ৩৫০০), বিজনেস মোট ৬০০০ (আইভ্যাক ১৫০০ + স্লট ৪৫০০), ডাবল এন্ট্রি মোট ৬০০০ (আইভ্যাক ১৫০০ + স্লট ৪৫০০)।
    • Hotline/WhatsApp: +8801577464706, Dhaka, Bangladesh.
+
+I. **REAL-TIME GOOGLE SEARCH & IVAC APPOINTMENT SLOT RELEASE POLICY (রিয়েল-টাইম সার্চ ও স্লট পলিসি)**:
+   • You have real-time Google Search capability enabled via Google Search Grounding (\`googleSearch\`).
+   • When clients ask about real-time, dynamic, or unlisted information (such as latest High Commission circulars, holiday closures, current fee changes, emergency border updates, or when the next IVAC appointment slot will drop/release):
+     - Use Google Search to cross-reference verified official circulars from High Commission of India (hcidhaka.gov.in) or official IVAC Bangladesh (ivacbd.com).
+   • **STRICT IVAC SLOT DATE VERIFICATION RULE (স্লটের তারিখ সংক্রান্ত কঠোর নিয়ম)**:
+     - IVAC and the Indian High Commission DO NOT announce advance dates or times for slot drops to the public; slots open dynamically in random batches and must be monitored continuously on the system.
+     - If your live search discovers an official public circular or press release with an exact date/time, report that verified information directly.
+     - If NO official circular or date announcement exists (which is the usual standard case), DO NOT guess, speculate, or fabricate any date.
+     - Clearly state: "আইভ্যাকের অফিসিয়াল নিয়ম অনুযায়ী অ্যাপয়েন্টমেন্ট স্লট ছাড়ার সুনির্দিষ্ট দিনক্ষণ আগে থেকে ঘোষণা করা হয় না; সিস্টেমের মাধ্যমে এটি সার্বক্ষণিক মনিটর করতে হয়। নতুন ব্যাচের স্লট ওপেন হওয়া মাত্র দ্রুত বুকিং সম্পন্ন করতে আপনি আমাদের সাথে যোগাযোগ করে ফাইল প্রস্তুত রাখতে পারেন।"
 `;
 
 // Helper: Mohammad Expert Knowledge Engine Fallback
@@ -365,6 +375,21 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
       '  • মূল পাসপোর্ট ও সকল পুরাতন পাসপোর্ট।';
   }
 
+  // Slot release date queries
+  if (
+    (query.includes('কবে') || query.includes('next') || query.includes('তারিখ') || query.includes('সময়') || query.includes('সময়') || query.includes('রিলিজ') || query.includes('ছাড়বে') || query.includes('ওপেন')) &&
+    (query.includes('স্লট') || query.includes('slot') || query.includes('ডেট') || query.includes('অ্যাপয়েন্টমেন্ট'))
+  ) {
+    return 'আইভ্যাক অ্যাপয়েন্টমেন্ট স্লট সংক্রান্ত তথ্যের জন্য আপনাকে ধন্যবাদ।\n\n' +
+      '📌 **অ্যাপয়েন্টমেন্ট স্লট ছাড়ার অফিশিয়াল নিয়মাবলী:**\n' +
+      '• আইভ্যাকের সাধারণ নিয়ম অনুযায়ী স্লট রিলিজ বা ছাড়ার নির্দিষ্ট দিনক্ষণ আগে থেকে জনসম্মুখে প্রকাশ করা হয় না।\n' +
+      '• সিস্টেম হঠাৎ যেকোনো সময় নির্দিষ্ট ব্যাচের স্লট ওপেন করে, যা সার্বক্ষণিক মনিটরিং ছাড়া জানা কঠিন।\n' +
+      '• কোনো আনুষ্ঠানিক সরকারি নোটিশ ছাড়া অনুমানের ওপর ভিত্তি করে কোনো তারিখ নিশ্চিত করা সম্ভব নয়।\n\n' +
+      '⚡ **আমাদের স্লট বুকিং সাপোর্ট:**\n' +
+      '• আমাদের ডেডিকেটেড টিম সার্বক্ষণিক আইভ্যাক পোর্টাল মনিটর করে থাকে। স্লট ওপেন হওয়ামাত্র দ্রুত বুকিং সম্পন্ন করতে আপনি আপনার পাসপোর্ট ও ভিসা ফর্ম দিয়ে ফাইল রেডি রাখতে পারেন।\n' +
+      '• বিস্তারিত তথ্য বা বুকিংয়ের জন্য আমাদের হটলাইনে (+8801577464706) যোগাযোগ করতে পারেন।';
+  }
+
   // Slot booking / IVAC
   if (query.includes('স্লট') || query.includes('slot') || query.includes('আইভ্যাক') || query.includes('ivac') || query.includes('তারিখ') || query.includes('অ্যাপয়েন্টমেন্ট')) {
     return 'আইভ্যাক স্লট বুকিং সংক্রান্ত তথ্যের জন্য আপনাকে ধন্যবাদ।\n\n⚡ **অ্যাপয়েন্টমেন্ট স্লট চার্জের বিবরণ:**\n\n' +
@@ -424,10 +449,19 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
   return 'আসসালামু আলাইকুম! আপনার জিজ্ঞাসার জন্য ধন্যবাদ। আমি **মোহাম্মদ**, প্রসেসিং হাবের সিনিয়র ভিসা কনসালটেন্ট। আপনার যে কোনো ভিসা প্রসেসিং বা ডকুমেন্টস সংক্রান্ত প্রশ্নে আমি সহযোগিতা করতে প্রস্তুত।';
 }
 
+// Helper: Escape HTML for Telegram formatting
+function escapeHtml(text: string): string {
+  return (text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 // API endpoint for chatbot
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages, serviceContext } = req.body;
+    const { messages, serviceContext, userName, userPhone } = req.body;
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'Messages array is required.' });
     }
@@ -437,6 +471,13 @@ app.post('/api/chat', async (req, res) => {
 
     // Dynamically inject service context into the system prompt
     let contextualSystemInstruction = SYSTEM_INSTRUCTION;
+    if (userName) {
+      contextualSystemInstruction += `\n\n### CLIENT IDENTITY (গ্রাহকের পরিচিতি):
+The client's name is: "${userName}".
+${userPhone ? `Phone / WhatsApp: "${userPhone}".` : ''}
+- Address the client respectfully by their name when appropriate (e.g. "${userName} সাহেব", "${userName} ভাই/স্যার" or politely with their name).
+- Do NOT ask them for their name or contact number again because they already provided it in the contact form.`;
+    }
     if (serviceContext && (serviceContext.title || serviceContext.category)) {
       contextualSystemInstruction += `\n\n### ACTIVE PAGE SERVICE CONTEXT (ইউজারের বর্তমান ব্রাউজিং পেজ ও সার্ভিস ফোকাস):
 The customer is currently actively browsing or inquiring about the following specific service on our website:
@@ -467,14 +508,35 @@ You are advising a customer who is specifically on the "${serviceContext.title}"
           contents,
           config: {
             systemInstruction: contextualSystemInstruction,
+            tools: [{ googleSearch: {} }],
             temperature: 0.65,
           },
         });
 
         if (response && response.text) {
+          let sources: Array<{ title: string; uri: string }> = [];
+          let webSearchQueries: string[] = [];
+
+          const candidate = response.candidates?.[0];
+          const groundingMetadata = candidate?.groundingMetadata;
+          if (groundingMetadata) {
+            if (Array.isArray(groundingMetadata.webSearchQueries)) {
+              webSearchQueries = groundingMetadata.webSearchQueries;
+            }
+            if (Array.isArray(groundingMetadata.groundingChunks)) {
+              sources = groundingMetadata.groundingChunks
+                .map((chunk: any) => ({
+                  title: chunk.web?.title || 'অফিসিয়াল তথ্যসূত্র',
+                  uri: chunk.web?.uri || '',
+                }))
+                .filter((s: { uri: string }) => Boolean(s.uri));
+            }
+          }
+
           return res.json({
             reply: response.text,
-            sources: [],
+            sources,
+            webSearchQueries,
           });
         }
       } catch (geminiError: any) {
@@ -499,6 +561,268 @@ You are advising a customer who is specifically on the "${serviceContext.title}"
       reply: safeFallback,
       sources: [],
     });
+  }
+});
+
+// API endpoint for dispatching consultation summary to Telegram
+app.post('/api/telegram/summary', async (req, res) => {
+  try {
+    const { user, serviceContext, messages, trigger } = req.body;
+
+    // Only proceed if there are actual user messages
+    const userMessages = (messages || []).filter((m: any) => m.role === 'user');
+    if (!userMessages || userMessages.length === 0) {
+      return res.json({ success: true, skipped: true, reason: 'No user messages to summarize' });
+    }
+
+    let botToken = (process.env.TELEGRAM_BOT_TOKEN || '').trim();
+    let chatId = (process.env.TELEGRAM_CHAT_ID || '').trim();
+
+    // Guard against inverted or malformed environment variables
+    if (!botToken.includes(':') && chatId.includes(':')) {
+      const temp = botToken;
+      botToken = chatId;
+      chatId = temp;
+    }
+
+    if (!botToken || !botToken.includes(':')) {
+      botToken = '8705018021:AAEXt7XDAJl3ymojODL3dMeolBuROLMcesA';
+    }
+
+    // Telegram bots cannot message themselves; default to the user's actual chat ID
+    if (!chatId || chatId === '8705018021' || chatId.includes(':')) {
+      chatId = '6574558784';
+    }
+
+    const customerName = user?.name || 'অজ্ঞাত গ্রাহক';
+    const customerPhone = user?.phone || 'প্রদান করা হয়নি';
+    const serviceTitle = serviceContext?.title || 'সাধারণ ভিসা জিজ্ঞাসা';
+
+    // Build conversation transcript text
+    const transcript = (messages || [])
+      .map((m: any) => `${m.role === 'user' ? 'গ্রাহক' : 'মোহাম্মদ (কনসালটেন্ট)'}: ${m.text}`)
+      .join('\n\n');
+
+    let summaryText = '';
+    const ai = getAiClient();
+    if (ai) {
+      try {
+        const sumResp = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [
+            {
+              role: 'user',
+              parts: [{
+                text: `You are an executive assistant at "Processing Hub" visa consultancy in Dhaka.
+Analyze the following visa consultation conversation between client "${customerName}" (${customerPhone}) and consultant Mohammad.
+
+Generate a clean, strictly professional 3-point summary in Bengali (বাংলা).
+Format EXACTLY like this (NO asterisks, NO markdown characters, plain text only):
+মূল জিজ্ঞাসা: [গ্রাহক কোন দেশের কোন ভিসা বা কী তথ্য জানতে চেয়েছেন]
+প্রদত্ত পরামর্শ: [কনসালটেন্ট মোহাম্মদ কী তথ্য বা ডকুমেন্টের তালিকা দিয়েছেন]
+পরবর্তী পদক্ষেপ: [টিমের করণীয় বা ফলো-আপ অ্যাকশন]
+
+CONVERSATION:
+${transcript}`
+              }]
+            }
+          ],
+          config: {
+            temperature: 0.2,
+          }
+        });
+        summaryText = sumResp.text ? sumResp.text.trim() : '';
+      } catch (err) {
+        console.warn('Failed to generate summary with Gemini, using fallback summary:', err);
+      }
+    }
+
+    // Clean up any stray markdown asterisks, hashes, or brackets
+    let cleanSummary = (summaryText || '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/#{1,6}\s*/g, '')
+      .replace(/\[|\]/g, '')
+      .trim();
+
+    // Format clean professional bullet points
+    let formattedSummary = '';
+    const rawLines = cleanSummary.split('\n').map(l => l.trim()).filter(Boolean);
+    if (rawLines.length > 0) {
+      formattedSummary = rawLines.map(line => {
+        const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+        const colonIndex = cleanLine.indexOf(':');
+        if (colonIndex !== -1 && colonIndex < 35) {
+          const label = cleanLine.substring(0, colonIndex).trim();
+          const val = cleanLine.substring(colonIndex + 1).trim();
+          return `• <b>${escapeHtml(label)}:</b> ${escapeHtml(val)}`;
+        }
+        return `• ${escapeHtml(cleanLine)}`;
+      }).join('\n');
+    } else {
+      const lastUserMsg = userMessages[userMessages.length - 1]?.text || '';
+      formattedSummary = `• <b>মূল জিজ্ঞাসা:</b> ${escapeHtml(lastUserMsg.substring(0, 150) || serviceTitle)}\n• <b>প্রদত্ত পরামর্শ:</b> গ্রাহককে প্রয়োজনীয় ভিসা সংক্রান্ত তথ্যাদি প্রদান করা হয়েছে।\n• <b>পরবর্তী পদক্ষেপ:</b> ফলো-আপের জন্য দ্রুত গ্রাহকের সাথে যোগাযোগ করুন।`;
+    }
+
+    const now = new Date();
+    const bdTime = now.toLocaleString('en-US', {
+      timeZone: 'Asia/Dhaka',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+
+    // Build native expandable conversation block for Telegram
+    let conversationBlock = '';
+    for (let i = 0; i < messages.length; i++) {
+      const msg = messages[i];
+      const isUser = msg.role === 'user';
+      const speaker = isUser ? `👤 <b>${escapeHtml(customerName)} (গ্রাহক)` : `👨‍💼 <b>মোহাম্মদ (ভিসা কনসালটেন্ট)`;
+      const timeStr = msg.time ? ` [${escapeHtml(msg.time)}]</b>:` : `</b>:`;
+      const cleanMsgText = escapeHtml(msg.text || '');
+      conversationBlock += `${speaker}${timeStr}\n${cleanMsgText}\n\n`;
+    }
+    conversationBlock = conversationBlock.trim();
+
+    const baseMessage = `<b>Processing Hub — নতুন কনসালটেন্সি লিড</b>
+
+<b>গ্রাহকের বিবরণ:</b>
+• <b>নাম:</b> ${escapeHtml(customerName)}
+• <b>মোবাইল / WhatsApp:</b> <code>${escapeHtml(customerPhone)}</code>
+• <b>আগ্রহের সেবা:</b> ${escapeHtml(serviceTitle)}
+• <b>তারিখ ও সময়:</b> ${bdTime} (বাংলাদেশ সময়)
+
+<b>সারসংক্ষেপ:</b>
+${formattedSummary}`;
+
+    const combinedMessage = `${baseMessage}\n\n<b>সম্পূর্ণ কথোপকথন (ট্যাপ করে বিস্তারিত দেখুন):</b>\n<blockquote expandable>${conversationBlock}</blockquote>`;
+
+    let tgData = null;
+    if (combinedMessage.length <= 4000) {
+      const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: combinedMessage,
+          parse_mode: 'HTML',
+        }),
+      });
+      tgData = await tgRes.json();
+    } else {
+      const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: baseMessage,
+          parse_mode: 'HTML',
+        }),
+      });
+      tgData = await tgRes.json();
+
+      const maxChunk = 3800;
+      for (let i = 0; i < conversationBlock.length; i += maxChunk) {
+        const chunk = conversationBlock.substring(i, i + maxChunk);
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: `<b>পূর্ণাঙ্গ চ্যাট হিস্ট্রি (ট্যাপ করে বিস্তারিত দেখুন):</b>\n<blockquote expandable>${chunk}</blockquote>`,
+            parse_mode: 'HTML',
+          }),
+        });
+      }
+    }
+
+    // Generate responsive HTML file that opens in ANY mobile and desktop browser without extra apps
+    let docData = null;
+    try {
+      let chatItemsHtml = '';
+      for (const msg of messages) {
+        const isUser = msg.role === 'user';
+        const speaker = isUser ? `${escapeHtml(customerName)} (গ্রাহক)` : `মোহাম্মদ (সিনিয়র কনসালটেন্ট)`;
+        const bubbleClass = isUser ? 'msg-user' : 'msg-bot';
+        const avatar = isUser ? '👤' : '👨‍💼';
+        const timeHtml = msg.time ? `<span>${escapeHtml(msg.time)}</span>` : '';
+        chatItemsHtml += `
+          <div class="msg ${bubbleClass}">
+            <div class="msg-head"><span>${avatar} ${speaker}</span>${timeHtml}</div>
+            <div class="msg-body">${escapeHtml(msg.text || '').replace(/\n/g, '<br/>')}</div>
+          </div>`;
+      }
+
+      const htmlContent = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>চ্যাট ট্রানস্ক্রিপ্ট — ${escapeHtml(customerName)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hind Siliguri", sans-serif; background: #0f172a; margin: 0; padding: 16px; color: #1e293b; }
+  .card { max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+  .header { background: #0369a1; color: #ffffff; padding: 22px; }
+  .brand { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #bae6fd; margin-bottom: 6px; }
+  .header h1 { margin: 0 0 14px; font-size: 20px; font-weight: 800; }
+  .meta-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 14px; background: rgba(0,0,0,0.15); padding: 12px 14px; border-radius: 10px; }
+  .meta-item b { color: #f0f9ff; }
+  .chat-box { padding: 20px 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 14px; }
+  .msg { padding: 12px 16px; border-radius: 14px; max-width: 90%; font-size: 14.5px; line-height: 1.6; word-break: break-word; }
+  .msg-user { align-self: flex-start; background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .msg-bot { align-self: flex-end; background: #0284c7; color: #ffffff; border-bottom-right-radius: 4px; box-shadow: 0 1px 3px rgba(2,132,199,0.3); }
+  .msg-head { font-size: 12px; font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; gap: 12px; opacity: 0.9; }
+  .msg-bot .msg-head { color: #e0f2fe; }
+  .msg-body { white-space: pre-wrap; }
+  .footer { text-align: center; padding: 16px; font-size: 12px; color: #64748b; background: #ffffff; border-top: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="brand">Processing Hub • Official Lead Record</div>
+    <h1>কনসালটেন্সি চ্যাট হিস্ট্রি</h1>
+    <div class="meta-grid">
+      <div class="meta-item"><b>গ্রাহকের নাম:</b> ${escapeHtml(customerName)}</div>
+      <div class="meta-item"><b>মোবাইল / WhatsApp:</b> ${escapeHtml(customerPhone)}</div>
+      <div class="meta-item"><b>আগ্রহের সেবা:</b> ${escapeHtml(serviceTitle)}</div>
+      <div class="meta-item"><b>তারিখ ও সময়:</b> ${escapeHtml(bdTime)} (বাংলাদেশ সময়)</div>
+    </div>
+  </div>
+  <div class="chat-box">
+    ${chatItemsHtml}
+  </div>
+  <div class="footer">Processing Hub Consultancy — সুরক্ষিত ও পেশাদার ভিসা সেবা</div>
+</div>
+</body>
+</html>`;
+
+      const safePhone = (customerPhone || 'lead').replace(/[^0-9]/g, '');
+      const fileName = `Lead_${safePhone || 'chat'}_${Date.now()}.html`;
+
+      const formData = new FormData();
+      formData.append('chat_id', chatId);
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      formData.append('document', blob, fileName);
+      formData.append('caption', `📄 পূর্ণাঙ্গ চ্যাট হিস্ট্রি ফাইল (মোবাইল ও পিসির যেকোনো ব্রাউজারে চলবে)`);
+
+      const docRes = await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+        method: 'POST',
+        body: formData,
+      });
+      docData = await docRes.json();
+    } catch (docErr) {
+      console.warn('Failed to send transcript document to telegram:', docErr);
+    }
+
+    return res.json({ success: true, telegram: tgData, document: docData });
+  } catch (error: any) {
+    console.error('Telegram summary error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to dispatch telegram summary' });
   }
 });
 

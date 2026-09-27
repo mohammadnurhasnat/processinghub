@@ -1,57 +1,57 @@
-# Cinematic Hero Visual & Exclusive Aptos Typography Implementation Plan
+# Implementation Plan: Contact Form & Telegram Summary Integration
 
-এই পরিকল্পনার লক্ষ্য হলো হিরো সেকশনে যেকোনো সাধারণ দর্শনার্থীর দৃষ্টি আকর্ষণকারী, প্রিমিয়াম ও কৌতূহল উদ্দীপক একটি সিনেমাটিক ইন্ডিয়ান ল্যান্ডমার্ক ভিজ্যুয়াল ব্যাকগ্রাউন্ড যুক্ত করা এবং ওয়েবসাইটের সব ইংরেজি কনটেন্টে এক্সক্লুসিভলি শুধুমাত্র **Aptos** ফন্ট সুনিশ্চিত করা।
+## Overview
+1. **Telegram Status Confirmation**: Currently, no Telegram bot is active or configured in this codebase or server environment. We will build the full Telegram Bot notification integration.
+2. **Lead Contact Form Gate**: When a visitor opens the chat modal, show a clean, high-conversion contact form requiring **Name** and **Phone Number (WhatsApp)** before the chat interface appears.
+3. **User Memory**: Persist the customer's name and phone number across sessions. Mohammad (the Senior Consultant) will address the customer warmly by name.
+4. **Automatic Telegram Summary on Close**: When the user closes the chat window, an automatic API call triggers in the background (`/api/telegram/summary`), which generates an executive summary of the consultation along with the customer's details and dispatches it directly to your Telegram chat/channel via the Telegram Bot API.
 
 ---
 
-## ১. User Review & Critical Decisions
+## User Review Required
 
 > [!IMPORTANT]
-> **নির্ধারিত মূল পরিবর্তনসমূহ:**
-> 1. **সিনেমাটিক কৌতূহল-উদ্দীপক হিরো ইমেজ (Majestic Cinematic Visual):**
->    - বর্তমান ৪-পার্ট ইমেজটি পরিবর্তন করে একটি পূর্ণাঙ্গ সিনেমাটিক ওয়াইড-ভিউ ল্যান্ডমার্ক ইমেজ দেওয়া হবে (যেমন: উজ্জ্বল নীল আকাশ, সোনালী রোদ ও সূর্যাস্তের মনোরম স্নিগ্ধ আভায় ভারতের ঐতিহাসিক স্থাপত্য ও প্রিমিয়াম ট্রাভেল ভাইব)।
->    - এমন একটি কম্পোজিশন যা দেখার সাথে সাথে যেকোনো গ্রাহকের মনে ভারত ভ্রমণের ইচ্ছা ও বিশ্বাস জাগ্রত করবে।
->    - টেক্সটের রিড্যাবিলিটি ঠিক রাখতে ফ্রস্টেড লাইট গ্লাস ওভারলে বজায় রাখা হবে।
-> 2. **এক্সক্লুসিভ Aptos ফন্ট কনফিগারেশন (Strict Aptos Typography):**
->    - ইংরেজি লেখার জন্য অন্য কোনো অতিরিক্ত ফন্ট নয়, সরাসরি **Aptos** ফন্ট লোড ও সেট করা হবে।
->    - বিভিন্ন অপারেটিং সিস্টেম ও ডিভাইসে যাতে আসল Aptos সঠিকভাবে রেন্ডার হয়, সেজন্য নিবেদিত ফন্ট রুল এবং `@font-face` সোর্স কনফিগার করা হবে।
->    - বর্তমান ফন্ট ওয়েটসমূহ (Bold, SemiBold, Regular) যথাযথভাবে বহাল থাকবে।
->    - বাংলা লেখার ক্ষেত্রে সুন্দর বাংলা ফন্ট (Noto Serif Bengali) অবিকৃত থাকবে।
+> To receive the summaries directly on your Telegram account or channel, please provide:
+> 1. **Telegram Bot Token** (from `@BotFather`)
+> 2. **Telegram Chat ID** (your numeric user/group ID, obtainable from `@userinfobot`)
+> *If you don't have them right now, we will add support for them in `.env` and provide a fallback configuration so the form and chat work smoothly immediately.*
 
 ---
 
-## ২. আর্কিটেকচার ও ডিজাইন ব্লুপ্রিন্ট (System & Visual Blueprint)
+## Proposed Changes
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                              CINEMATIC HERO SECTION                                    │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│  🌄 High-Res Cinematic Indian Landmark Panorama (Majestic architecture, clear sky,     │
-│     golden warm daylight glow, inspiring curiosity & immediate travel attraction)      │
-│                                                                                        │
-│  ✨ Pure Frosted Glass Lighting (Keeps headline punchy & clear)                        │
-│                                                                                        │
-│      [ সহজ ও নির্ভুল ইন্ডিয়ান ভিসা প্রসেসিং (Noto Serif Bengali) ]                      │
-│      [ Processing Hub • Fast, Reliable, 100% Guaranteed (Exclusive Aptos Body) ]       │
-│      [ ফ্রি ভিসা পরামর্শ নিন (Mint CTA Button with Aptos/Bengali synergy) ]             │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+### Backend (`server.ts`)
+- Add secure `/api/telegram/summary` endpoint:
+  - Receives customer name, phone number, active service context, and message history.
+  - Summarizes the conversation (or uses Gemini to extract key client interests and requested documents/dates).
+  - Sends a beautifully formatted Telegram notification message (using HTML/Markdown) to the configured Telegram bot.
+- Support environment variables `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` with graceful logging and error prevention if not yet set.
+
+### Chat Interface (`src/components/AiChatbotModal.tsx`)
+- **Contact Form View (First Screen)**:
+  - If the user hasn't filled out their contact info yet (checked via `localStorage`), render a professional, trust-building contact card:
+    - Input: **আপনার নাম (Full Name)**
+    - Input: **মোবাইল / WhatsApp নম্বর (Phone Number)**
+    - Button: **পরামর্শ শুরু করুন (Start Consultation)**
+  - Validates valid Bangladeshi/international phone numbers (at least 10-11 digits).
+- **Smooth Transition**:
+  - Once submitted, saves to `localStorage` (`processinghub_user_profile`), slides out the form, and reveals the chat interface.
+  - Displays user identity badge at the top with a subtle "পরিবর্তন" (edit profile) button.
+- **Personalized AI Consultant**:
+  - Passes user's name to `/api/ai/chat` so Mohammad greets and advises the client personally by name without robotic repetition.
+- **Auto Telegram Dispatch on Close**:
+  - When `onClose` is triggered (modal close button or background tap), if there are conversation messages (>1 message), fire the `/api/telegram/summary` beacon/request to send the lead and summary to Telegram.
 
 ---
 
-## ৩. বাস্তবায়নের ধাপসমূহ (Step-by-Step Implementation Strategy)
+## Verification Plan
 
-### ধাপ ১: আকর্ষণীয় ও কৌতূহলোদ্দীপক সিনেমাটিক ইমেজ জেনারেশন
-- `generate_image` টুলের মাধ্যমে একটি হাই-রেজ্যুলেশন ১৬:৯ অ্যাসপেক্ট রেশিওর প্রিমিয়াম সিনেমাটিক ইমেজ তৈরি করা:
-  - পরিষ্কার আকাশ, সূর্যাস্তের নরম সোনালী আলো এবং ভারতের নান্দনিক ঐতিহাসিক স্থাপত্যের দৃশ্য।
-  - কোনো অতিরঞ্জিত হিজিবিজি উপাদান ছাড়া একটি পরিচ্ছন্ন ও আন্তর্জাতিক ট্রাভেল এজেন্সির উপযোগী লুক।
-- `Hero.tsx` ফাইলে ইমেজটি প্রতিস্থাপন করা।
+### Automated Tests
+- Test TypeScript types and bundle compilation with `npm run build` / `compile_applet`.
+- Run `lint_applet` to ensure zero errors.
 
-### ধাপ ২: এক্সক্লুসিভ Aptos ফন্ট সেটআপ (`src/index.css`)
-- সব ইংরেজি টেক্সট সিলেক্টরের জন্য এককভাবে `font-family: 'Aptos', sans-serif;` এনফোর্স করা।
-- অন্যান্য অপ্রয়োজনীয় ফন্ট রেফারেন্স পরিহার করে শুধু Aptos-কে অগ্রাধিকার দেওয়া।
-- হেডিং, বাটন, মেনু (Home, Commitment, Services, Destinations, Slots, Contact), ব্যাজ এবং সংখ্যাগুলোতে সরাসরি Aptos কার্যকর করা।
-
-### ধাপ ৩: যাচাই ও বিল্ড চেকিং
-- হিরো সেকশনের ভিজ্যুয়াল অ্যাপিল ও টেক্সট স্পষ্টতা যাচাই করা।
-- `compile_applet` এবং `lint_applet` চালিয়ে কোড ভ্যালিডেশন সম্পন্ন করা।
+### Manual / Browser Verification
+1. Open support chat -> verify Contact Form is shown first.
+2. Enter Name & Phone number -> submit -> verify chat opens smoothly and displays personalized greeting.
+3. Chat with Mohammad about a visa query -> close the chat window.
+4. Verify Telegram summary endpoint is invoked with full client details and consultation summary.
