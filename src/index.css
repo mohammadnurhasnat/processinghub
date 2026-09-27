@@ -36,17 +36,21 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', Georgia, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #F8F9FE;
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(204, 210, 251, 0.25) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(162, 219, 152, 0.22) 0%, transparent 40%);
   color: var(--ink);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-h1, h2, h3, .brand {
-  font-family: 'Space Grotesk', sans-serif;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', Georgia, 'Space Grotesk', serif;
+}
+
+button, input, select, textarea, optgroup, p, span, a, li, label {
+  font-family: 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', Georgia, 'Inter', serif, sans-serif;
 }
 
 a {
