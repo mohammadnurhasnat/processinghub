@@ -26,6 +26,43 @@
   --shadow: 0 10px 30px rgba(35, 45, 68, 0.08);
 }
 
+/* APTOS (BODY) OFFICIAL WEB FONT DECLARATIONS */
+@font-face {
+  font-family: 'Aptos';
+  src: url('/fonts/Aptos.ttf') format('truetype'),
+       local('Aptos'), local('Aptos Display');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aptos';
+  src: url('/fonts/Aptos-Bold.ttf') format('truetype'),
+       local('Aptos Bold'), local('Aptos-Bold');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aptos Display';
+  src: url('/fonts/Aptos-Display.ttf') format('truetype'),
+       local('Aptos Display');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aptos Display';
+  src: url('/fonts/Aptos-Display-Bold.ttf') format('truetype'),
+       local('Aptos Display Bold'), local('Aptos-Display-Bold');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -36,7 +73,7 @@ html {
 }
 
 body {
-  font-family: 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', Georgia, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   background-color: #F8F9FE;
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(204, 210, 251, 0.25) 0%, transparent 40%),
@@ -46,11 +83,15 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', Georgia, 'Space Grotesk', serif;
+  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', system-ui, -apple-system, sans-serif;
 }
 
 button, input, select, textarea, optgroup, p, span, a, li, label {
-  font-family: 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', Georgia, 'Inter', serif, sans-serif;
+  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', system-ui, -apple-system, sans-serif;
+}
+
+.font-aptos {
+  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
 }
 
 a {
@@ -148,7 +189,7 @@ nav.scrolled {
 }
 
 .brand-btn .brand-text {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Aptos', sans-serif;
   font-size: 1.05rem;
   font-weight: 700;
   color: #1A2416;
@@ -184,72 +225,99 @@ nav.scrolled .brand-btn,
     0 6px 20px rgba(38, 48, 31, 0.14);
 }
 
-.nav-links {
+/* DESKTOP NAV CAPSULE CONTAINER */
+.nav-menu-capsule-wrapper {
   display: flex;
-  gap: 8px;
   align-items: center;
+  justify-content: center;
+  flex: 1;
+  margin: 0 16px;
 }
 
-.nav-link-separator {
-  color: rgba(74, 90, 184, 0.40);
-  font-size: 0.95rem;
+@media (max-width: 991px) {
+  .nav-menu-capsule-wrapper {
+    display: none;
+  }
+}
+
+.nav-menu-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.22) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.50);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.90);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.30);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.90),
+    inset 0 -1px 4px rgba(0, 0, 0, 0.03),
+    0 6px 22px rgba(35, 45, 68, 0.08);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+nav.scrolled .nav-menu-capsule,
+.site-header.scrolled .nav-menu-capsule,
+.site-header.menu-open .nav-menu-capsule {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(247, 245, 239, 0.70) 100%);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 1),
+    0 6px 22px rgba(38, 48, 31, 0.12);
+}
+
+.nav-capsule-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  color: #1E2519;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  border-top: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65), 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.nav-capsule-item:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.50) 100%);
+  border-color: rgba(255, 255, 255, 0.95);
+  color: #14381C;
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 1),
+    0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.nav-capsule-item:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.nav-capsule-separator {
+  color: rgba(74, 90, 184, 0.35);
+  font-size: 0.85rem;
   font-weight: 300;
   user-select: none;
   margin: 0 1px;
 }
 
-.nav-links a {
-  position: relative;
-  display: inline-flex;
+/* Legacy nav-links fallback */
+.nav-links {
+  display: flex;
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  padding: 8px 22px;
-  border-radius: 999px;
-  color: #1E2519;
-  font-weight: 600;
-  font-size: 0.90rem;
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.40);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.75);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.20);
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.70),
-    inset 0 -1px 6px rgba(255, 255, 255, 0.12),
-    0 4px 14px rgba(0, 0, 0, 0.05);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-}
-
-.nav-links a::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.05) 80%, rgba(255, 255, 255, 0) 100%);
-  border-radius: 999px 999px 0 0;
-  pointer-events: none;
-}
-
-.nav-links a:hover {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.14) 100%);
-  border-color: rgba(255, 255, 255, 0.85);
-  color: #14381C;
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.90),
-    inset 0 -1px 6px rgba(255, 255, 255, 0.20),
-    0 6px 20px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1.5px);
-}
-
-.nav-links a:active {
-  transform: translateY(1px);
-  background: rgba(255, 255, 255, 0.30);
 }
 
 .nav-cta {
@@ -291,7 +359,7 @@ nav.scrolled .brand-btn,
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-color: #141A22;
+  background-color: #E6EEF5;
   box-sizing: border-box;
 }
 
@@ -299,7 +367,7 @@ nav.scrolled .brand-btn,
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(16, 22, 32, 0.35) 0%, rgba(16, 22, 32, 0.80) 100%);
+  background: linear-gradient(180deg, rgba(16, 26, 38, 0.25) 0%, rgba(16, 26, 38, 0.52) 100%);
 }
 
 .hero-content {
@@ -902,7 +970,7 @@ section {
   }
 
   .site-header .brand-btn .brand-text {
-    font-family: 'Space Grotesk', sans-serif !important;
+    font-family: 'Aptos', sans-serif !important;
     font-size: 1.05rem !important;
     font-weight: 700 !important;
     line-height: 1.35 !important;
@@ -1280,7 +1348,7 @@ section {
 
 .footer-brand .brand {
   color: #14351C;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Aptos', sans-serif;
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;

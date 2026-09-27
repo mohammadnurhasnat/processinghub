@@ -100,54 +100,63 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="brand-text">{CONFIG.brandName}</span>
           </a>
 
-          <div className="nav-links">
-            <a 
-              href="#hero-section" 
-              id="desktop-link-home"
-              onClick={(e) => handleNavClick(e, '#hero-section')}
-            >
-              হোম
-            </a>
-            <span className="nav-link-separator" aria-hidden="true">|</span>
-            <a 
-              href="#our-commitment" 
-              id="desktop-link-commitment"
-              onClick={(e) => handleNavClick(e, '#our-commitment')}
-            >
-              আমাদের অঙ্গীকার
-            </a>
-            <span className="nav-link-separator" aria-hidden="true">|</span>
-            <a 
-              href="#services" 
-              id="desktop-link-services"
-              onClick={(e) => handleNavClick(e, '#services')}
-            >
-              ভিসা সার্ভিসসমূহ
-            </a>
-            <span className="nav-link-separator" aria-hidden="true">|</span>
-            <a 
-              href="#destinations" 
-              id="desktop-link-destinations"
-              onClick={(e) => handleNavClick(e, '#destinations')}
-            >
-              জনপ্রিয় গন্তব্য
-            </a>
-            <span className="nav-link-separator" aria-hidden="true">|</span>
-            <a 
-              href="#services" 
-              id="desktop-link-slot-booking"
-              onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
-            >
-              স্লট বুকিং
-            </a>
-            <span className="nav-link-separator" aria-hidden="true">|</span>
-            <a 
-              href="#contact" 
-              id="desktop-link-contact"
-              onClick={(e) => handleNavClick(e, '#contact')}
-            >
-              যোগাযোগ
-            </a>
+          {/* CENTERED DESKTOP MENU CAPSULE CONTAINER */}
+          <div className="nav-menu-capsule-wrapper">
+            <div className="nav-menu-capsule">
+              <a 
+                href="#hero-section" 
+                id="desktop-link-home"
+                className="nav-capsule-item"
+                onClick={(e) => handleNavClick(e, '#hero-section')}
+              >
+                Home
+              </a>
+              <span className="nav-capsule-separator" aria-hidden="true">|</span>
+              <a 
+                href="#our-commitment" 
+                id="desktop-link-commitment"
+                className="nav-capsule-item"
+                onClick={(e) => handleNavClick(e, '#our-commitment')}
+              >
+                Commitment
+              </a>
+              <span className="nav-capsule-separator" aria-hidden="true">|</span>
+              <a 
+                href="#services" 
+                id="desktop-link-services"
+                className="nav-capsule-item"
+                onClick={(e) => handleNavClick(e, '#services')}
+              >
+                Services
+              </a>
+              <span className="nav-capsule-separator" aria-hidden="true">|</span>
+              <a 
+                href="#destinations" 
+                id="desktop-link-destinations"
+                className="nav-capsule-item"
+                onClick={(e) => handleNavClick(e, '#destinations')}
+              >
+                Destinations
+              </a>
+              <span className="nav-capsule-separator" aria-hidden="true">|</span>
+              <a 
+                href="#services" 
+                id="desktop-link-slot-booking"
+                className="nav-capsule-item"
+                onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
+              >
+                Slots
+              </a>
+              <span className="nav-capsule-separator" aria-hidden="true">|</span>
+              <a 
+                href="#contact" 
+                id="desktop-link-contact"
+                className="nav-capsule-item"
+                onClick={(e) => handleNavClick(e, '#contact')}
+              >
+                Contact
+              </a>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -220,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#hero-section')}
                   className="mobile-card-link"
                 >
-                  হোম
+                  Home
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -231,7 +240,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#our-commitment')}
                   className="mobile-card-link"
                 >
-                  আমাদের অঙ্গীকার
+                  Commitment
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -242,7 +251,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#services')}
                   className="mobile-card-link"
                 >
-                  ভিসা সার্ভিসসমূহ
+                  Services
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -253,7 +262,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#destinations')}
                   className="mobile-card-link"
                 >
-                  জনপ্রিয় গন্তব্য
+                  Destinations
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -264,7 +273,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
                   className="mobile-card-link"
                 >
-                  স্লট বুকিং
+                  Slots
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
@@ -275,7 +284,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={(e) => handleNavClick(e, '#contact')}
                   className="mobile-card-link"
                 >
-                  যোগাযোগ
+                  Contact
                 </a>
               </div>
 

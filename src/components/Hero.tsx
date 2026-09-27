@@ -1,6 +1,6 @@
 import React from 'react';
 import { CONFIG } from '../config';
-import heroVisaImage from '../assets/images/indian_visa_hero_1789099375163.jpg';
+import heroVisaImage from '../assets/images/majestic_hero_india_1790529628066.jpg';
 
 export const Hero: React.FC = () => {
   return (
