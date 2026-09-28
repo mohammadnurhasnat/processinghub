@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan for Contact Lead Form before chat, User Identity Memory, and Telegram Bot Integration for sending conversation summaries when chat closes.",
-  "updatedAt":  "2026-09-27T19:37:34.751980692Z",
+  "summary":  "টেলিগ্রাম লিড নোটিফিকেশনকে অতিসংক্ষিপ্ত ও স্মার্ট করা, সরাসরি কল ও হোয়াটসঅ্যাপ অ্যাকশন বাটন যুক্ত করা, ফাইল নির্ভরতা সরিয়ে টেলিগ্রাম এক্সপ্যান্ডেবল রিড নিশ্চিত করা এবং চ্যাটবটের উত্তরকে সংক্ষিপ্ত, টু-দ্য-পয়েন্ট ও প্রাঞ্জল করার পূর্ণাঙ্গ বাস্তবায়ন পরিকল্পনা।",
+  "updatedAt":  "2026-09-28T13:33:07.447711279Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

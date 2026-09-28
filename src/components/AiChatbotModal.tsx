@@ -129,9 +129,9 @@ const formatDisplayTime = (timeStr?: string): string => {
 const getWelcomeMessage = (service: VisaService | null | undefined, userName?: string): string => {
   const greetingName = userName ? ` **${userName}**` : '';
   if (service?.title) {
-    return `আসসালামু আলাইকুম${greetingName}! প্রসেসিং হাবে আপনাকে স্বাগতম। আপনি **"${service.title}"** সেবাটি দেখছেন। এই বিষয়ে প্রয়োজনীয় ডকুমেন্টস, অফিশিয়াল ফি কিংবা প্রসেসিং সময় সম্পর্কিত যেকোনো জিজ্ঞাসা থাকলে বলুন, আমি সম্পূর্ণ সহায়তা করছি।`;
+    return `আসসালামু আলাইকুম${greetingName}! আমি মোহাম্মদ। **"${service.title}"** সম্পর্কে আপনার নির্দিষ্ট কী জানার আছে বলুন, সাহায্য করছি।`;
   }
-  return `আসসালামু আলাইকুম${greetingName}! আমি **মোহাম্মদ (Mohammad)**, প্রসেসিং হাবের সিনিয়র ভিসা কনসালটেন্ট। ভারতীয় ভিসা আবেদন, প্রয়োজনীয় ডকুমেন্টস যাচাইকরণ কিংবা আইভ্যাকের সর্বশেষ নিয়ম সম্পর্কে আপনার কী জানার রয়েছে বলুন, আমি আন্তরিকভাবে সহায়তা করছি।`;
+  return `আসসালামু আলাইকুম${greetingName}! আমি মোহাম্মদ, প্রসেসিং হাবের সিনিয়র ভিসা কনসালটেন্ট। আপনার ভিসা সম্পর্কিত প্রশ্নটি বলুন, সাহায্য করছি।`;
 };
 
 const STORAGE_KEY = 'processinghub_chat_history_v1';

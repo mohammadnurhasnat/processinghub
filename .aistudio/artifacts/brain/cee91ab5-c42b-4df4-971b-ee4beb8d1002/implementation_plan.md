@@ -1,57 +1,113 @@
-# Implementation Plan: Contact Form & Telegram Summary Integration
+# স্মার্ট ও অ্যাডভান্সড টেলিগ্রাম লিড এবং চ্যাটবট রেসপন্স অপ্টিমাইজেশন প্ল্যান
 
-## Overview
-1. **Telegram Status Confirmation**: Currently, no Telegram bot is active or configured in this codebase or server environment. We will build the full Telegram Bot notification integration.
-2. **Lead Contact Form Gate**: When a visitor opens the chat modal, show a clean, high-conversion contact form requiring **Name** and **Phone Number (WhatsApp)** before the chat interface appears.
-3. **User Memory**: Persist the customer's name and phone number across sessions. Mohammad (the Senior Consultant) will address the customer warmly by name.
-4. **Automatic Telegram Summary on Close**: When the user closes the chat window, an automatic API call triggers in the background (`/api/telegram/summary`), which generates an executive summary of the consultation along with the customer's details and dispatches it directly to your Telegram chat/channel via the Telegram Bot API.
+টেলিগ্রাম লিডকে অপ্রয়োজনীয় বড় লেখা ও ফাইল বিড়ম্বনা মুক্ত করে সম্পূর্ণ স্বয়ংসম্পূর্ণ, অতিসংক্ষিপ্ত, এবং তাৎক্ষণিক অ্যাকশনযোগ্য (1-Tap Call & WhatsApp) করা; সাথে সাথে চ্যাটবটের রেসপন্সকে অপ্রয়োজনীয় ভূমিকা বা অতিরিক্ত কথা পরিহার করে একদম টু-দ্য-পয়েন্ট ও প্রাঞ্জল বাংলায় রূপান্তর করা।
 
 ---
 
-## User Review Required
+## ইউজার রিভিউ ও গুরুত্বপূর্ণ সিদ্ধান্তসমূহ
 
-> [!IMPORTANT]
-> To receive the summaries directly on your Telegram account or channel, please provide:
-> 1. **Telegram Bot Token** (from `@BotFather`)
-> 2. **Telegram Chat ID** (your numeric user/group ID, obtainable from `@userinfobot`)
-> *If you don't have them right now, we will add support for them in `.env` and provide a fallback configuration so the form and chat work smoothly immediately.*
+> [!IMPORTANT] ব্যবহারকারীর মতামত ও নিশ্চিত সিদ্ধান্তের ভিত্তিতে এই পরিকল্পনা প্রণয়ন করা হয়েছে:
 
----
-
-## Proposed Changes
-
-### Backend (`server.ts`)
-- Add secure `/api/telegram/summary` endpoint:
-  - Receives customer name, phone number, active service context, and message history.
-  - Summarizes the conversation (or uses Gemini to extract key client interests and requested documents/dates).
-  - Sends a beautifully formatted Telegram notification message (using HTML/Markdown) to the configured Telegram bot.
-- Support environment variables `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` with graceful logging and error prevention if not yet set.
-
-### Chat Interface (`src/components/AiChatbotModal.tsx`)
-- **Contact Form View (First Screen)**:
-  - If the user hasn't filled out their contact info yet (checked via `localStorage`), render a professional, trust-building contact card:
-    - Input: **আপনার নাম (Full Name)**
-    - Input: **মোবাইল / WhatsApp নম্বর (Phone Number)**
-    - Button: **পরামর্শ শুরু করুন (Start Consultation)**
-  - Validates valid Bangladeshi/international phone numbers (at least 10-11 digits).
-- **Smooth Transition**:
-  - Once submitted, saves to `localStorage` (`processinghub_user_profile`), slides out the form, and reveals the chat interface.
-  - Displays user identity badge at the top with a subtle "পরিবর্তন" (edit profile) button.
-- **Personalized AI Consultant**:
-  - Passes user's name to `/api/ai/chat` so Mohammad greets and advises the client personally by name without robotic repetition.
-- **Auto Telegram Dispatch on Close**:
-  - When `onClose` is triggered (modal close button or background tap), if there are conversation messages (>1 message), fire the `/api/telegram/summary` beacon/request to send the lead and summary to Telegram.
+- **১. সারসংক্ষেপ ফরম্যাট:** টেলিগ্রামে দীর্ঘ ব্যাখ্যার পরিবর্তে মাত্র ২-৩ লাইনের অতিসংক্ষিপ্ত ও তথ্যবহুল বুলেট পয়েন্ট (গ্রাহকের মূল জিজ্ঞাসা, প্রদত্ত সমাধান ও পরবর্তী পদক্ষেপ)।
+- **২. পূর্ণাঙ্গ চ্যাট হিস্ট্রি ভিউ:** দীর্ঘ নামের অতিরিক্ত ফাইল বাদ দিয়ে টেলিগ্রামের নিজস্ব **এক্সপ্যান্ডেবল ব্লক (`<blockquote expandable>`)** ব্যবহার করা হবে, যাতে মোবাইল বা ল্যাপটপ যেকোনো ডিভাইসে মেসেজের ওপর ট্যাপ করলেই সম্পূর্ণ চ্যাট সুন্দরভাবে পড়া যায়।
+- **৩. তাৎক্ষণিক অ্যাকশন বাটন (Inline Keyboard):** টেলিগ্রাম মেসেজের নিচে সরাসরি `💬 WhatsApp এ মেসেজ` এবং `📞 সরাসরি কল করুন` বাটন থাকবে, যাতে টিম চ্যাট দেখার সাথে সাথেই ১ ক্লিকে গ্রাহকের সাথে যোগাযোগ করতে পারে।
+- **৪. চ্যাটবট রেসপন্স রুলস (স্বল্প ও গোছানো কথা):** চ্যাটবটের সিস্টেম প্রম্পটকে কঠোরভাবে অপ্টিমাইজ করা হবে যাতে কোনো অপ্রাসঙ্গিক বা অতিরঞ্জিত কথা না বলে; গ্রাহক ঠিক যতটুকু জানতে চাইবেন, ঠিক ততটুকুই স্পষ্ট ও প্রাঞ্জল ভাষায় বুঝিয়ে বলবে।
 
 ---
 
-## Verification Plan
+## ১. ওভারভিউ ও মূল উদ্দেশ্য
 
-### Automated Tests
-- Test TypeScript types and bundle compilation with `npm run build` / `compile_applet`.
-- Run `lint_applet` to ensure zero errors.
+- **মূল লক্ষ্য:** লিড হ্যান্ডলিং টাইম ন্যূনতম করা এবং ওয়েবসাইটের ভিজিটরদের দ্রুত ও বিরক্তিহীন চ্যাটিং অভিজ্ঞতা দেওয়া।
+- **লক্ষ্যমাত্রা:**
+  1. চ্যাটবটের মেসেজ হবে সংক্ষিপ্ত, স্পষ্ট ও টু-দ্য-পয়েন্ট।
+  2. টেলিগ্রাম চ্যানেলে লিড নোটিফিকেশন আসবে একদম পরিচ্ছন্ন ও কম্প্যাক্ট চেহারায়।
+  3. আলাদা ফাইল খোঁজা বা ডাউনলোডের ঝামেলা ছাড়া টেলিগ্রাম অ্যাপের ভেতরেই পুরো চ্যাট পড়া যাবে।
+  4. ইনলাইন বাটনের মাধ্যমে এক ক্লিকেই কনসালটেন্ট সরাসরি গ্রাহকের নম্বরে যোগাযোগ করতে পারবেন।
 
-### Manual / Browser Verification
-1. Open support chat -> verify Contact Form is shown first.
-2. Enter Name & Phone number -> submit -> verify chat opens smoothly and displays personalized greeting.
-3. Chat with Mohammad about a visa query -> close the chat window.
-4. Verify Telegram summary endpoint is invoked with full client details and consultation summary.
+---
+
+## ২. ইউজার এক্সপেরিয়েন্স ও টেলিগ্রাম প্রেজেন্টেশন ডিজাইন
+
+### টেলিগ্রাম লিড মেসেজের নতুন কাঠামো (Ultra-Clean & Compact):
+
+```html
+<b>Processing Hub — নতুন কনসালটেন্সি লিড</b>
+
+<b>গ্রাহক বিবরণ:</b>
+• <b>নাম:</b> মোহাম্মদ নুর হাসনাত
+• <b>মোবাইল / WhatsApp:</b> <code>01577464706</code>
+• <b>সেবা:</b> মেডিকেল ভিসা প্রসেসিং
+• <b>সময়:</b> ২৮ সেপ্টেম্বর, ০২:০৫ AM
+
+<b>সারসংক্ষেপ:</b>
+• <b>জিজ্ঞাসা:</b> ভারতের মেডিকেল ভিসার জন্য ইনভাইটেশন লেটার ছাড়া আবেদন সম্ভব কি না।
+• <b>সমাধান:</b> ইনভাইটেশন লেটার বাধ্যতামূলক; প্রসেসিং হাব জেনুইন লেটার সংগ্রহে শতভাগ সহায়তা করে।
+• <b>ফলো-আপ:</b> দ্রুত কল দিয়ে ইনভাইটেশন লেটার ও ভিসা প্যাকেজের অফার প্রদান।
+
+<b>সম্পূর্ণ কথোপকথন (ট্যাপ করে দেখুন):</b>
+<blockquote expandable>
+👤 গ্রাহক [০১:৫৯ AM]:
+মেডিকেল ভিসার ইনভাইটেশন লেটার ছাড়া আবেদন সম্ভব?
+
+👨‍💼 মোহাম্মদ (ভিসা কনসালটেন্ট) [০২:০০ AM]:
+না, ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী ইনভাইটেশন লেটার ছাড়া আবেদন জমা নেওয়া হয় না। তবে প্রসেসিং হাব আপনাকে সঠিক হাসপাতাল থেকে ইনভাইটেশন লেটার এনে দিতে পূর্ণ সহায়তা করবে।
+</blockquote>
+```
+
+### টেলিগ্রাম ইনলাইন বাটন ডিজাইন (Telegram Inline Keyboard):
+মেসেজটির নিচে সরাসরি দুটি হাইলাইট করা বাটন থাকবে:
+```
+┌─────────────────────────────────┐
+│     💬 WhatsApp এ মেসেজ দিন     │ (https://wa.me/8801577464706?text=...)
+├─────────────────────────────────┤
+│     📞 গ্রাহককে সরাসরি কল করুন     │ (tel:+8801577464706)
+└─────────────────────────────────┘
+```
+
+---
+
+## ৩. চ্যাটবট রেসপন্স নীতি (Anti-Fluff & Precise Bengali)
+
+চ্যাটবটের সিস্টেম নির্দেশনায় নিম্নলিখিত নীতিমালা প্রয়োগ করা হবে:
+- **সংক্ষিপ্ততা ও স্পষ্টতা:** ১-৩টি স্পষ্ট বাক্যের মধ্যে উত্তর সম্পন্ন করা। কোনো অপ্রয়োজনীয় বড় সূচনা বা ইতি টানা যাবে না।
+- **সহজ ও প্রাঞ্জল ভাষা:** জটিল বা কঠিন শব্দ পরিহার করে বাস্তবসম্মত ও ঘরোয়া ভাষায় গ্রাহকের প্রশ্নের সরাসরি উত্তর দেওয়া।
+- **অপ্রয়োজনীয় প্রসারণ বর্জন:** গ্রাহক যে দেশের বা যে বিষয়ের ভিসা নিয়ে প্রশ্ন করেছেন, কেবল সেই নির্দিষ্ট তথ্যই দেওয়া হবে; অন্য দেশের অপ্রাসঙ্গিক তুলনা টানা যাবে না।
+
+---
+
+## ৪. কারিগরি আর্কিটেকচার ও ডাটা ফ্লো
+
+```
+┌────────────────────────────────────────────────────────┐
+│                   Website User Interaction              │
+│  - ভিজিটর প্রশ্ন করে                                   │
+│  - চ্যাটবট সংক্ষিপ্ত, গোছানো ও প্রাঞ্জল উত্তর প্রদান করে    │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│                  Server / API Processing               │
+│  - Gemini Flash: অতিসংক্ষিপ্ত ২-৩ লাইনের সামারি তৈরি     │
+│  - Telegram Message Builder: HTML + Expandable Block    │
+│  - Inline Keyboard Builder: WhatsApp Link + Tel URL    │
+│  - আলাদা কোনো দীর্ঘ নামের ফাইল পাঠানো হবে না          │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│                     Telegram Bot                       │
+│  - সুপার ফাস্ট ও সংক্ষিপ্ত লিড অ্যালার্ট পাঠানো           │
+│  - ১ ট্যাপে সম্পূর্ণ চ্যাট ভিউ                           │
+│  - ১ ট্যাপে সরাসরি WhatsApp বা Call করার সুবিধা          │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ৫. পরবর্তী পদক্ষেপ
+
+পরিকল্পনাটি অনুমোদিত হলে নিম্নরূপ কোড আপডেট সম্পন্ন করা হবে:
+1. `server.ts`-এ টেলিগ্রাম ডিসপ্যাচারে অপ্রয়োজনীয় ফাইল এটাচমেন্ট বাদ দেওয়া।
+2. ইনলাইন কিবোর্ড বাটন (`reply_markup.inline_keyboard`) যুক্ত করা।
+3. সামারাইজেশনের প্রম্পটকে আরও সংক্ষিপ্ত (ম্যাক্সিমাম ২০-২৫ শব্দ প্রতি বুলেট) করা।
+4. চ্যাটবটের মূল সিস্টেম প্রম্পটকে (`src/components/AiChatbotModal.tsx` ও `server.ts`) সংক্ষিপ্ত ও প্রাসঙ্গিক উত্তর দেওয়ার জন্য কনফিগার করা।

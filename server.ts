@@ -53,13 +53,19 @@ You are MOHAMMAD (মোহাম্মদ), the Senior Visa & Travel Consultant
   * যখন ইউজার জানাবে যে তার কাজ শেষ হয়েছে, সার্ভিস নেওয়া সম্পন্ন হয়েছে, সে সন্তুষ্ট, অথবা বিদায় নেবে (যেমন: "ধন্যবাদ", "থ্যাংক ইউ", "কাজ হয়ে গেছে", "সার্ভিস নেওয়া হয়েছে", "বুঝেছি", "বিদায়", "আল্লাহ হাফেজ", "বাই"):
   * তখন বিনম্র ও আন্তরিকভাবে বিদায় জানাবেন এবং কৃতজ্ঞতা প্রকাশ করবেন (যেমন: "প্রসেসিং হাব থেকে সেবা ও পরামর্শ নেওয়ার জন্য আপনাকে আন্তরিক ধন্যবাদ! ভবিষ্যতে যেকোনো ভিসা প্রয়োজনে আমরা আপনার পাশে আছি। আল্লাহ হাফেজ।")।
 
-### CORE COMMUNICATION RULES:
-1. **Human & Courteous Tone (মানুষের মতো আন্তরিক ও মার্জিত ভাষা)**:
-   - সর্বদা কাস্টমারকে শ্রদ্ধার সাথে "আপনি" সম্বোধন করে অত্যন্ত সুশীল, অমায়িক ও বিনীত ভাষায় কথা বলুন।
-2. **Bullet Points Formatting (সিরিয়াল/পয়েন্ট নির্দেশাবলী)**:
-   - যখন কোনো প্রশ্নের উত্তরে বিভিন্ন কাগজপত্র, প্রয়োজনীয় তথ্য, চেকলিস্ট বা কারণের বিবরণ দিবেন, তখন তা রোবটিক সংখ্যা (১, ২, ৩) এর বদলে সুন্দর **বুলেট পয়েন্ট (•)** আকারে সাজিয়ে দিন।
-3. **To-the-point & Clear (সুনির্দিষ্ট ও গোছানো)**:
-   - অতিরিক্ত অতিরঞ্জিত বা অযাচিত মার্কেটিং প্রচার ছাড়াই প্রয়োজনীয় তথ্যটি সুন্দরভাবে গুছিয়ে উপস্থাপন করুন।
+### CORE COMMUNICATION RULES (কঠোর সংক্ষেপ ও টু-দ্য-পয়েন্ট নীতি):
+1. **No Bloat & Ultra-Concise (অতিরিক্ত কথা নয়, যত কম কথায় উত্তর দেওয়া যায়)**:
+   - কাস্টমার ঠিক যেটুকু জানতে চেয়েছে, কেবল সেটুকুরই স্পষ্ট, নিখুঁত ও সংক্ষিপ্ত উত্তর দিন।
+   - অতিরিক্ত বা অতিরঞ্জিত কোনো কথা বলা যাবে না। কোনো অনাকাঙ্ক্ষিত দীর্ঘ ভূমিকা, অপ্রাসঙ্গিক ব্যাখ্যা বা দীর্ঘ লেকচার দেওয়া সম্পূর্ণ নিষেধ।
+   - উত্তর যত বড় হবে, কাস্টমার তত বিরক্ত হবে। তাই যত কম কথায় সাজিয়ে-গুছিয়ে উত্তর দেওয়া যায়, তত ভালো।
+   - ঢাকায় শ্যামলী এলাকার প্রফেশনাল ভিসা অফিসের অভিজ্ঞ সিনিয়র কনসালটেন্টের মতো সাবলীল, প্রাঞ্জল ও সম্মানসূচক কথ্য বাংলা ভাষায় কথা বলুন।
+2. **Answer What Is Asked (প্রশ্ন অনুযায়ী সুনির্দিষ্ট উত্তর)**:
+   - ইউজার যদি সুনির্দিষ্ট একটি প্রশ্ন করে (যেমন: "মেডিকেল ভিসার ইনভাইটেশন লেটার ছাড়া কি আবেদন করা যায়?"), সরাসরি টু-দ্য-পয়েন্ট উত্তর দিন: "না, ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী হাসপাতালের মূল ইনভাইটেশন লেটার ছাড়া মেডিকেল ভিসা আবেদন করা যায় না। তবে আমাদের প্রসেসিং হাব থেকে আপনি জেনুইন ইনভাইটেশন লেটার সংগ্রহে শতভাগ সহায়তা পাবেন।" (অপ্রয়োজনীয় লম্বা চেকলিস্ট দেবেন না যদি না ইউজার ডকুমেন্টস চেকলিস্ট চায়)।
+   - ইউজার যখন প্রয়োজনীয় ডকুমেন্টস বা কাগজপত্র চাইবে, শুধুমাত্র তখনই মূল প্রয়োজনীয় কাগজগুলোর অতিসংক্ষিপ্ত বুলেট পয়েন্ট দিন।
+3. **Bullet Points Formatting (পয়েন্ট নির্দেশাবলী)**:
+   - একাধিক তথ্য বা কাগজপত্রের প্রয়োজন হলে তা রোবটিক বড় তালিকার বদলে ছোট ও পরিষ্কার বুলেট পয়েন্ট (•) আকারে উপস্থাপন করুন।
+4. **Human & Courteous Tone (আন্তরিক ও মার্জিত ভাষা)**:
+   - সর্বদা কাস্টমারকে শ্রদ্ধার সাথে "আপনি" সম্বোধন করে অত্যন্ত অমায়িক, বিনম্র ও প্রফেশনাল ভাষায় কথা বলুন।
 
 ### IVAC OFFICIAL NOTICE BOARD MEMORY & GUIDELINES:
 Official Indian Visa Application Centre (IVAC) notice board prescribes exact document checklists, rejection causes, charges, and guidelines:
@@ -616,11 +622,15 @@ app.post('/api/telegram/summary', async (req, res) => {
                 text: `You are an executive assistant at "Processing Hub" visa consultancy in Dhaka.
 Analyze the following visa consultation conversation between client "${customerName}" (${customerPhone}) and consultant Mohammad.
 
-Generate a clean, strictly professional 3-point summary in Bengali (বাংলা).
+Generate an ULTRA-SHORT 2 to 3 bullet point summary in Bengali (বাংলা).
+CRITICAL RULES:
+- Maximum 2 or 3 bullet lines total!
+- Keep each bullet line very short, crisp, and direct (under 15 words per line).
+- NO long paragraphs, NO storytelling.
 Format EXACTLY like this (NO asterisks, NO markdown characters, plain text only):
-মূল জিজ্ঞাসা: [গ্রাহক কোন দেশের কোন ভিসা বা কী তথ্য জানতে চেয়েছেন]
-প্রদত্ত পরামর্শ: [কনসালটেন্ট মোহাম্মদ কী তথ্য বা ডকুমেন্টের তালিকা দিয়েছেন]
-পরবর্তী পদক্ষেপ: [টিমের করণীয় বা ফলো-আপ অ্যাকশন]
+• মূল জিজ্ঞাসা: [সংক্ষেপে গ্রাহকের মূল প্রশ্ন বা চাহিদা]
+• প্রদত্ত পরামর্শ: [সংক্ষেপে কী সমাধান বা তথ্য দেওয়া হয়েছে]
+• অ্যাকশন: [ফলো-আপের জন্য কী করতে হবে]
 
 CONVERSATION:
 ${transcript}`
@@ -661,7 +671,7 @@ ${transcript}`
       }).join('\n');
     } else {
       const lastUserMsg = userMessages[userMessages.length - 1]?.text || '';
-      formattedSummary = `• <b>মূল জিজ্ঞাসা:</b> ${escapeHtml(lastUserMsg.substring(0, 150) || serviceTitle)}\n• <b>প্রদত্ত পরামর্শ:</b> গ্রাহককে প্রয়োজনীয় ভিসা সংক্রান্ত তথ্যাদি প্রদান করা হয়েছে।\n• <b>পরবর্তী পদক্ষেপ:</b> ফলো-আপের জন্য দ্রুত গ্রাহকের সাথে যোগাযোগ করুন।`;
+      formattedSummary = `• <b>মূল জিজ্ঞাসা:</b> ${escapeHtml(lastUserMsg.substring(0, 100) || serviceTitle)}\n• <b>প্রদত্ত পরামর্শ:</b> গ্রাহককে প্রয়োজনীয় ভিসা পরামর্শ দেওয়া হয়েছে।\n• <b>অ্যাকশন:</b> দ্রুত কাস্টমারের সাথে যোগাযোগ করুন।`;
     }
 
     const now = new Date();
@@ -687,18 +697,37 @@ ${transcript}`
     }
     conversationBlock = conversationBlock.trim();
 
+    // Prepare direct WhatsApp button
+    const digitsOnly = (customerPhone || '').replace(/[^0-9]/g, '');
+    let waPhone = digitsOnly;
+    if (digitsOnly.startsWith('0')) {
+      waPhone = `88${digitsOnly}`;
+    } else if (!digitsOnly.startsWith('880') && digitsOnly.length === 10) {
+      waPhone = `880${digitsOnly}`;
+    }
+
+    const inlineKeyboard: Array<Array<{ text: string; url: string }>> = [];
+    if (waPhone && waPhone.length >= 11) {
+      inlineKeyboard.push([
+        {
+          text: '💬 WhatsApp এ চ্যাট করুন',
+          url: `https://wa.me/${waPhone}`
+        }
+      ]);
+    }
+
     const baseMessage = `<b>Processing Hub — নতুন কনসালটেন্সি লিড</b>
 
 <b>গ্রাহকের বিবরণ:</b>
 • <b>নাম:</b> ${escapeHtml(customerName)}
-• <b>মোবাইল / WhatsApp:</b> <code>${escapeHtml(customerPhone)}</code>
+• <b>মোবাইল:</b> <code>${escapeHtml(customerPhone)}</code>
 • <b>আগ্রহের সেবা:</b> ${escapeHtml(serviceTitle)}
 • <b>তারিখ ও সময়:</b> ${bdTime} (বাংলাদেশ সময়)
 
 <b>সারসংক্ষেপ:</b>
 ${formattedSummary}`;
 
-    const combinedMessage = `${baseMessage}\n\n<b>সম্পূর্ণ কথোপকথন (ট্যাপ করে বিস্তারিত দেখুন):</b>\n<blockquote expandable>${conversationBlock}</blockquote>`;
+    const combinedMessage = `${baseMessage}\n\n<b>সম্পূর্ণ কথোপকথন (ট্যাপ করে পড়ুন):</b>\n<blockquote expandable>${conversationBlock}</blockquote>`;
 
     let tgData = null;
     if (combinedMessage.length <= 4000) {
@@ -709,6 +738,7 @@ ${formattedSummary}`;
           chat_id: chatId,
           text: combinedMessage,
           parse_mode: 'HTML',
+          reply_markup: inlineKeyboard.length > 0 ? { inline_keyboard: inlineKeyboard } : undefined,
         }),
       });
       tgData = await tgRes.json();
@@ -720,6 +750,7 @@ ${formattedSummary}`;
           chat_id: chatId,
           text: baseMessage,
           parse_mode: 'HTML',
+          reply_markup: inlineKeyboard.length > 0 ? { inline_keyboard: inlineKeyboard } : undefined,
         }),
       });
       tgData = await tgRes.json();
@@ -732,94 +763,14 @@ ${formattedSummary}`;
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            text: `<b>পূর্ণাঙ্গ চ্যাট হিস্ট্রি (ট্যাপ করে বিস্তারিত দেখুন):</b>\n<blockquote expandable>${chunk}</blockquote>`,
+            text: `<b>পূর্ণাঙ্গ চ্যাট হিস্ট্রি (ট্যাপ করে পড়ুন):</b>\n<blockquote expandable>${chunk}</blockquote>`,
             parse_mode: 'HTML',
           }),
         });
       }
     }
 
-    // Generate responsive HTML file that opens in ANY mobile and desktop browser without extra apps
-    let docData = null;
-    try {
-      let chatItemsHtml = '';
-      for (const msg of messages) {
-        const isUser = msg.role === 'user';
-        const speaker = isUser ? `${escapeHtml(customerName)} (গ্রাহক)` : `মোহাম্মদ (সিনিয়র কনসালটেন্ট)`;
-        const bubbleClass = isUser ? 'msg-user' : 'msg-bot';
-        const avatar = isUser ? '👤' : '👨‍💼';
-        const timeHtml = msg.time ? `<span>${escapeHtml(msg.time)}</span>` : '';
-        chatItemsHtml += `
-          <div class="msg ${bubbleClass}">
-            <div class="msg-head"><span>${avatar} ${speaker}</span>${timeHtml}</div>
-            <div class="msg-body">${escapeHtml(msg.text || '').replace(/\n/g, '<br/>')}</div>
-          </div>`;
-      }
-
-      const htmlContent = `<!DOCTYPE html>
-<html lang="bn">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>চ্যাট ট্রানস্ক্রিপ্ট — ${escapeHtml(customerName)}</title>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hind Siliguri", sans-serif; background: #0f172a; margin: 0; padding: 16px; color: #1e293b; }
-  .card { max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-  .header { background: #0369a1; color: #ffffff; padding: 22px; }
-  .brand { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #bae6fd; margin-bottom: 6px; }
-  .header h1 { margin: 0 0 14px; font-size: 20px; font-weight: 800; }
-  .meta-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 14px; background: rgba(0,0,0,0.15); padding: 12px 14px; border-radius: 10px; }
-  .meta-item b { color: #f0f9ff; }
-  .chat-box { padding: 20px 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 14px; }
-  .msg { padding: 12px 16px; border-radius: 14px; max-width: 90%; font-size: 14.5px; line-height: 1.6; word-break: break-word; }
-  .msg-user { align-self: flex-start; background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-  .msg-bot { align-self: flex-end; background: #0284c7; color: #ffffff; border-bottom-right-radius: 4px; box-shadow: 0 1px 3px rgba(2,132,199,0.3); }
-  .msg-head { font-size: 12px; font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; gap: 12px; opacity: 0.9; }
-  .msg-bot .msg-head { color: #e0f2fe; }
-  .msg-body { white-space: pre-wrap; }
-  .footer { text-align: center; padding: 16px; font-size: 12px; color: #64748b; background: #ffffff; border-top: 1px solid #e2e8f0; }
-</style>
-</head>
-<body>
-<div class="card">
-  <div class="header">
-    <div class="brand">Processing Hub • Official Lead Record</div>
-    <h1>কনসালটেন্সি চ্যাট হিস্ট্রি</h1>
-    <div class="meta-grid">
-      <div class="meta-item"><b>গ্রাহকের নাম:</b> ${escapeHtml(customerName)}</div>
-      <div class="meta-item"><b>মোবাইল / WhatsApp:</b> ${escapeHtml(customerPhone)}</div>
-      <div class="meta-item"><b>আগ্রহের সেবা:</b> ${escapeHtml(serviceTitle)}</div>
-      <div class="meta-item"><b>তারিখ ও সময়:</b> ${escapeHtml(bdTime)} (বাংলাদেশ সময়)</div>
-    </div>
-  </div>
-  <div class="chat-box">
-    ${chatItemsHtml}
-  </div>
-  <div class="footer">Processing Hub Consultancy — সুরক্ষিত ও পেশাদার ভিসা সেবা</div>
-</div>
-</body>
-</html>`;
-
-      const safePhone = (customerPhone || 'lead').replace(/[^0-9]/g, '');
-      const fileName = `Lead_${safePhone || 'chat'}_${Date.now()}.html`;
-
-      const formData = new FormData();
-      formData.append('chat_id', chatId);
-      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-      formData.append('document', blob, fileName);
-      formData.append('caption', `📄 পূর্ণাঙ্গ চ্যাট হিস্ট্রি ফাইল (মোবাইল ও পিসির যেকোনো ব্রাউজারে চলবে)`);
-
-      const docRes = await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
-        method: 'POST',
-        body: formData,
-      });
-      docData = await docRes.json();
-    } catch (docErr) {
-      console.warn('Failed to send transcript document to telegram:', docErr);
-    }
-
-    return res.json({ success: true, telegram: tgData, document: docData });
+    return res.json({ success: true, telegram: tgData });
   } catch (error: any) {
     console.error('Telegram summary error:', error);
     return res.status(500).json({ error: error?.message || 'Failed to dispatch telegram summary' });
