@@ -3,7 +3,6 @@ import { VisaService } from './types';
 import { VISA_SERVICES } from './data/visaData';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
-import { OurCommitmentSection } from './components/OurCommitmentSection';
 import { ServicesSection } from './components/ServicesSection';
 import { DestinationsSection } from './components/DestinationsSection';
 import { CtaStrip } from './components/CtaStrip';
@@ -84,9 +83,6 @@ export default function App() {
 
       {/* Hero Banner */}
       <Hero />
-
-      {/* Our Commitment & Professional Approach Section */}
-      <OurCommitmentSection />
 
       {/* Visa Services & Packages */}
       <ServicesSection 

@@ -113,15 +113,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </a>
               <span className="nav-capsule-separator" aria-hidden="true">|</span>
               <a 
-                href="#our-commitment" 
-                id="desktop-link-commitment"
-                className="nav-capsule-item"
-                onClick={(e) => handleNavClick(e, '#our-commitment')}
-              >
-                Commitment
-              </a>
-              <span className="nav-capsule-separator" aria-hidden="true">|</span>
-              <a 
                 href="#services" 
                 id="desktop-link-services"
                 className="nav-capsule-item"
@@ -230,17 +221,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="mobile-card-link"
                 >
                   Home
-                </a>
-
-                <div className="mobile-menu-divider" aria-hidden="true" />
-
-                <a 
-                  href="#our-commitment"
-                  id="mobile-link-commitment"
-                  onClick={(e) => handleNavClick(e, '#our-commitment')}
-                  className="mobile-card-link"
-                >
-                  Commitment
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
