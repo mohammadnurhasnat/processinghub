@@ -1,113 +1,81 @@
-# স্মার্ট ও অ্যাডভান্সড টেলিগ্রাম লিড এবং চ্যাটবট রেসপন্স অপ্টিমাইজেশন প্ল্যান
+# Bangladeshi Natural Scenery Dynamic Hero Slider
 
-টেলিগ্রাম লিডকে অপ্রয়োজনীয় বড় লেখা ও ফাইল বিড়ম্বনা মুক্ত করে সম্পূর্ণ স্বয়ংসম্পূর্ণ, অতিসংক্ষিপ্ত, এবং তাৎক্ষণিক অ্যাকশনযোগ্য (1-Tap Call & WhatsApp) করা; সাথে সাথে চ্যাটবটের রেসপন্সকে অপ্রয়োজনীয় ভূমিকা বা অতিরিক্ত কথা পরিহার করে একদম টু-দ্য-পয়েন্ট ও প্রাঞ্জল বাংলায় রূপান্তর করা।
-
----
-
-## ইউজার রিভিউ ও গুরুত্বপূর্ণ সিদ্ধান্তসমূহ
-
-> [!IMPORTANT] ব্যবহারকারীর মতামত ও নিশ্চিত সিদ্ধান্তের ভিত্তিতে এই পরিকল্পনা প্রণয়ন করা হয়েছে:
-
-- **১. সারসংক্ষেপ ফরম্যাট:** টেলিগ্রামে দীর্ঘ ব্যাখ্যার পরিবর্তে মাত্র ২-৩ লাইনের অতিসংক্ষিপ্ত ও তথ্যবহুল বুলেট পয়েন্ট (গ্রাহকের মূল জিজ্ঞাসা, প্রদত্ত সমাধান ও পরবর্তী পদক্ষেপ)।
-- **২. পূর্ণাঙ্গ চ্যাট হিস্ট্রি ভিউ:** দীর্ঘ নামের অতিরিক্ত ফাইল বাদ দিয়ে টেলিগ্রামের নিজস্ব **এক্সপ্যান্ডেবল ব্লক (`<blockquote expandable>`)** ব্যবহার করা হবে, যাতে মোবাইল বা ল্যাপটপ যেকোনো ডিভাইসে মেসেজের ওপর ট্যাপ করলেই সম্পূর্ণ চ্যাট সুন্দরভাবে পড়া যায়।
-- **৩. তাৎক্ষণিক অ্যাকশন বাটন (Inline Keyboard):** টেলিগ্রাম মেসেজের নিচে সরাসরি `💬 WhatsApp এ মেসেজ` এবং `📞 সরাসরি কল করুন` বাটন থাকবে, যাতে টিম চ্যাট দেখার সাথে সাথেই ১ ক্লিকে গ্রাহকের সাথে যোগাযোগ করতে পারে।
-- **৪. চ্যাটবট রেসপন্স রুলস (স্বল্প ও গোছানো কথা):** চ্যাটবটের সিস্টেম প্রম্পটকে কঠোরভাবে অপ্টিমাইজ করা হবে যাতে কোনো অপ্রাসঙ্গিক বা অতিরঞ্জিত কথা না বলে; গ্রাহক ঠিক যতটুকু জানতে চাইবেন, ঠিক ততটুকুই স্পষ্ট ও প্রাঞ্জল ভাষায় বুঝিয়ে বলবে।
+Replace the static hero image with a high-fidelity, 4-slide automatic image carousel showcasing the iconic natural landscapes of Bangladesh, with seamless 3-second transitions and optimal readability for the Indian visa consultancy website.
 
 ---
 
-## ১. ওভারভিউ ও মূল উদ্দেশ্য
+## User Review & Critical Decisions
 
-- **মূল লক্ষ্য:** লিড হ্যান্ডলিং টাইম ন্যূনতম করা এবং ওয়েবসাইটের ভিজিটরদের দ্রুত ও বিরক্তিহীন চ্যাটিং অভিজ্ঞতা দেওয়া।
-- **লক্ষ্যমাত্রা:**
-  1. চ্যাটবটের মেসেজ হবে সংক্ষিপ্ত, স্পষ্ট ও টু-দ্য-পয়েন্ট।
-  2. টেলিগ্রাম চ্যানেলে লিড নোটিফিকেশন আসবে একদম পরিচ্ছন্ন ও কম্প্যাক্ট চেহারায়।
-  3. আলাদা ফাইল খোঁজা বা ডাউনলোডের ঝামেলা ছাড়া টেলিগ্রাম অ্যাপের ভেতরেই পুরো চ্যাট পড়া যাবে।
-  4. ইনলাইন বাটনের মাধ্যমে এক ক্লিকেই কনসালটেন্ট সরাসরি গ্রাহকের নম্বরে যোগাযোগ করতে পারবেন।
-
----
-
-## ২. ইউজার এক্সপেরিয়েন্স ও টেলিগ্রাম প্রেজেন্টেশন ডিজাইন
-
-### টেলিগ্রাম লিড মেসেজের নতুন কাঠামো (Ultra-Clean & Compact):
-
-```html
-<b>Processing Hub — নতুন কনসালটেন্সি লিড</b>
-
-<b>গ্রাহক বিবরণ:</b>
-• <b>নাম:</b> মোহাম্মদ নুর হাসনাত
-• <b>মোবাইল / WhatsApp:</b> <code>01577464706</code>
-• <b>সেবা:</b> মেডিকেল ভিসা প্রসেসিং
-• <b>সময়:</b> ২৮ সেপ্টেম্বর, ০২:০৫ AM
-
-<b>সারসংক্ষেপ:</b>
-• <b>জিজ্ঞাসা:</b> ভারতের মেডিকেল ভিসার জন্য ইনভাইটেশন লেটার ছাড়া আবেদন সম্ভব কি না।
-• <b>সমাধান:</b> ইনভাইটেশন লেটার বাধ্যতামূলক; প্রসেসিং হাব জেনুইন লেটার সংগ্রহে শতভাগ সহায়তা করে।
-• <b>ফলো-আপ:</b> দ্রুত কল দিয়ে ইনভাইটেশন লেটার ও ভিসা প্যাকেজের অফার প্রদান।
-
-<b>সম্পূর্ণ কথোপকথন (ট্যাপ করে দেখুন):</b>
-<blockquote expandable>
-👤 গ্রাহক [০১:৫৯ AM]:
-মেডিকেল ভিসার ইনভাইটেশন লেটার ছাড়া আবেদন সম্ভব?
-
-👨‍💼 মোহাম্মদ (ভিসা কনসালটেন্ট) [০২:০০ AM]:
-না, ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী ইনভাইটেশন লেটার ছাড়া আবেদন জমা নেওয়া হয় না। তবে প্রসেসিং হাব আপনাকে সঠিক হাসপাতাল থেকে ইনভাইটেশন লেটার এনে দিতে পূর্ণ সহায়তা করবে।
-</blockquote>
-```
-
-### টেলিগ্রাম ইনলাইন বাটন ডিজাইন (Telegram Inline Keyboard):
-মেসেজটির নিচে সরাসরি দুটি হাইলাইট করা বাটন থাকবে:
-```
-┌─────────────────────────────────┐
-│     💬 WhatsApp এ মেসেজ দিন     │ (https://wa.me/8801577464706?text=...)
-├─────────────────────────────────┤
-│     📞 গ্রাহককে সরাসরি কল করুন     │ (tel:+8801577464706)
-└─────────────────────────────────┘
-```
+> [!IMPORTANT]
+> **Confirmed Specifications from Clarification Phase:**
+> 1. **All 4 Scenic Themes Selected**: Sajek Valley/Bandarban hills & clouds, Sreemangal lush tea gardens, Cox's Bazar/Saint Martin sea beach, and Sundarbans mangrove riverways.
+> 2. **Auto-Slide Rotation**: Slides will automatically transition every 3 seconds (3000ms) with smooth cross-fade animation.
+> 3. **Contextual Harmony**: High-contrast overlay gradients ensure all headline typography, badges, and WhatsApp consultation CTAs remain crisp, premium, and easy to read.
 
 ---
 
-## ৩. চ্যাটবট রেসপন্স নীতি (Anti-Fluff & Precise Bengali)
+## 1. Overview & Core Concept
 
-চ্যাটবটের সিস্টেম নির্দেশনায় নিম্নলিখিত নীতিমালা প্রয়োগ করা হবে:
-- **সংক্ষিপ্ততা ও স্পষ্টতা:** ১-৩টি স্পষ্ট বাক্যের মধ্যে উত্তর সম্পন্ন করা। কোনো অপ্রয়োজনীয় বড় সূচনা বা ইতি টানা যাবে না।
-- **সহজ ও প্রাঞ্জল ভাষা:** জটিল বা কঠিন শব্দ পরিহার করে বাস্তবসম্মত ও ঘরোয়া ভাষায় গ্রাহকের প্রশ্নের সরাসরি উত্তর দেওয়া।
-- **অপ্রয়োজনীয় প্রসারণ বর্জন:** গ্রাহক যে দেশের বা যে বিষয়ের ভিসা নিয়ে প্রশ্ন করেছেন, কেবল সেই নির্দিষ্ট তথ্যই দেওয়া হবে; অন্য দেশের অপ্রাসঙ্গিক তুলনা টানা যাবে না।
+- **What It Does**: Upgrades the main Hero section into a cinematic 4-slide background carousel featuring Bangladesh's most celebrated scenic locations. The slides cycle automatically every 3 seconds with smooth cross-fade animations, subtle Ken Burns slow-pan motion, interactive slide indicator dots, and previous/next navigation buttons.
+- **Target Audience / Persona**: Bangladeshi applicants seeking reliable Indian medical, tourist, and business visa processing, greeted by familiar and inspiring natural beauty that conveys trust, warmth, and professionalism.
+- **Key Value**: Delivers a vibrant, patriotic, and visually captivating first impression while keeping the primary call-to-action ("ফ্রি ভিসা পরামর্শ নিন") prominently legible.
 
 ---
 
-## ৪. কারিগরি আর্কিটেকচার ও ডাটা ফ্লো
+## 2. User Experience & Visual Design
+
+### Key Visual Assets (4 Dedicated 16:9 Landscapes)
+1. **সাজেক ও বান্দরবান (Sajek & Bandarban)**: Lush green hill ranges bathed in golden morning light with floating misty white cloud carpets.
+2. **শ্রীমঙ্গল চা বাগান (Sreemangal Tea Estates)**: Serene rolling emerald tea hills with gentle morning dew and winding pathways.
+3. **কক্সবাজার ও সেন্টমার্টিন (Cox's Bazar & Saint Martin)**: Expansive golden sandy coastline, azure blue Bay of Bengal waves, and coconut palm silhouettes.
+4. **সুন্দরবন ম্যানগ্রোভ (Sundarbans River & Forest)**: Serene delta riverways, pristine Sundari tree mangrove forest, and calm reflecting waters at dawn.
+
+### Motion & Interaction Design
+- **Auto-Rotation Interval**: Changes slide every 3.0 seconds (`3000ms`).
+- **Interactive Controls**:
+  - Pill/dot indicators at the bottom indicating active slide with smooth width expansion.
+  - Hover/touch pause so reading users aren't disrupted.
+  - Left/Right subtle arrow controls for manual switching.
+  - Smooth 700ms ease-in-out opacity/transform transition between slides.
+- **Contrast Scrim**: Measured multi-stop gradient overlay (`from-black/75 via-black/45 to-black/80`) to satisfy WCAG AA contrast standards for all Bengali text and the green WhatsApp action button.
+
+---
+
+## 3. Technical Architecture & Component Hierarchy
 
 ```
-┌────────────────────────────────────────────────────────┐
-│                   Website User Interaction              │
-│  - ভিজিটর প্রশ্ন করে                                   │
-│  - চ্যাটবট সংক্ষিপ্ত, গোছানো ও প্রাঞ্জল উত্তর প্রদান করে    │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│                  Server / API Processing               │
-│  - Gemini Flash: অতিসংক্ষিপ্ত ২-৩ লাইনের সামারি তৈরি     │
-│  - Telegram Message Builder: HTML + Expandable Block    │
-│  - Inline Keyboard Builder: WhatsApp Link + Tel URL    │
-│  - আলাদা কোনো দীর্ঘ নামের ফাইল পাঠানো হবে না          │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│                     Telegram Bot                       │
-│  - সুপার ফাস্ট ও সংক্ষিপ্ত লিড অ্যালার্ট পাঠানো           │
-│  - ১ ট্যাপে সম্পূর্ণ চ্যাট ভিউ                           │
-│  - ১ ট্যাপে সরাসরি WhatsApp বা Call করার সুবিধা          │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                           Hero Section                          │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ Background Slider Container (overflow-hidden, relative)    │  │
+│  │  ├─ Slide 1: Sajek Valley Hills & Clouds (Active/Fade)    │  │
+│  │  ├─ Slide 2: Sreemangal Lush Tea Garden (Transition)      │  │
+│  │  ├─ Slide 3: Cox's Bazar / Saint Martin Coastline         │  │
+│  │  └─ Slide 4: Sundarbans Mangrove River                    │  │
+│  │  └─ Dark Scrim Layer (bg-gradient-to-t & backdrop shadow) │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ Hero Content Overlay (Z-index 10, Flex Column Centered)   │  │
+│  │  ├─ Trust Badge: "Processing Hub — নির্ভরযোগ্য ভিসা সেবা"   │  │
+│  │  ├─ H1: সহজ ও নির্ভুল ইন্ডিয়ান ভিসা প্রসেসিং                 │  │
+│  │  ├─ Subtitle: অভিজ্ঞ কনসালট্যান্টদের সহায়তায়...            │  │
+│  │  ├─ Primary CTA: "ফ্রি ভিসা পরামর্শ নিন" (Direct WhatsApp) │  │
+│  │  └─ Carousel Dots Indicator (4 Dots with 3s progress bar) │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ৫. পরবর্তী পদক্ষেপ
+## 4. Implementation Steps
 
-পরিকল্পনাটি অনুমোদিত হলে নিম্নরূপ কোড আপডেট সম্পন্ন করা হবে:
-1. `server.ts`-এ টেলিগ্রাম ডিসপ্যাচারে অপ্রয়োজনীয় ফাইল এটাচমেন্ট বাদ দেওয়া।
-2. ইনলাইন কিবোর্ড বাটন (`reply_markup.inline_keyboard`) যুক্ত করা।
-3. সামারাইজেশনের প্রম্পটকে আরও সংক্ষিপ্ত (ম্যাক্সিমাম ২০-২৫ শব্দ প্রতি বুলেট) করা।
-4. চ্যাটবটের মূল সিস্টেম প্রম্পটকে (`src/components/AiChatbotModal.tsx` ও `server.ts`) সংক্ষিপ্ত ও প্রাসঙ্গিক উত্তর দেওয়ার জন্য কনফিগার করা।
+1. **Batch Image Generation (Phase 1)**:
+   - Generate all 4 Bangladeshi landscape assets in parallel via `generate_image` tool with `16:9` aspect ratio.
+2. **Hero Component Update (Phase 2)**:
+   - Enhance `src/components/Hero.tsx` with slider state (`currentSlide`, auto-play timer `setInterval`, touch handlers, dot controls, and keyboard navigation).
+   - Apply smooth transition styling and dark gradient overlay.
+3. **Verification**:
+   - Verify build integrity with `compile_applet` and `lint_applet`.
+   - Test 3-second cycle, indicator interactions, and mobile responsiveness.

@@ -364,10 +364,7 @@ nav.scrolled .nav-menu-capsule,
 }
 
 .hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(16, 26, 38, 0.25) 0%, rgba(16, 26, 38, 0.52) 100%);
+  display: none;
 }
 
 .hero-content {
