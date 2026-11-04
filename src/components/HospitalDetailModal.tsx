@@ -176,7 +176,17 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             <span className="font-medium">মেডিকেল ভিসা ও ইনভাইটেশন হেল্পলাইন</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end flex-nowrap w-full sm:w-auto">
+            <button
+              type="button"
+              id="hospital-modal-bottom-close-btn"
+              onClick={onClose}
+              className="btn-3d-red-glass flex-initial inline-flex items-center justify-center gap-1 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>বন্ধ</span>
+            </button>
+
             <a
               id="hospital-call-helpline-btn"
               href={`tel:${CONFIG.phone}`}
@@ -189,11 +199,14 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             <a
               id="hospital-whatsapp-booking-btn"
               href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(waAppointmentText)}`}
+              data-service-name={`মেডিকেল ভিসা ও ${hospital.name} ডক্টর অ্যাপয়েন্টমেন্ট`}
+              data-section="টপ হসপিটাল সেকশন"
+              data-whatsapp-title="মেডিকেল ভিসা ও হাসপাতাল"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-3d-matte-green flex-[1.4] sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center text-[#124218]"
             >
-              <span>ডক্টর অ্যাপয়েন্টমেন্ট নিন</span>
+              <span>অ্যাপয়েন্টমেন্ট নিন</span>
             </a>
           </div>
         </div>

@@ -5,6 +5,8 @@ import { CONFIG } from '../config';
 import { VisaService } from '../types';
 import { AiChatbotModal } from './AiChatbotModal';
 
+import { useWhatsApp } from '../context/WhatsAppContext';
+
 interface FloatingWhatsAppProps {
   serviceContext?: VisaService | null;
   onClearServiceContext?: () => void;
@@ -18,6 +20,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
   isChatbotForcedOpen,
   onCloseForcedChatbot
 }) => {
+  const { openWhatsAppModal } = useWhatsApp();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isInternalChatbotOpen, setIsInternalChatbotOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -45,12 +48,20 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
 
   const handleOpenWhatsApp = () => {
     setIsPopupOpen(false);
-    const waUrl = `https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
-      serviceContext?.title
-        ? `Hello Processing Hub, I have an inquiry about ${serviceContext.title}.`
-        : 'Hello Processing Hub, I have an inquiry about Indian Visa Processing.'
-    )}`;
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    const serviceName = serviceContext?.title 
+      ? `${serviceContext.title} প্রসেসিং ও ডকুমেন্টেশন` 
+      : 'সাধারণ অনুসন্ধান ও তাৎক্ষণিক সহায়তা';
+    
+    openWhatsAppModal({
+      url: `https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
+        serviceContext?.title
+          ? `Hello Processing Hub, I have an inquiry about ${serviceContext.title}.`
+          : 'Hello Processing Hub, I have an inquiry about Indian Visa Processing.'
+      )}`,
+      title: 'WhatsApp পরামর্শ',
+      serviceTitle: serviceName,
+      sectionName: serviceContext?.title ? `${serviceContext.title} কার্ড` : 'ফ্লোটিং সাপোর্ট'
+    });
   };
 
   // Close popup if clicked outside

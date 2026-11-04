@@ -108,16 +108,6 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               )}
             </p>
           </div>
-
-          <button
-            type="button"
-            id="modal-close-btn"
-            onClick={onClose}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[#D5CFBF] bg-white hover:bg-[#F0ECE1] text-[#4E5C46] hover:text-[#1E2519] flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
-            aria-label="Close modal"
-          >
-            <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
-          </button>
         </div>
 
         {/* Modal Body */}
@@ -261,6 +251,19 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
             )}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2.5 w-full md:w-auto justify-between sm:justify-end flex-nowrap ml-auto">
+            {/* 1. Red 3D Glassmorphism Close Button */}
+            <button
+              type="button"
+              id="modal-bottom-close-btn"
+              onClick={onClose}
+              title="উইন্ডো বন্ধ করুন"
+              className="btn-3d-red-glass flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>বন্ধ</span>
+            </button>
+
+            {/* 2. Download Checklist Button */}
             <button
               type="button"
               id="modal-download-checklist-btn"
@@ -281,6 +284,8 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                 </>
               )}
             </button>
+
+            {/* 3. WhatsApp Submit Button */}
             <a
               id="modal-whatsapp-submit-btn"
               href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
@@ -288,6 +293,9 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                   ? `Hello Processing Hub, I want to book Indian Visa Slot for ${selectedSlot.name}. Selected IVAC Center: ${selectedIvacCenter}. IVAC Fee: ৳${selectedSlot.ivacFee} + Service Charge: ৳${selectedSlot.serviceCharge} (Total: ৳${selectedSlot.totalFee}). Ready Info: (${completedCount}/${totalCount}). Please confirm slot availability.`
                   : `Hello Processing Hub, I want to book ${service.title} (Service Charge: ${service.price}). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for file submission.`
               )}`}
+              data-service-name={service.isSlotBooking ? `ভিসা স্লট বুকিং (${selectedSlot.name}) - ${selectedIvacCenter}` : `${service.title} প্রসেসিং`}
+              data-section="চেকলিস্ট ও বুকিং উইন্ডো"
+              data-whatsapp-title={service.isSlotBooking ? 'ভিসা স্লট বুকিং' : service.title}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-3d-matte-green flex-[1.2] sm:flex-initial inline-flex items-center justify-center px-3.5 sm:px-4.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center"

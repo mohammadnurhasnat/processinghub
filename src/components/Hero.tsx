@@ -218,6 +218,9 @@ export const Hero: React.FC = () => {
             id="hero-reserve-btn"
             className="btn-primary inline-flex items-center gap-2" 
             href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I would like to get a free consultation for Indian Visa Processing.')}`}
+            data-service-name="ফ্রি ভিসা পরামর্শ ও প্রাথমিক ফাইল যাচাই"
+            data-section="হিরো সেকশন"
+            data-whatsapp-title="ফ্রি ভিসা পরামর্শ"
             target="_blank" 
             rel="noopener noreferrer"
           >

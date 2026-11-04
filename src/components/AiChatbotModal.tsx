@@ -500,36 +500,46 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div 
-          className="fixed inset-0 z-70 sm:inset-auto sm:bottom-20 sm:right-6 flex flex-col items-center justify-end sm:justify-start pointer-events-none"
+          className={`fixed inset-0 z-70 ${
+            !userProfile || isEditingProfile 
+              ? 'flex items-center justify-center p-3 sm:p-4' 
+              : 'sm:inset-auto sm:bottom-20 sm:right-6 flex flex-col items-center justify-end sm:justify-start'
+          } pointer-events-none`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="support-chat-title"
         >
-          {/* Backdrop on mobile only with Liquid Blur */}
+          {/* Backdrop with Blur */}
           <motion.div 
             key="chat-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 bg-black/45 backdrop-blur-md sm:hidden z-0 pointer-events-auto" 
+            className={`fixed inset-0 bg-black/45 backdrop-blur-md ${
+              !userProfile || isEditingProfile ? 'block' : 'sm:hidden'
+            } z-0 pointer-events-auto`} 
             onClick={handleClose}
             aria-hidden="true"
           />
 
-          {/* Main Chat Window Card with smooth physics-based spring entrance and slight bounce */}
+          {/* Main Chat Window Card with compact dynamic sizing */}
           <motion.div 
             key="chat-window-card"
-            initial={{ opacity: 0, scale: 0.92, y: 85 }}
+            initial={{ opacity: 0, scale: 0.94, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 45, transition: { duration: 0.22, ease: "easeOut" } }}
+            exit={{ opacity: 0, scale: 0.94, y: 30, transition: { duration: 0.2, ease: "easeOut" } }}
             transition={{ 
               type: "spring",
-              damping: 18,
-              stiffness: 240,
-              mass: 0.85
+              damping: 22,
+              stiffness: 280,
+              mass: 0.8
             }}
-            className="relative z-10 w-full sm:w-[420px] md:w-[450px] h-[92vh] sm:h-[630px] max-h-[96vh] bg-white rounded-t-2xl sm:rounded-2xl border border-[#D5CFBF] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden origin-bottom-right pointer-events-auto"
+            className={`relative z-10 w-full sm:w-[410px] md:w-[420px] ${
+              !userProfile || isEditingProfile 
+                ? 'h-auto max-h-[90vh] rounded-3xl' 
+                : 'h-[85vh] sm:h-[600px] max-h-[92vh] rounded-t-2xl sm:rounded-2xl'
+            } bg-white border border-[#D5CFBF] shadow-[0_25px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden origin-bottom-right pointer-events-auto`}
           >
             {/* Header (White / Light Theme) */}
             <div className="bg-white text-[#1E2519] px-4 py-3 flex items-center justify-between border-b border-[#E8E4D9] flex-shrink-0">
@@ -655,25 +665,25 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
             {/* GATE: If user has not provided contact info yet or is editing profile, show Contact Form */}
             {(!userProfile || isEditingProfile) ? (
-              <div className="flex-1 overflow-y-auto px-5 py-6 bg-gradient-to-b from-[#FAF8F5] via-white to-[#F6F4EE] flex flex-col justify-center">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5 bg-gradient-to-b from-[#FAF8F5] via-white to-[#F5F7FA]">
                 <div className="max-w-sm mx-auto w-full">
-                  <div className="text-center mb-6">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#EBF7EE] to-[#D5EFDB] border border-[#BDE3C6] text-[#1FA855] shadow-xs mb-3">
-                      <MessagesSquare className="w-7 h-7 stroke-[2.2]" />
+                  <div className="text-center mb-3.5">
+                    <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-[#EEF2F8] to-[#DCE6F2] border border-[#C6D6E8] text-[#1E3A8A] shadow-xs mb-2">
+                      <MessagesSquare className="w-5 h-5 stroke-[2.2]" />
                     </div>
-                    <h4 className="text-base font-bold text-[#1E2519]">
+                    <h4 className="text-[15px] font-bold text-[#16202E]">
                       সরাসরি সিনিয়র কনসালটেন্টের সাথে কথা বলুন
                     </h4>
-                    <p className="text-xs text-[#636F5A] mt-1.5 leading-relaxed">
-                      ভিসা প্রসেসিং ও ডকুমেন্টস সংক্রান্ত তাৎক্ষণিক পরামর্শ পেতে অনুগ্রহ করে আপনার নাম ও যোগাযোগ নম্বর প্রদান করুন।
+                    <p className="text-[11.5px] text-[#5A687C] mt-1 leading-relaxed">
+                      ভিসা প্রসেসিং ও ডকুমেন্টস সংক্রান্ত তাৎক্ষণিক পরামর্শ পেতে অনুগ্রহ করে আপনার নাম ও যোগাযোগ নম্বর দিন।
                     </p>
                   </div>
 
-                  <form onSubmit={handleProfileSubmit} className="space-y-4">
+                  <form onSubmit={handleProfileSubmit} className="space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#2D3825] mb-1.5 flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-[#1FA855]" />
-                        <span>আপনার পূর্ণ নাম <span className="text-red-500">*</span></span>
+                      <label className="block text-xs font-semibold text-[#1E293B] mb-1 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-[#2A4365]" />
+                        <span>আপনার পূর্ণ নাম <span className="text-rose-500">*</span></span>
                       </label>
                       <input
                         type="text"
@@ -684,14 +694,14 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                         }}
                         placeholder="যেমন: মোহাম্মদ রহিম"
                         required
-                        className="w-full bg-white border border-[#D5CFBF] focus:border-[#1FA855] focus:ring-2 focus:ring-[#1FA855]/20 rounded-xl px-3.5 py-2.5 text-sm text-[#1E2519] placeholder-[#8A9582] focus:outline-none transition-all shadow-xs"
+                        className="w-full bg-white border border-[#D5D0C5] focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/15 rounded-xl px-3.5 py-2.5 text-sm text-[#16202E] placeholder-[#8A95A5] focus:outline-none transition-all shadow-xs"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-[#2D3825] mb-1.5 flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-[#1FA855]" />
-                        <span>মোবাইল / WhatsApp নম্বর <span className="text-red-500">*</span></span>
+                      <label className="block text-xs font-semibold text-[#1E293B] mb-1 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-[#2A4365]" />
+                        <span>মোবাইল / WhatsApp নম্বর <span className="text-rose-500">*</span></span>
                       </label>
                       <input
                         type="tel"
@@ -702,20 +712,20 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                         }}
                         placeholder="01XXXXXXXXX"
                         required
-                        className="w-full bg-white border border-[#D5CFBF] focus:border-[#1FA855] focus:ring-2 focus:ring-[#1FA855]/20 rounded-xl px-3.5 py-2.5 text-sm text-[#1E2519] placeholder-[#8A9582] focus:outline-none transition-all shadow-xs"
+                        className="w-full bg-white border border-[#D5D0C5] focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/15 rounded-xl px-3.5 py-2.5 text-sm text-[#16202E] placeholder-[#8A95A5] focus:outline-none transition-all font-mono shadow-xs"
                       />
                     </div>
 
                     {formError && (
-                      <p className="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg flex items-center gap-1">
+                      <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg flex items-center gap-1">
                         <span>⚠️ {formError}</span>
                       </p>
                     )}
 
-                    <div className="pt-2">
+                    <div className="pt-1">
                       <button
                         type="submit"
-                        className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#1FA855] to-[#168E45] hover:from-[#188A45] hover:to-[#127236] text-white font-semibold text-sm shadow-[0_4px_14px_rgba(31,168,85,0.25)] hover:shadow-[0_6px_18px_rgba(31,168,85,0.32)] transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
+                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#1E2E48] to-[#142033] hover:from-[#243755] hover:to-[#1A2840] active:scale-[0.99] text-white font-bold text-sm shadow-[0_3px_0_#0D1624,0_6px_18px_rgba(20,32,51,0.22)] transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <span>পরামর্শ শুরু করুন</span>
                         <ArrowRight className="w-4 h-4" />
@@ -726,14 +736,14 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsEditingProfile(false)}
-                        className="w-full text-xs text-[#636F5A] hover:text-[#1E2519] underline py-1 text-center cursor-pointer font-medium"
+                        className="w-full text-xs text-[#5A687C] hover:text-[#16202E] underline py-1 text-center cursor-pointer font-medium"
                       >
                         বাতিল করুন (চ্যাটে ফিরুন)
                       </button>
                     )}
 
-                    <div className="flex items-center justify-center gap-1.5 pt-2 text-[11px] text-[#7A8870]">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#1FA855]" />
+                    <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#5A687C]">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#2A4365]" />
                       <span>আপনার তথ্য শতভাগ নিরাপদ ও সংরক্ষিত থাকবে</span>
                     </div>
                   </form>

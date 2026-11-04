@@ -111,7 +111,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
             type="button"
             id="quick-book-close-btn"
             onClick={onClose}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[var(--periwinkle-border)] bg-white hover:bg-[var(--periwinkle-light)] text-[var(--periwinkle-dark)] flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
+            className="btn-3d-red-glass w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
             aria-label="Close modal"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />

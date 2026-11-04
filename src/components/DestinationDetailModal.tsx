@@ -139,7 +139,17 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
             <span className="font-medium">ট্যুরিস্ট ভিসা ও ফাইল প্রসেসিং সাপোর্ট</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end flex-nowrap w-full sm:w-auto">
+            <button
+              type="button"
+              id="dest-modal-bottom-close-btn"
+              onClick={onClose}
+              className="btn-3d-red-glass flex-initial inline-flex items-center justify-center gap-1 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>বন্ধ</span>
+            </button>
+
             <a
               id="dest-call-helpline-btn"
               href={`tel:${CONFIG.phone}`}
@@ -152,6 +162,9 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
             <a
               id="dest-whatsapp-booking-btn"
               href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(waTravelText)}`}
+              data-service-name={`ট্যুরিস্ট ভিসা ও ${destination.name} ট্রাভেল ফাইল`}
+              data-section="ভ্রমণ গন্তব্য সেকশন"
+              data-whatsapp-title="ট্যুরিস্ট ভিসা ও ভ্রমণ গন্তব্য"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-3d-matte-green flex-[1.4] sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center text-[#124218]"

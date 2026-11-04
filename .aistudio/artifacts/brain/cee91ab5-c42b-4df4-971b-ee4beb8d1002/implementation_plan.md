@@ -1,81 +1,60 @@
-# Bangladeshi Natural Scenery Dynamic Hero Slider
+# Human-Crafted Agency Polish & 3D Tactile Modal Design Plan
 
-Replace the static hero image with a high-fidelity, 4-slide automatic image carousel showcasing the iconic natural landscapes of Bangladesh, with seamless 3-second transitions and optimal readability for the Indian visa consultancy website.
-
----
-
-## User Review & Critical Decisions
-
-> [!IMPORTANT]
-> **Confirmed Specifications from Clarification Phase:**
-> 1. **All 4 Scenic Themes Selected**: Sajek Valley/Bandarban hills & clouds, Sreemangal lush tea gardens, Cox's Bazar/Saint Martin sea beach, and Sundarbans mangrove riverways.
-> 2. **Auto-Slide Rotation**: Slides will automatically transition every 3 seconds (3000ms) with smooth cross-fade animation.
-> 3. **Contextual Harmony**: High-contrast overlay gradients ensure all headline typography, badges, and WhatsApp consultation CTAs remain crisp, premium, and easy to read.
+Transform all popup window buttons into tactile 3D glassmorphic controls (including a distinctive red glassmorphic close button), replace green tones on the consultant contact form with a sophisticated human-crafted navy/slate palette, and completely eliminate any robotic AI cues across the site in favor of authentic Senior Visa Consultant branding.
 
 ---
 
-## 1. Overview & Core Concept
+## 1. Requirement & Style Blueprint
 
-- **What It Does**: Upgrades the main Hero section into a cinematic 4-slide background carousel featuring Bangladesh's most celebrated scenic locations. The slides cycle automatically every 3 seconds with smooth cross-fade animations, subtle Ken Burns slow-pan motion, interactive slide indicator dots, and previous/next navigation buttons.
-- **Target Audience / Persona**: Bangladeshi applicants seeking reliable Indian medical, tourist, and business visa processing, greeted by familiar and inspiring natural beauty that conveys trust, warmth, and professionalism.
-- **Key Value**: Delivers a vibrant, patriotic, and visually captivating first impression while keeping the primary call-to-action ("ফ্রি ভিসা পরামর্শ নিন") prominently legible.
-
----
-
-## 2. User Experience & Visual Design
-
-### Key Visual Assets (4 Dedicated 16:9 Landscapes)
-1. **সাজেক ও বান্দরবান (Sajek & Bandarban)**: Lush green hill ranges bathed in golden morning light with floating misty white cloud carpets.
-2. **শ্রীমঙ্গল চা বাগান (Sreemangal Tea Estates)**: Serene rolling emerald tea hills with gentle morning dew and winding pathways.
-3. **কক্সবাজার ও সেন্টমার্টিন (Cox's Bazar & Saint Martin)**: Expansive golden sandy coastline, azure blue Bay of Bengal waves, and coconut palm silhouettes.
-4. **সুন্দরবন ম্যানগ্রোভ (Sundarbans River & Forest)**: Serene delta riverways, pristine Sundari tree mangrove forest, and calm reflecting waters at dawn.
-
-### Motion & Interaction Design
-- **Auto-Rotation Interval**: Changes slide every 3.0 seconds (`3000ms`).
-- **Interactive Controls**:
-  - Pill/dot indicators at the bottom indicating active slide with smooth width expansion.
-  - Hover/touch pause so reading users aren't disrupted.
-  - Left/Right subtle arrow controls for manual switching.
-  - Smooth 700ms ease-in-out opacity/transform transition between slides.
-- **Contrast Scrim**: Measured multi-stop gradient overlay (`from-black/75 via-black/45 to-black/80`) to satisfy WCAG AA contrast standards for all Bengali text and the green WhatsApp action button.
+### Item 1: 3D Tactile Buttons & Red Glassmorphic Close Button
+- **Red Glassmorphic 3D Close Button**:
+  - Apply soft red glassmorphism with tactile 3D matte depth:
+    `bg-gradient-to-b from-rose-50/90 to-red-100/90 border border-red-200/80 text-red-700 shadow-[0_2px_0_#fda4af,0_4px_12px_rgba(239,68,68,0.15)] hover:from-rose-100 hover:to-red-200 active:translate-y-0.5 active:shadow-none backdrop-blur-md`
+- **All Popup Buttons to 3D Tactile**:
+  - Update `ServiceChecklistModal.tsx`, `HospitalDetailModal.tsx`, `DestinationDetailModal.tsx`, and `QuickBookModal.tsx`.
+  - Every button has physical 3D push feel, matte bevel, and distinct elevation.
 
 ---
 
-## 3. Technical Architecture & Component Hierarchy
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                           Hero Section                          │
-│                                                                 │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │ Background Slider Container (overflow-hidden, relative)    │  │
-│  │  ├─ Slide 1: Sajek Valley Hills & Clouds (Active/Fade)    │  │
-│  │  ├─ Slide 2: Sreemangal Lush Tea Garden (Transition)      │  │
-│  │  ├─ Slide 3: Cox's Bazar / Saint Martin Coastline         │  │
-│  │  └─ Slide 4: Sundarbans Mangrove River                    │  │
-│  │  └─ Dark Scrim Layer (bg-gradient-to-t & backdrop shadow) │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │ Hero Content Overlay (Z-index 10, Flex Column Centered)   │  │
-│  │  ├─ Trust Badge: "Processing Hub — নির্ভরযোগ্য ভিসা সেবা"   │  │
-│  │  ├─ H1: সহজ ও নির্ভুল ইন্ডিয়ান ভিসা প্রসেসিং                 │  │
-│  │  ├─ Subtitle: অভিজ্ঞ কনসালট্যান্টদের সহায়তায়...            │  │
-│  │  ├─ Primary CTA: "ফ্রি ভিসা পরামর্শ নিন" (Direct WhatsApp) │  │
-│  │  └─ Carousel Dots Indicator (4 Dots with 3s progress bar) │  │
-│  └───────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
+### Item 2: Non-Green Human-Centric Palette for Consultant Contact Form
+- **Color Overhaul in `AiChatbotModal.tsx`**:
+  - Replace green banners, green input rings, green badges, and green send buttons.
+  - Apply a rich, executive Navy / Warm Slate Indigo theme:
+    - Primary Action: Deep Navy-Indigo 3D Button (`bg-gradient-to-b from-[#1E2E48] to-[#142033] shadow-[0_3px_0_#0D1624,0_6px_16px_rgba(20,32,51,0.25)] text-white hover:from-[#243755]`)
+    - Header & Icons: Warm Sapphire / Slate Blue accents (`#2A4365`, `#334E68`, `#486581`).
+    - Input Focus: Warm Slate Indigo focus ring (`focus:border-[#2A4365] focus:ring-[#2A4365]/15`).
+    - Status Badge: Soft Indigo / Slate active pill (`bg-[#EBF1FA] text-[#1E3A8A] border border-[#BFDBFE]`).
 
 ---
 
-## 4. Implementation Steps
+### Item 3: Total Human Agency Transformation (No Robotic/AI Trace)
+- **Eliminate AI/Robotic References**:
+  - Replace any mention of "AI", "Bot", "Artificial Intelligence", "রোবট", "এআই অ্যাসিস্ট্যান্ট" across the whole website.
+  - Rebrand as **"সরাসরি সিনিয়র ভিসা কনসালটেন্ট" (Senior Visa Consultant)** and **"ডেডিকেটেড ফাইল ও ডকুমেন্টেশন হেল্পডেস্ক"**.
+  - Update all helper texts, tooltips, placeholders, and chat prompts to sound 100% human, professional, empathetic, and personalized.
+  - Ensure the conversational experience feels like chatting directly with a seasoned Bangladeshi visa processing officer.
 
-1. **Batch Image Generation (Phase 1)**:
-   - Generate all 4 Bangladeshi landscape assets in parallel via `generate_image` tool with `16:9` aspect ratio.
-2. **Hero Component Update (Phase 2)**:
-   - Enhance `src/components/Hero.tsx` with slider state (`currentSlide`, auto-play timer `setInterval`, touch handlers, dot controls, and keyboard navigation).
-   - Apply smooth transition styling and dark gradient overlay.
-3. **Verification**:
-   - Verify build integrity with `compile_applet` and `lint_applet`.
-   - Test 3-second cycle, indicator interactions, and mobile responsiveness.
+---
+
+## 2. Target Files & Key Modifications
+
+1. **`src/components/ServiceChecklistModal.tsx`**:
+   - Apply Red 3D Glassmorphism to `modal-bottom-close-btn`.
+   - Ensure all 3 buttons have responsive 3D tactile push effects.
+2. **`src/components/HospitalDetailModal.tsx` & `src/components/DestinationDetailModal.tsx`**:
+   - Update bottom buttons to 3D tactile controls.
+3. **`src/components/AiChatbotModal.tsx`**:
+   - Redesign contact form away from green into sleek Navy-Slate/Warm Executive theme.
+   - Refine text from AI terminology to Senior Visa Consultant.
+4. **`src/components/FloatingWhatsApp.tsx` & Global Microcopy**:
+   - Rebrand "AI Support" button to "লাইভ কনসালটেন্ট" (Live Consultant) / "ভিসা এক্সপার্ট".
+   - Ensure all microcopy across components conveys human expertise.
+
+---
+
+## 3. Verification Plan
+
+1. Open Service Checklist $\rightarrow$ Verify Red 3D Glassmorphism Close button and all 3D buttons.
+2. Open Consultant Form $\rightarrow$ Verify non-green executive navy-slate theme and compact sizing.
+3. Check entire website copy $\rightarrow$ Confirm zero AI/robotic terminology and natural human consultancy tone.
+4. Run `compile_applet` and `lint_applet` to confirm clean builds.
