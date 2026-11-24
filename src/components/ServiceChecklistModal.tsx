@@ -52,8 +52,10 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
         serviceTitle: service.title,
         category: service.category,
         price: service.isSlotBooking 
-          ? `৳${selectedSlot.totalFee.toLocaleString('bn-BD')}` 
-          : service.price,
+          ? `৳${selectedSlot.totalFee.toLocaleString('bn-BD')} (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ${selectedSlot.serviceCharge.toLocaleString('bn-BD')}৳)` 
+          : service.id === 'ticket-booking'
+            ? `${service.price} (সার্ভিস চার্জ)`
+            : `${service.price} (আইভ্যাক ফি ১,৫০০৳ ও স্লটসহ)`,
         isSlotBooking: service.isSlotBooking,
         slotName: service.isSlotBooking ? selectedSlot.name : undefined,
         ivacCenter: service.isSlotBooking ? selectedIvacCenter : undefined,
@@ -99,11 +101,15 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
             <p className="text-xs text-[#6B7563] mt-1.5">
               {service.isSlotBooking ? (
                 <span>
-                  মোট ফি: <strong className="text-[#1E2519] font-bold">৳{selectedSlot.totalFee.toLocaleString('bn-BD')}</strong> (আইভ্যাক ফি ১৫০০৳ + সার্ভিস ফি {selectedSlot.serviceCharge.toLocaleString('bn-BD')}৳)
+                  মোট ফি: <strong className="text-[#1E2519] font-bold">৳{selectedSlot.totalFee.toLocaleString('bn-BD')}</strong> (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি {selectedSlot.serviceCharge.toLocaleString('bn-BD')}৳)
+                </span>
+              ) : service.id === 'ticket-booking' ? (
+                <span>
+                  সার্ভিস ফি: <strong className="text-[#1E2519] font-bold">{service.price}</strong> (টিকেট বুকিং সার্ভিস চার্জ)
                 </span>
               ) : (
                 <span>
-                  সার্ভিস ফি: <strong className="text-[#1E2519] font-bold">{service.price}</strong> (আইভ্যাক ফি ব্যতীত)
+                  মোট ফি: <strong className="text-[#1E2519] font-bold">{service.price}</strong> (আইভ্যাক ফি ১,৫০০৳ ও স্লটসহ)
                 </span>
               )}
             </p>
@@ -141,7 +147,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                       </div>
                       <div className="mt-1.5 text-[11px] text-[#65715D] space-y-0.5">
                         <div>আইভ্যাক ফি: ৳{slot.ivacFee.toLocaleString('bn-BD')}</div>
-                        <div>সার্ভিস ফি: ৳{slot.serviceCharge.toLocaleString('bn-BD')}</div>
+                        <div>স্লট ফি: ৳{slot.serviceCharge.toLocaleString('bn-BD')}</div>
                         <div className="pt-1 border-t border-[#E5E0D4] font-bold text-[#1E2519]">
                           মোট ফি: ৳{slot.totalFee.toLocaleString('bn-BD')}
                         </div>
@@ -246,8 +252,10 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
           <div className="text-xs font-semibold text-[#4E5C46] bg-[#F2F6EF] px-2.5 py-1.5 rounded-md border border-[#DEE6D8] hidden md:inline-flex items-center flex-shrink-0">
             {service.isSlotBooking ? (
               <span>মোট ফি: <strong className="text-[#1E2519]">৳{selectedSlot.totalFee.toLocaleString('bn-BD')}</strong></span>
-            ) : (
+            ) : service.id === 'ticket-booking' ? (
               <span>সার্ভিস চার্জ: <strong className="text-[#1E2519]">{service.price}</strong></span>
+            ) : (
+              <span>মোট ফি (স্লটসহ): <strong className="text-[#1E2519]">{service.price}</strong></span>
             )}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2.5 w-full md:w-auto justify-between sm:justify-end flex-nowrap ml-auto">
@@ -290,8 +298,10 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               id="modal-whatsapp-submit-btn"
               href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
                 service.isSlotBooking
-                  ? `Hello Processing Hub, I want to book Indian Visa Slot for ${selectedSlot.name}. Selected IVAC Center: ${selectedIvacCenter}. IVAC Fee: ৳${selectedSlot.ivacFee} + Service Charge: ৳${selectedSlot.serviceCharge} (Total: ৳${selectedSlot.totalFee}). Ready Info: (${completedCount}/${totalCount}). Please confirm slot availability.`
-                  : `Hello Processing Hub, I want to book ${service.title} (Service Charge: ${service.price}). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for file submission.`
+                  ? `Hello Processing Hub, I want to book Indian Visa Slot (Only Slot) for ${selectedSlot.name}. Selected IVAC Center: ${selectedIvacCenter}. IVAC Fee: ৳${selectedSlot.ivacFee} + Slot Charge: ৳${selectedSlot.serviceCharge} (Total: ৳${selectedSlot.totalFee}). Ready Info: (${completedCount}/${totalCount}). Please confirm slot availability.`
+                  : service.id === 'ticket-booking'
+                    ? `Hello Processing Hub, I want to book ${service.title} (Service Charge: ${service.price}). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for booking.`
+                    : `Hello Processing Hub, I want to book ${service.title} with slot (Total: ${service.price}, including ৳1,500 IVAC fee). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for file submission.`
               )}`}
               data-service-name={service.isSlotBooking ? `ভিসা স্লট বুকিং (${selectedSlot.name}) - ${selectedIvacCenter}` : `${service.title} প্রসেসিং`}
               data-section="চেকলিস্ট ও বুকিং উইন্ডো"

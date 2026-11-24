@@ -68,7 +68,13 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
               {/* Card Footer */}
               <div className="gear-footer">
                 <div className="gear-price text-left">
-                  <span className="lbl text-left">সার্ভিস ফি</span>
+                  <span className="lbl text-left">
+                    {service.isSlotBooking
+                      ? 'শুধু স্লট ফি'
+                      : service.id === 'ticket-booking'
+                        ? 'সার্ভিস ফি'
+                        : 'মোট ফি (আইভ্যাক ফিসহ)'}
+                  </span>
                   <div className="flex items-baseline gap-1 justify-start text-left">
                     <span className="amt">{service.price}</span>
                     <span className="per">{service.per}</span>

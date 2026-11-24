@@ -151,7 +151,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               {/* 1. Tourist Visa */}
               <a
                 id="quick-tourist-visa"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Tourist Visa processing (Service Charge: ৳1,500).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Tourist Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -163,11 +163,11 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#161D28]">Tourist Visa (ট্যুরিস্ট ভিসা)</h4>
-                    <p className="text-xs text-[#5A6474]">ফরম পূরণ, আইভ্যাক স্লট ও ফাইল প্রসেসিং</p>
+                    <p className="text-xs text-[#5A6474]">ফাইল প্রসেসিং, আইভ্যাক ফি (১,৫০০৳) ও স্লটসহ</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳১,৫০০</span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
                   <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
@@ -175,7 +175,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               {/* 2. Medical Visa */}
               <a
                 id="quick-medical-visa"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Medical Visa processing (Service Charge: ৳4,000).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Medical Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -187,11 +187,11 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#161D28]">Medical Visa (মেডিকেল ভিসা)</h4>
-                    <p className="text-xs text-[#5A6474]">হাসপাতাল ইনভাইটেশন লেটার ও মেডিকেল ফাইল</p>
+                    <p className="text-xs text-[#5A6474]">ইনভাইটেশন লেটার, প্রসেসিং, আইভ্যাক ফি ও স্লটসহ</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৪,০০০</span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
                   <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
@@ -199,7 +199,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               {/* 3. Business Visa */}
               <a
                 id="quick-business-visa"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Business Visa processing (Service Charge: ৳5,000).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Business Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -211,11 +211,11 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#161D28]">Business Visa (বিজনেস ভিসা)</h4>
-                    <p className="text-xs text-[#5A6474]">ইনভাইটেশন পেপারস ও ট্রেড ডকুমেন্টস ফাইল</p>
+                    <p className="text-xs text-[#5A6474]">ইনভাইটেশন, ট্রেড ফাইল, আইভ্যাক ফি ও স্লটসহ</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৫,০০০</span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
                   <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
@@ -223,7 +223,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               {/* 4. Double Entry Visa */}
               <a
                 id="quick-double-entry-visa"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Double Entry Visa processing (Service Charge: ৳3,000).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Double Entry Visa processing with slot (Total: ৳6,500, including ৳1,500 IVAC fee).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -234,12 +234,12 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                     <Layers className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#161D28]">Double Entry Visa (ডবল এন্ট্রি ভিসা)</h4>
-                    <p className="text-xs text-[#5A6474]">নেপাল/ভুটান ট্রানজিট ও দুইবার প্রবেশ সুবিধা</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Double Entry Visa (ডাবল এন্ট্রি ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">ট্রানজিট ফাইল প্রসেসিং, আইভ্যাক ফি ও স্লটসহ</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৩,০০০</span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,৫০০</span>
                   <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
@@ -247,7 +247,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               {/* 5. Ticket Booking */}
               <a
                 id="quick-ticket-booking"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Ticket Booking service (Air / Travel Ticket).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Ticket Booking service (Service Charge: ৳1,500).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -263,7 +263,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳১,০০০</span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳১,৫০০</span>
                   <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
@@ -271,7 +271,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               {/* 6. Visa Slot Booking */}
               <a
                 id="quick-slot-booking"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Visa Appointment Slot (Tourist / Medical / Business / Double Entry).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Visa Appointment Slot (Only Slot: IVAC Fee ৳1,500 + Medical/Business/Double Entry ৳3,000 or Tourist ৳4,000).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -282,12 +282,12 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                     <CalendarClock className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#161D28]">Slot Booking (ভিসার স্লট বুকিং)</h4>
-                    <p className="text-xs text-[#5A6474]">আইভ্যাক ফি ১৫০০৳ + নির্ধারিত ক্যাটাগরি ফি</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Slot Booking (শুধু স্লট বুকিং)</h4>
+                    <p className="text-xs text-[#5A6474]">আইভ্যাক ফি ১,৫০০৳ + স্লট ৩,০০০৳ / ৪,০০০৳</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">১৫০০৳ + ফি</span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৪,৫০০+</span>
                   <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>

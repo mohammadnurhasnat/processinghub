@@ -2,6 +2,13 @@ import { VisaService, SlotType, Destination, Hospital } from '../types';
 
 export const SLOT_TYPES: SlotType[] = [
   {
+    id: 'medical-slot',
+    name: 'Medical Visa Slot (মেডিকেল স্লট)',
+    ivacFee: 1500,
+    serviceCharge: 3000,
+    totalFee: 4500
+  },
+  {
     id: 'tourist-slot',
     name: 'Tourist Visa Slot (ট্যুরিস্ট স্লট)',
     ivacFee: 1500,
@@ -9,25 +16,18 @@ export const SLOT_TYPES: SlotType[] = [
     totalFee: 5500
   },
   {
-    id: 'medical-slot',
-    name: 'Medical Visa Slot (মেডিকেল স্লট)',
+    id: 'double-entry-slot',
+    name: 'Double Entry Slot (ডাবল এন্ট্রি স্লট)',
     ivacFee: 1500,
-    serviceCharge: 3500,
-    totalFee: 5500
+    serviceCharge: 3000,
+    totalFee: 4500
   },
   {
     id: 'business-slot',
     name: 'Business Visa Slot (বিজনেস স্লট)',
     ivacFee: 1500,
-    serviceCharge: 4500,
-    totalFee: 6000
-  },
-  {
-    id: 'double-entry-slot',
-    name: 'Double Entry Slot (ডাবল এন্ট্রি স্লট)',
-    ivacFee: 1500,
-    serviceCharge: 4500,
-    totalFee: 6000
+    serviceCharge: 3000,
+    totalFee: 4500
   }
 ];
 
@@ -37,10 +37,10 @@ export const VISA_SERVICES: VisaService[] = [
     title: 'Tourist Visa (ট্যুরিস্ট ভিসা)',
     category: 'ভ্রমণ ও পর্যটন',
     image: 'https://images.moondeveloper.com/attractions/2024/11/25/67446493a8fde.jpg',
-    description: 'অনলাইন ফরম ফিলআপ, আইভ্যাক (IVAC) অ্যাপয়েন্টমেন্ট স্লট বুকিং, সঠিক ডকুমেন্টস যাচাই ও ফাইল প্রস্তুতি।',
-    price: '৳১,৫০০',
-    per: '/ প্রসেসিং চার্জ',
-    waText: 'Hello Processing Hub, I want to book Indian Tourist Visa processing (Charge: ৳1,500).',
+    description: 'অনলাইন ফরম ফিলআপ, আইভ্যাক (IVAC) ফি ও অ্যাপয়েন্টমেন্ট স্লট বুকিং, সঠিক ডকুমেন্টস যাচাই এবং সম্পূর্ণ ফাইল প্রস্তুতি।',
+    price: '৳৬,০০০',
+    per: '/ প্রসেসিং ও স্লটসহ',
+    waText: 'Hello Processing Hub, I want to book Indian Tourist Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).',
     documents: [
       'মূল পাসপোর্ট (কমপক্ষে ৬ মাসের মেয়াদ ও ২টি খালি পৃষ্ঠা থাকতে হবে)',
       'পূর্বের সকল পুরাতন পাসপোর্ট (যদি থাকে)',
@@ -57,10 +57,10 @@ export const VISA_SERVICES: VisaService[] = [
     title: 'Medical Visa & Attendant (মেডিকেল ভিসা)',
     category: 'চিকিৎসা সেবা',
     image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
-    description: 'ভারতের শীর্ষ হাসপাতাল থেকে ডক্টরস ইনভাইটেশন লেটার সংগ্রহ, জরুরি অ্যাপয়েন্টমেন্ট ও মেডিকেল অ্যাটেনডেন্ট ফাইল প্রসেসিং।',
-    price: '৳৪,০০০',
-    per: '/ সার্ভিস চার্জ',
-    waText: 'Hello Processing Hub, I want to book Indian Medical Visa processing (Charge: ৳4,000).',
+    description: 'ভারতের শীর্ষ হাসপাতাল থেকে ডক্টরস ইনভাইটেশন লেটার সংগ্রহ, আইভ্যাক ফি ও জরুরি অ্যাপয়েন্টমেন্ট স্লটসহ সম্পূর্ণ মেডিকেল ফাইল প্রসেসিং।',
+    price: '৳৬,০০০',
+    per: '/ প্রসেসিং ও স্লটসহ',
+    waText: 'Hello Processing Hub, I want to book Indian Medical Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).',
     documents: [
       'রোগী ও মেডিকেল অ্যাটেনডেন্টের মূল পাসপোর্ট (কমপক্ষে ৬ মাসের মেয়াদসহ)',
       'পূর্বের সকল পুরাতন পাসপোর্ট (যদি থাকে)',
@@ -79,10 +79,10 @@ export const VISA_SERVICES: VisaService[] = [
     title: 'Double Entry Visa (ডাবল এন্ট্রি ভিসা)',
     category: 'ট্রানজিট ভিসা',
     image: 'https://dqliving.com/wp-content/uploads/2021/02/VFS-Global-scaled.jpg',
-    description: 'ইউরোপের বিভিন্ন দেশের এম্বাসি ফেস করার জন্য প্রয়োজনীয় ডাবল-এন্ট্রি ইন্ডিয়ান ভিসা প্রসেসিংয়ে ফাইল প্রস্তুতি, ডকুমেন্ট চেকিং ও বিশেষজ্ঞ সহায়তা—সবকিছু একসাথে।',
-    price: '৳৩,০০০',
-    per: '/ সার্ভিস চার্জ',
-    waText: 'Hello Processing Hub, I want to book Indian Double Entry Visa processing (Charge: ৳3,000).',
+    description: 'ইউরোপের বিভিন্ন দেশের এম্বাসি ফেস করার জন্য প্রয়োজনীয় ডাবল-এন্ট্রি ইন্ডিয়ান ভিসা প্রসেসিংয়ে ফাইল প্রস্তুতি, ডকুমেন্ট চেকিং, আইভ্যাক ফি ও স্লট বুকিং—সবকিছু একসাথে।',
+    price: '৳৬,৫০০',
+    per: '/ প্রসেসিং ও স্লটসহ',
+    waText: 'Hello Processing Hub, I want to book Indian Double Entry Visa processing with slot (Total: ৳6,500, including ৳1,500 IVAC fee).',
     documents: [
       'মূল পাসপোর্ট (কমপক্ষে ৬ মাসের মেয়াদ ও ২টি খালি পৃষ্ঠা থাকতে হবে)',
       'পূর্বের সকল পুরাতন পাসপোর্ট (যদি থাকে)',
@@ -100,10 +100,10 @@ export const VISA_SERVICES: VisaService[] = [
     title: 'Business Visa (বিজনেস ভিসা)',
     category: 'ব্যবসা ও বাণিজ্য',
     image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
-    description: 'ভারতীয় কোম্পানির ইনভাইটেশন লেটার ভেরিফিকেশন, ট্রেড লাইসেন্স ও ব্যাংক ডকুমেন্টস পেপারওয়ার্ক সহ কমপ্লিট ফাইল প্রসেসিং।',
-    price: '৳৫,০০০',
-    per: '/ সার্ভিস চার্জ',
-    waText: 'Hello Processing Hub, I want to book Indian Business Visa processing (Charge: ৳5,000).',
+    description: 'ভারতীয় কোম্পানির ইনভাইটেশন লেটার ভেরিফিকেশন, ট্রেড লাইসেন্স ও ব্যাংক ডকুমেন্টস পেপারওয়ার্ক, আইভ্যাক ফি ও স্লটসহ কমপ্লিট ফাইল প্রসেসিং।',
+    price: '৳৬,০০০',
+    per: '/ প্রসেসিং ও স্লটসহ',
+    waText: 'Hello Processing Hub, I want to book Indian Business Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).',
     documents: [
       'মূল পাসপোর্ট (কমপক্ষে ৬ মাসের মেয়াদ ও ২টি খালি পৃষ্ঠা থাকতে হবে)',
       'পূর্বের সকল পুরাতন পাসপোর্ট (যদি থাকে)',
@@ -139,16 +139,16 @@ export const VISA_SERVICES: VisaService[] = [
     title: 'Visa Slot Booking (ভিসার স্লট বুকিং)',
     category: 'আইভ্যাক অ্যাপয়েন্টমেন্ট',
     image: 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&w=800&q=80',
-    description: 'আইভ্যাক (IVAC) সেন্টারে নির্ধারিত ফি ১৫০০ টাকার সাথে ক্যাটাগরি অনুযায়ী মেডিকেল, বিজনেস, ট্যুরিস্ট ও ডাবল এন্ট্রি স্লট বুকিং।',
-    price: '৳১,৫০০+',
-    per: '/ আইভ্যাক ফি + চার্জ',
-    waText: 'Hello Processing Hub, I want to book an Indian Visa Appointment Slot.',
+    description: 'শুধুমাত্র স্লট বুকিং: প্রতিটি ভিসার জন্য নির্ধারিত আইভ্যাক ফি ১,৫০০৳ + মেডিকেল/ডাবল এন্ট্রি/বিজনেস ৩,০০০৳ এবং ট্যুরিস্ট ৪,০০০৳।',
+    price: '৳৪,৫০০+',
+    per: '/ আইভ্যাক ফি + স্লট',
+    waText: 'Hello Processing Hub, I want to book an Indian Visa Appointment Slot (Only Slot).',
     isSlotBooking: true,
     documents: [
       'আবেদনকারীর মূল পাসপোর্ট কপি (কমপক্ষে ৬ মাসের মেয়াদসহ)',
       'অনলাইন ভিসা অ্যাপ্লিকেশন ফর্মের ওয়েব ফাইল নম্বর (Web File Number)',
       'পছন্দসই আইভ্যাক সেন্টার (ঢাকা/চট্টগ্রাম/রাজশাহী/সিলেট/খুলনা ইত্যাদি)',
-      'স্লটের ক্যাটাগরি নির্বাচন (ট্যুরিস্ট/মেডিকেল/বিজনেস/ডাবল এন্ট্রি)',
+      'স্লটের ক্যাটাগরি নির্বাচন (মেডিকেল/ট্যুরিস্ট/ডাবল এন্ট্রি/বিজনেস)',
       'জরুরি অ্যাপয়েন্টমেন্টের সম্ভাব্য সময় ও তারিখ'
     ]
   }
