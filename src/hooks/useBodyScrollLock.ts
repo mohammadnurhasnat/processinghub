@@ -13,13 +13,6 @@ export function useBodyScrollLock(isLocked: boolean) {
     const originalBodyOverflow = document.body.style.overflow;
     const originalOverscrollBehavior = document.documentElement.style.overscrollBehavior;
 
-    // Immediately stop any momentum or active smooth scrolling cleanly
-    try {
-      window.scrollTo({ top: window.scrollY, behavior: 'instant' as ScrollBehavior });
-    } catch {
-      // fallback
-    }
-
     // Lock page root
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
@@ -34,7 +27,7 @@ export function useBodyScrollLock(isLocked: boolean) {
       }
 
       // Check if mouse is within a scrollable modal container
-      const scrollable = target.closest<HTMLElement>('.service-modal-body, .mobile-drawer-panel');
+      const scrollable = target.closest<HTMLElement>('.service-modal-body, .mobile-drawer-panel, .chatbot-messages-body');
       if (!scrollable) {
         e.preventDefault();
         return;
@@ -62,7 +55,7 @@ export function useBodyScrollLock(isLocked: boolean) {
         return;
       }
 
-      const scrollable = target.closest<HTMLElement>('.service-modal-body, .mobile-drawer-panel');
+      const scrollable = target.closest<HTMLElement>('.service-modal-body, .mobile-drawer-panel, .chatbot-messages-body');
       if (!scrollable) {
         e.preventDefault();
       }

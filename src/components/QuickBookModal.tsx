@@ -34,45 +34,18 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
 
     setIsSubmittingCallback(true);
 
-    const escapeHtml = (str: string) => {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    };
-
-    const timeString = new Date().toLocaleString('bn-BD', {
-      timeZone: 'Asia/Dhaka',
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    });
-
-    const safeName = escapeHtml(callbackName.trim() || 'উল্লেখ করা হয়নি');
-    const safePhone = escapeHtml(callbackPhone.trim());
-    const safeNote = escapeHtml(callbackNote.trim() || 'সাধারণ তথ্য');
-
-    const htmlMessage = 
-      `🚨 <b>নতুন কল ব্যাক অনুরোধ এসেছে!</b>\n\n` +
-      `👤 <b>নাম:</b> ${safeName}\n` +
-      `📞 <b>মোবাইল নম্বর:</b> <code>${safePhone}</code>\n` +
-      `💼 <b>কাঙ্ক্ষিত সেবা/নোট:</b> ${safeNote}\n` +
-      `⏰ <b>সময়:</b> ${timeString}\n` +
-      `🌐 <b>উৎস:</b> Processing Hub Website`;
-
     try {
-      if (CONFIG.telegram?.botToken && CONFIG.telegram?.chatId) {
-        await fetch(`https://api.telegram.org/bot${CONFIG.telegram.botToken}/sendMessage`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            chat_id: CONFIG.telegram.chatId,
-            text: htmlMessage,
-            parse_mode: 'HTML',
-          }),
-        });
-      }
+      await fetch('/api/telegram/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: callbackName.trim(),
+          phone: callbackPhone.trim(),
+          note: callbackNote.trim(),
+        }),
+      });
     } catch (err) {
       console.error('Telegram notification error:', err);
     } finally {
@@ -103,7 +76,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               আপনার কাঙ্ক্ষিত সেবা নির্বাচন করুন
             </h3>
             <p className="text-xs text-[#5A6474] mt-1.5">
-              নিচের যেকোনো সার্ভিসে ক্লিক করলে তাৎক্ষণিক তথ্যসহ WhatsApp-এ যুক্ত হয়ে যাবেন:
+              নিচের যেকোনো সার্ভিসে ক্লিক করে ফর্ম পূরণ করলে সরাসরি WhatsApp বা লাইভ এজেন্টের সাথে যুক্ত হয়ে যাবেন:
             </p>
           </div>
 
@@ -131,7 +104,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   : 'text-[var(--periwinkle-text)] hover:text-[#161D28]'
               }`}
             >
-              সার্ভিস লিস্ট (WhatsApp)
+              সার্ভিস লিস্ট (WhatsApp / Agent)
             </button>
             <button
               type="button"
@@ -168,7 +141,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
-                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -192,7 +165,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
-                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -216,7 +189,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
-                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -240,7 +213,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,৫০০</span>
-                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -264,7 +237,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳১,৫০০</span>
-                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
@@ -288,7 +261,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৪,৫০০+</span>
-                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp <ChevronRight className="w-3 h-3" /></span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
             </div>

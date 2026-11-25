@@ -13,11 +13,7 @@ export const CONFIG = {
     lat: 23.8103,
     lng: 90.4125
   },
-  fallbackImage: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80',
-  telegram: {
-    botToken: '8705018021:AAEXt7XDAJl3ymojODL3dMeolBuROLMcesA',
-    chatId: '6574558784'
-  }
+  fallbackImage: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80'
 };
 
 export const IVAC_CENTERS = [

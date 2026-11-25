@@ -8,7 +8,6 @@ import {
   Check, 
   CheckCheck,
   Copy, 
-  MessageCircle,
   Search,
   Tag,
   Volume2,
@@ -16,15 +15,18 @@ import {
   User,
   Phone,
   ShieldCheck,
-  Edit3,
   LogOut,
-  ArrowRight
+  ArrowRight,
+  Paperclip,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { CONFIG } from '../config';
 import { VisaService } from '../types';
 import { soundEffects } from '../utils/soundEffects';
+import { compressChatAttachment } from '../utils/fileCompressor';
+import { useWhatsApp } from '../context/WhatsAppContext';
 
 export interface UserProfile {
   name: string;
@@ -32,6 +34,43 @@ export interface UserProfile {
 }
 
 const USER_PROFILE_KEY = 'processinghub_user_profile';
+const AGENT_STORAGE_KEY = 'processinghub_assigned_agent_v1';
+
+const AGENT_NAMES = ['Nur Sajid', 'Eity', 'Nur Hasnat', 'Mohammad', 'Aysha'] as const;
+type AgentName = (typeof AGENT_NAMES)[number];
+
+const pickRandomAgent = (exclude?: string): AgentName => {
+  const pool = exclude && AGENT_NAMES.length > 1
+    ? AGENT_NAMES.filter((name) => name !== exclude)
+    : [...AGENT_NAMES];
+  return pool[Math.floor(Math.random() * pool.length)];
+};
+
+const getOrAssignSessionAgent = (): AgentName => {
+  if (typeof window !== 'undefined') {
+    try {
+      const savedAgent = localStorage.getItem(AGENT_STORAGE_KEY) as AgentName | null;
+      if (savedAgent && (AGENT_NAMES as readonly string[]).includes(savedAgent)) {
+        return savedAgent;
+      }
+      const picked = pickRandomAgent();
+      localStorage.setItem(AGENT_STORAGE_KEY, picked);
+      return picked;
+    } catch {
+      return pickRandomAgent();
+    }
+  }
+  return AGENT_NAMES[0];
+};
+
+interface ChatAttachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  data?: string;
+  previewUrl?: string;
+}
 
 interface ChatMessage {
   id: string;
@@ -39,6 +78,7 @@ interface ChatMessage {
   text: string;
   time: string;
   isRead?: boolean;
+  attachments?: ChatAttachment[];
   sources?: Array<{ title: string; uri: string }>;
   webSearchQueries?: string[];
 }
@@ -126,12 +166,16 @@ const formatDisplayTime = (timeStr?: string): string => {
   return formatTimestamp();
 };
 
-const getWelcomeMessage = (service: VisaService | null | undefined, userName?: string): string => {
+const getWelcomeMessage = (
+  service: VisaService | null | undefined,
+  agentName: AgentName,
+  userName?: string
+): string => {
   const greetingName = userName ? ` **${userName}**` : '';
   if (service?.title) {
-    return `আসসালামু আলাইকুম${greetingName}! আমি মোহাম্মদ। **"${service.title}"** সম্পর্কে আপনার নির্দিষ্ট কী জানার আছে বলুন, সাহায্য করছি।`;
+    return `আসসালামু আলাইকুম${greetingName}! আমি **${agentName}**। **"${service.title}"** সম্পর্কে আপনার কী জানার আছে বলুন, সাহায্য করছি।`;
   }
-  return `আসসালামু আলাইকুম${greetingName}! আমি মোহাম্মদ, প্রসেসিং হাবের সিনিয়র ভিসা কনসালটেন্ট। আপনার ভিসা সম্পর্কিত প্রশ্নটি বলুন, সাহায্য করছি।`;
+  return `আসসালামু আলাইকুম${greetingName}! আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি। আপনার কী বিষয়ে সহযোগিতা প্রয়োজন বলুন।`;
 };
 
 const STORAGE_KEY = 'processinghub_chat_history_v1';
@@ -143,6 +187,10 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   serviceContext,
   onClearServiceContext
 }) => {
+  const { pendingAgentHandoff, clearAgentHandoff } = useWhatsApp();
+
+  const [assignedAgent, setAssignedAgent] = useState<AgentName>(() => getOrAssignSessionAgent());
+
   // Load saved user profile (Name & Phone) from localStorage
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     if (typeof window !== 'undefined') {
@@ -165,9 +213,9 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   const [phoneInput, setPhoneInput] = useState('');
   const [formError, setFormError] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [endChatNotice, setEndChatNotice] = useState<string | null>(null);
 
   const lastSummarizedMsgIdRef = useRef<string | null>(null);
+  const processedHandoffIdRef = useRef<string | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     if (typeof window !== 'undefined') {
@@ -175,19 +223,20 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
         const savedProfile = localStorage.getItem(USER_PROFILE_KEY);
         const parsedProfile = savedProfile ? JSON.parse(savedProfile) : null;
         const initialName = parsedProfile?.name;
+        const currentAgent = getOrAssignSessionAgent();
 
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.slice(-10);
+            return parsed.slice(-50);
           }
         }
         return [
           {
             id: 'welcome-1',
             role: 'assistant',
-            text: getWelcomeMessage(serviceContext, initialName),
+            text: getWelcomeMessage(serviceContext, currentAgent, initialName),
             time: formatTimestamp(),
             isRead: true,
           }
@@ -200,38 +249,69 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       {
         id: 'welcome-1',
         role: 'assistant',
-        text: getWelcomeMessage(serviceContext),
+        text: getWelcomeMessage(serviceContext, AGENT_NAMES[0]),
         time: formatTimestamp(),
         isRead: true,
       }
     ];
   });
   const [inputText, setInputText] = useState('');
+  const [pendingAttachments, setPendingAttachments] = useState<ChatAttachment[]>([]);
+  const [isCompressingFiles, setIsCompressingFiles] = useState(false);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showTypingBubble, setShowTypingBubble] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(soundEffects.getMuted());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const prevServiceRef = useRef<string | undefined>(serviceContext?.id);
+  const isMountedRef = useRef(true);
+  const chatSessionIdRef = useRef(0);
+  const typingRevealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handoffSendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasOpenRef = useRef(false);
+  const initialMessageIdsRef = useRef<Set<string>>(new Set(messages.map((m) => m.id)));
 
-  // Auto-scroll to bottom helper that guarantees the latest incoming message is kept in view
-  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior,
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (typingRevealTimerRef.current) clearTimeout(typingRevealTimerRef.current);
+      if (handoffSendTimerRef.current) clearTimeout(handoffSendTimerRef.current);
+    };
+  }, []);
+
+  // Scroll only inside the chat message container (never scrollIntoView, which can shake outer layout)
+  const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    if (behavior === 'smooth') {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
       });
+    } else {
+      container.scrollTop = container.scrollHeight;
     }
-    messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
   };
 
-  // Sync messages to localStorage whenever messages change (keep last 10)
+  // Sync messages to localStorage whenever messages change (strip heavy base64 payloads so storage quota is safe)
   useEffect(() => {
     if (typeof window !== 'undefined' && messages.length > 0) {
       try {
-        const toSave = messages.slice(-10);
+        const toSave = messages.slice(-50).map((m) => ({
+          ...m,
+          attachments: m.attachments?.map((a) => ({
+            id: a.id,
+            name: a.name,
+            mimeType: a.mimeType,
+            size: a.size,
+          })),
+        }));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
       } catch (e) {
         console.error('Failed to persist chat messages:', e);
@@ -262,45 +342,145 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       const contextMsg: ChatMessage = {
         id: `context-${Date.now()}`,
         role: 'assistant',
-        text: getWelcomeMessage(serviceContext),
+        text: getWelcomeMessage(serviceContext, assignedAgent),
         time: formatTimestamp(),
         isRead: false,
       };
       setMessages(prev => [...prev.slice(-9), contextMsg]);
     }
-  }, [serviceContext]);
+  }, [serviceContext, assignedAgent]);
 
-  // Robust Auto-scroll listener: triggers on new messages, loading indicator, and modal open
+  // Smooth scroll management: align cleanly on open without fighting entrance animation, smooth scroll on new messages
   useEffect(() => {
-    if (isOpen) {
-      // Immediate scroll
-      scrollToBottom('auto');
+    if (!isOpen) {
+      wasOpenRef.current = false;
+      return;
+    }
 
-      // Subsequent frame scroll to account for DOM reflow / markdown rendering
+    const justOpened = !wasOpenRef.current;
+    wasOpenRef.current = true;
+
+    if (justOpened) {
       const rAf = requestAnimationFrame(() => {
-        scrollToBottom('smooth');
+        scrollToBottom('auto');
       });
 
-      const timer = setTimeout(() => {
-        scrollToBottom('smooth');
-        inputRef.current?.focus();
-      }, 100);
-
-      const secondTimer = setTimeout(() => {
-        scrollToBottom('smooth');
-      }, 250);
+      const focusTimer = setTimeout(() => {
+        if (typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches) {
+          inputRef.current?.focus({ preventScroll: true });
+        }
+      }, 270);
 
       return () => {
         cancelAnimationFrame(rAf);
-        clearTimeout(timer);
-        clearTimeout(secondTimer);
+        clearTimeout(focusTimer);
       };
     }
-  }, [isOpen, messages, isLoading]);
 
-  const handleSendMessage = async (textToSend?: string) => {
-    const text = (textToSend || inputText).trim();
-    if (!text || isLoading) return;
+    const rAf = requestAnimationFrame(() => {
+      scrollToBottom('smooth');
+    });
+
+    return () => cancelAnimationFrame(rAf);
+  }, [isOpen, messages.length, showTypingBubble]);
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setAttachmentError(null);
+
+    const maxInputBytes = 25 * 1024 * 1024; // Accept large photos/PDFs up to 25 MB and auto-compress them
+    const maxCompressedBytes = 10 * 1024 * 1024;
+    const maxCount = 3;
+    const nextList: ChatAttachment[] = [...pendingAttachments];
+    const fileArray = Array.from(files);
+    e.target.value = '';
+
+    setIsCompressingFiles(true);
+    try {
+      for (const file of fileArray) {
+        if (nextList.length >= maxCount) {
+          setAttachmentError('একসাথে সর্বোচ্চ ৩টি ফাইল বা ছবি যুক্ত করা যাবে।');
+          break;
+        }
+        if (file.size > maxInputBytes) {
+          setAttachmentError(`"${file.name}" ফাইলটি ২৫ MB-এর বেশি। দয়া করে ছোট ফাইল দিন।`);
+          continue;
+        }
+
+        const mimeType =
+          file.type ||
+          (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream');
+        const isSupported =
+          mimeType.startsWith('image/') ||
+          mimeType === 'application/pdf' ||
+          mimeType.startsWith('text/') ||
+          mimeType === 'text/csv';
+
+        if (!isSupported) {
+          setAttachmentError(`"${file.name}" ফরম্যাট সাপোর্টেড নয়। ছবি, PDF বা টেক্সট ফাইল দিন।`);
+          continue;
+        }
+
+        const compressed = await compressChatAttachment(file);
+        if (!compressed.base64Data) continue;
+
+        if (compressed.size > maxCompressedBytes) {
+          setAttachmentError(`"${file.name}" কম্প্রেস করার পরও অনেক বড়। অনুগ্রহ করে ফাইলটি ছোট করে দিন।`);
+          continue;
+        }
+
+        nextList.push({
+          id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          name: compressed.name,
+          mimeType: compressed.mimeType,
+          size: compressed.size,
+          data: compressed.base64Data,
+          previewUrl: compressed.mimeType.startsWith('image/') ? compressed.dataUrl : undefined,
+        });
+      }
+
+      if (isMountedRef.current) {
+        setPendingAttachments(nextList);
+      }
+    } catch (err) {
+      console.error('Attachment compression error:', err);
+      if (isMountedRef.current) {
+        setAttachmentError('ফাইলটি প্রসেস করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsCompressingFiles(false);
+      }
+    }
+  };
+
+  const handleRemovePendingAttachment = (id: string) => {
+    setPendingAttachments((prev) => prev.filter((item) => item.id !== id));
+    setAttachmentError(null);
+  };
+
+  const handleSendMessage = async (
+    textToSend?: string,
+    overrideProfile?: UserProfile,
+    overrideAgent?: AgentName
+  ) => {
+    const text = (textToSend !== undefined ? textToSend : inputText).trim();
+    const attachmentsToSend = textToSend !== undefined ? [] : pendingAttachments;
+    if ((!text && attachmentsToSend.length === 0) || isLoading) return;
+
+    const activeProfile = overrideProfile || userProfile;
+    const activeAgent = overrideAgent || assignedAgent;
+    const currentSessionId = chatSessionIdRef.current;
+    const requestStartedAt = Date.now();
+    // Natural human-like reading + typing window (5 to 7 seconds)
+    const targetReplyDelayMs = 5000 + Math.floor(Math.random() * 2001);
 
     // Play sending sound
     soundEffects.playSendPop();
@@ -310,24 +490,46 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       role: 'user',
       text,
       time: formatTimestamp(),
+      attachments: attachmentsToSend.length > 0 ? attachmentsToSend : undefined,
     };
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
-    setInputText('');
+    if (textToSend === undefined) {
+      setInputText('');
+      setPendingAttachments([]);
+      setAttachmentError(null);
+    }
     setIsLoading(true);
+    setShowTypingBubble(false);
+
+    if (typingRevealTimerRef.current) {
+      clearTimeout(typingRevealTimerRef.current);
+    }
+    typingRevealTimerRef.current = setTimeout(() => {
+      if (isMountedRef.current && chatSessionIdRef.current === currentSessionId) {
+        setShowTypingBubble(true);
+      }
+    }, 650);
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: newMessages.map(m => ({
+          messages: newMessages.map((m, idx) => ({
             role: m.role,
             text: m.text,
+            attachments: m.attachments?.map((a) => ({
+              name: a.name,
+              mimeType: a.mimeType,
+              // Send binary data only for recent messages (last 4 messages) to keep payload lean
+              data: idx >= newMessages.length - 4 ? a.data : undefined,
+            })),
           })),
-          userName: userProfile?.name,
-          userPhone: userProfile?.phone,
+          userName: activeProfile?.name,
+          userPhone: activeProfile?.phone,
+          agentName: activeAgent,
           serviceContext: serviceContext ? {
             id: serviceContext.id,
             title: serviceContext.title,
@@ -347,6 +549,14 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
       const data = await response.json();
 
+      const elapsedMs = Date.now() - requestStartedAt;
+      const remainingDelay = Math.max(0, targetReplyDelayMs - elapsedMs);
+      if (remainingDelay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingDelay));
+      }
+
+      if (!isMountedRef.current || chatSessionIdRef.current !== currentSessionId) return;
+
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
@@ -362,6 +572,14 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       soundEffects.playReplyChime();
     } catch (error) {
       console.error('Chat error:', error);
+      const elapsedMs = Date.now() - requestStartedAt;
+      const remainingDelay = Math.max(0, targetReplyDelayMs - elapsedMs);
+      if (remainingDelay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingDelay));
+      }
+
+      if (!isMountedRef.current || chatSessionIdRef.current !== currentSessionId) return;
+
       const errorMessage: ChatMessage = {
         id: `err-${Date.now()}`,
         role: 'assistant',
@@ -372,41 +590,155 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       setMessages(prev => [...prev, errorMessage]);
       soundEffects.playReplyChime();
     } finally {
-      setIsLoading(false);
+      if (typingRevealTimerRef.current) {
+        clearTimeout(typingRevealTimerRef.current);
+        typingRevealTimerRef.current = null;
+      }
+      if (isMountedRef.current && chatSessionIdRef.current === currentSessionId) {
+        setShowTypingBubble(false);
+        setIsLoading(false);
+      }
     }
   };
 
-  // Helper to trigger Telegram summary dispatch
-  const triggerTelegramSummary = (trigger: 'close' | 'manual') => {
-    // Only send if the customer asked at least one user question
-    const userMsgs = messages.filter(m => m.role === 'user');
-    if (userMsgs.length === 0) return;
+  // Auto-fill profile and smoothly send formatted inquiry after chat window entrance settles
+  useEffect(() => {
+    if (!isOpen || !pendingAgentHandoff) return;
+    if (processedHandoffIdRef.current === pendingAgentHandoff.id) return;
 
-    const lastMsgId = messages[messages.length - 1]?.id;
-    if (lastSummarizedMsgIdRef.current === lastMsgId) return;
-    lastSummarizedMsgIdRef.current = lastMsgId;
+    processedHandoffIdRef.current = pendingAgentHandoff.id;
+
+    const nextProfile: UserProfile = {
+      name: pendingAgentHandoff.name,
+      phone: pendingAgentHandoff.phone,
+    };
 
     try {
+      localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(nextProfile));
+    } catch (err) {
+      console.error('Failed to persist user profile from handoff:', err);
+    }
+
+    setUserProfile(nextProfile);
+    setIsEditingProfile(false);
+    setFormError('');
+
+    const messageToSend = pendingAgentHandoff.formattedMessage;
+    clearAgentHandoff();
+
+    if (handoffSendTimerRef.current) {
+      clearTimeout(handoffSendTimerRef.current);
+    }
+    handoffSendTimerRef.current = setTimeout(() => {
+      handoffSendTimerRef.current = null;
+      if (isMountedRef.current) {
+        handleSendMessage(messageToSend, nextProfile, assignedAgent);
+      }
+    }, 260);
+  }, [isOpen, pendingAgentHandoff]);
+
+  // Keep latest state in a ref for reliable background/pagehide/idle dispatch
+  const latestChatRef = useRef({
+    messages,
+    userProfile,
+    serviceContext,
+    assignedAgent,
+  });
+
+  useEffect(() => {
+    latestChatRef.current = {
+      messages,
+      userProfile,
+      serviceContext,
+      assignedAgent,
+    };
+  }, [messages, userProfile, serviceContext, assignedAgent]);
+
+  // Helper to trigger full conversation & summary dispatch to Telegram (deduplicated per last message)
+  const triggerTelegramSummary = (trigger: 'close' | 'manual' | 'idle' | 'unload') => {
+    const {
+      messages: currentMessages,
+      userProfile: currentProfile,
+      serviceContext: currentService,
+      assignedAgent: currentAgent,
+    } = latestChatRef.current;
+
+    // Only send if the customer asked at least one user question
+    const userMsgs = currentMessages.filter(m => m.role === 'user');
+    if (userMsgs.length === 0) return;
+
+    const lastMsgId = currentMessages[currentMessages.length - 1]?.id;
+    if (!lastMsgId || lastSummarizedMsgIdRef.current === lastMsgId) return;
+    lastSummarizedMsgIdRef.current = lastMsgId;
+
+    const payload = JSON.stringify({
+      user: currentProfile,
+      agentName: currentAgent,
+      serviceContext: currentService ? {
+        id: currentService.id,
+        title: currentService.title,
+        price: currentService.price,
+        category: currentService.category,
+      } : undefined,
+      messages: currentMessages.map(m => ({
+        role: m.role,
+        text: m.text,
+        time: m.time,
+        attachments: m.attachments?.map(a => ({ name: a.name, mimeType: a.mimeType })),
+      })),
+      trigger,
+    });
+
+    try {
+      // Use sendBeacon on tab close/hide for maximum browser delivery reliability
+      if (trigger === 'unload' && typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+        const blob = new Blob([payload], { type: 'application/json' });
+        const queued = navigator.sendBeacon('/api/telegram/summary', blob);
+        if (queued) return;
+      }
+
       fetch('/api/telegram/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         keepalive: true, // Guarantees browser executes the dispatch even when modal unmounts
-        body: JSON.stringify({
-          user: userProfile,
-          serviceContext: serviceContext ? {
-            id: serviceContext.id,
-            title: serviceContext.title,
-            price: serviceContext.price,
-            category: serviceContext.category,
-          } : undefined,
-          messages: messages.map(m => ({ role: m.role, text: m.text, time: m.time })),
-          trigger,
-        }),
+        body: payload,
       }).catch(err => console.error('Telegram dispatch failed:', err));
     } catch (err) {
       console.error('Failed to send telegram summary:', err);
     }
   };
+
+  // Auto-dispatch to Telegram if the user stops talking for 2 minutes after receiving a reply
+  useEffect(() => {
+    if (!isOpen || isLoading) return;
+    const hasUserMsg = messages.some(m => m.role === 'user');
+    if (!hasUserMsg) return;
+
+    const idleTimer = setTimeout(() => {
+      triggerTelegramSummary('idle');
+    }, 2 * 60 * 1000); // 2 minutes of inactivity
+
+    return () => clearTimeout(idleTimer);
+  }, [messages, inputText, isOpen, isLoading]);
+
+  // Auto-dispatch if the user closes the browser tab, navigates away, or backgrounds the page
+  useEffect(() => {
+    const handlePageHide = () => {
+      triggerTelegramSummary('unload');
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        triggerTelegramSummary('unload');
+      }
+    };
+
+    window.addEventListener('pagehide', handlePageHide);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', handlePageHide);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleClose = () => {
     triggerTelegramSummary('close');
@@ -415,10 +747,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
   const handleEndChatManual = () => {
     triggerTelegramSummary('manual');
-    setEndChatNotice('আপনার পরামর্শের সারসংক্ষেপ সিনিয়র কনসালটেন্টের কাছে সফলভাবে পাঠানো হয়েছে।');
-    setTimeout(() => {
-      setEndChatNotice(null);
-    }, 4500);
+    onClose();
   };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
@@ -459,7 +788,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           {
             id: `welcome-${Date.now()}`,
             role: 'assistant',
-            text: getWelcomeMessage(serviceContext, trimmedName),
+            text: getWelcomeMessage(serviceContext, assignedAgent, trimmedName),
             time: formatTimestamp(),
             isRead: true,
           }
@@ -472,9 +801,26 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   };
 
   const handleResetChat = () => {
+    chatSessionIdRef.current += 1;
+    if (typingRevealTimerRef.current) {
+      clearTimeout(typingRevealTimerRef.current);
+      typingRevealTimerRef.current = null;
+    }
+    if (handoffSendTimerRef.current) {
+      clearTimeout(handoffSendTimerRef.current);
+      handoffSendTimerRef.current = null;
+    }
+    setIsLoading(false);
+    setShowTypingBubble(false);
+
+    const nextAgent = pickRandomAgent(assignedAgent);
+    setAssignedAgent(nextAgent);
+    lastSummarizedMsgIdRef.current = null;
+
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem(AGENT_STORAGE_KEY, nextAgent);
       } catch (e) {
         console.error('Failed to clear chat storage:', e);
       }
@@ -483,7 +829,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       {
         id: `welcome-${Date.now()}`,
         role: 'assistant',
-        text: getWelcomeMessage(serviceContext, userProfile?.name),
+        text: getWelcomeMessage(serviceContext, nextAgent, userProfile?.name),
         time: formatTimestamp(),
         isRead: true,
       }
@@ -496,12 +842,19 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const activeDisplayProfile: UserProfile | null = userProfile || (
+    pendingAgentHandoff
+      ? { name: pendingAgentHandoff.name, phone: pendingAgentHandoff.phone }
+      : null
+  );
+  const showProfileGate = !activeDisplayProfile || isEditingProfile;
+
   return (
     <AnimatePresence>
       {isOpen && (
         <div 
           className={`fixed inset-0 z-70 ${
-            !userProfile || isEditingProfile 
+            showProfileGate 
               ? 'flex items-center justify-center p-3 sm:p-4' 
               : 'sm:inset-auto sm:bottom-20 sm:right-6 flex flex-col items-center justify-end sm:justify-start'
           } pointer-events-none`}
@@ -517,48 +870,104 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             className={`fixed inset-0 bg-black/45 backdrop-blur-md ${
-              !userProfile || isEditingProfile ? 'block' : 'sm:hidden'
+              showProfileGate ? 'block' : 'sm:hidden'
             } z-0 pointer-events-auto`} 
             onClick={handleClose}
             aria-hidden="true"
           />
 
-          {/* Main Chat Window Card with compact dynamic sizing */}
+          {/* Main Chat Window Card with smooth GPU ease-out transition */}
           <motion.div 
             key="chat-window-card"
-            initial={{ opacity: 0, scale: 0.94, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 30, transition: { duration: 0.2, ease: "easeOut" } }}
-            transition={{ 
-              type: "spring",
-              damping: 22,
-              stiffness: 280,
-              mass: 0.8
-            }}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12, transition: { duration: 0.18, ease: 'easeIn' } }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
             className={`relative z-10 w-full sm:w-[410px] md:w-[420px] ${
-              !userProfile || isEditingProfile 
+              showProfileGate 
                 ? 'h-auto max-h-[90vh] rounded-3xl' 
                 : 'h-[85vh] sm:h-[600px] max-h-[92vh] rounded-t-2xl sm:rounded-2xl'
-            } bg-white border border-[#D5CFBF] shadow-[0_25px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden origin-bottom-right pointer-events-auto`}
+            } bg-white border border-[#D5CFBF] shadow-[0_25px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden overscroll-contain pointer-events-auto`}
           >
             {/* Header (White / Light Theme) */}
             <div className="bg-white text-[#1E2519] px-4 py-3 flex items-center justify-between border-b border-[#E8E4D9] flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="relative w-9 h-9 rounded-full bg-[#EBF7EE] border border-[#CDE5D5] flex items-center justify-center text-[#1FA855] shadow-xs">
-                  <MessagesSquare className="w-5 h-5 stroke-[2]" />
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="relative w-10 h-10 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#EBF7EE] to-[#D6EFE0] border border-[#BDE0C8] flex items-center justify-center shadow-xs overflow-hidden">
+                    <svg
+                      viewBox="0 0 40 40"
+                      className="w-9 h-9 agent-avatar-bob"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      {/* Shirt / Shoulders */}
+                      <path
+                        d="M7.5 39C8.2 31.8 13.4 28.5 20 28.5C26.6 28.5 31.8 31.8 32.5 39H7.5Z"
+                        fill="#1FA855"
+                      />
+                      <path
+                        d="M16.5 28.7L20 33L23.5 28.7"
+                        fill="#FFFFFF"
+                        opacity="0.92"
+                      />
+                      {/* Neck */}
+                      <rect x="17.2" y="24.2" width="5.6" height="5.2" rx="2.2" fill="#F2BE97" />
+                      {/* Ears */}
+                      <circle cx="11.2" cy="18.2" r="2.1" fill="#F2BE97" />
+                      <circle cx="28.8" cy="18.2" r="2.1" fill="#F2BE97" />
+                      {/* Headset Band & Earcups */}
+                      <path
+                        d="M10.4 17.5C10.4 11.7 14.7 7.5 20 7.5C25.3 7.5 29.6 11.7 29.6 17.5"
+                        stroke="#1E293B"
+                        strokeWidth="2.1"
+                        strokeLinecap="round"
+                      />
+                      <rect x="8.8" y="15.3" width="3" height="5.4" rx="1.5" fill="#1E293B" />
+                      <rect x="28.2" y="15.3" width="3" height="5.4" rx="1.5" fill="#1E293B" />
+                      {/* Face */}
+                      <ellipse cx="20" cy="17.6" rx="8.1" ry="8.6" fill="#FAD2B4" />
+                      {/* Hair */}
+                      <path
+                        d="M11.8 15.8C12 10.6 15.5 8 20.2 8C24.8 8 28 10.8 28.2 15.4C26.3 13.3 23.7 12.6 20 12.8C16.6 13 13.8 13.8 11.8 15.8Z"
+                        fill="#1E293B"
+                      />
+                      {/* Animated Cartoon Eyes */}
+                      <ellipse cx="16.8" cy="17.6" rx="1.15" ry="1.35" fill="#1E293B" className="agent-avatar-eye" />
+                      <ellipse cx="23.2" cy="17.6" rx="1.15" ry="1.35" fill="#1E293B" className="agent-avatar-eye" />
+                      {/* Soft Cheek Highlights */}
+                      <ellipse cx="14.5" cy="20.1" rx="1.4" ry="0.8" fill="#F49B86" opacity="0.5" />
+                      <ellipse cx="25.5" cy="20.1" rx="1.4" ry="0.8" fill="#F49B86" opacity="0.5" />
+                      {/* Friendly Smile */}
+                      <path
+                        d="M17.2 21.1C18.1 22.3 21.9 22.3 22.8 21.1"
+                        stroke="#9C4A32"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      {/* Headset Mic Boom */}
+                      <path
+                        d="M29.2 19.6C29.2 22.2 26.8 23.2 23.8 23.2"
+                        stroke="#1E293B"
+                        strokeWidth="1.4"
+                        strokeLinecap="round"
+                      />
+                      <circle cx="23.2" cy="23.2" r="1.1" fill="#1FA855" />
+                    </svg>
+                  </div>
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#1FA855] border-2 border-white" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 id="support-chat-title" className="font-semibold text-sm tracking-wide text-[#1E2519]">
-                      MOHAMMAD
+                    <h3 id="support-chat-title" className="font-semibold text-sm tracking-wide text-[#1E2519] truncate">
+                      {assignedAgent}
                     </h3>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#1FA855] text-white">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#1FA855] text-white shrink-0">
                       অনলাইন
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#636F5A] flex items-center gap-1">
-                    <span>সরাসরি ভিসা ও ডকুমেন্টের পরামর্শ</span>
+                  <p className="text-[11px] text-[#636F5A] truncate">
+                    is chatting with you
                   </p>
                 </div>
               </div>
@@ -619,52 +1028,8 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
               </div>
             )}
 
-            {/* User Identity / Active Consultation Bar */}
-            {userProfile && !isEditingProfile && (
-              <div className="bg-[#FBF9F5] border-b border-[#E8E2D2] px-3.5 py-1.5 flex items-center justify-between text-[11px] text-[#3E4A35] flex-shrink-0">
-                <div className="flex items-center gap-1.5 truncate">
-                  <span className="w-2 h-2 rounded-full bg-[#1FA855] shrink-0" />
-                  <span className="font-bold text-[#14351C] truncate max-w-[140px] sm:max-w-[180px]">{userProfile.name}</span>
-                  <span className="text-[#7A8870] font-mono text-[10.5px]">({userProfile.phone.slice(-4).padStart(userProfile.phone.length, '•')})</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNameInput(userProfile.name);
-                      setPhoneInput(userProfile.phone);
-                      setIsEditingProfile(true);
-                    }}
-                    className="inline-flex items-center gap-1 text-[10.5px] text-[#2E7D32] hover:text-[#14351C] hover:underline cursor-pointer font-medium"
-                    title="তথ্য পরিবর্তন করুন"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    <span>এডিট</span>
-                  </button>
-                  <span className="text-[#D5CFBF]">|</span>
-                  <button
-                    type="button"
-                    onClick={handleEndChatManual}
-                    className="inline-flex items-center gap-1 text-[10.5px] text-[#636F5A] hover:text-red-700 cursor-pointer font-medium"
-                    title="কথোপকথন সমাপ্ত করুন ও সামারি পাঠান"
-                  >
-                    <LogOut className="w-3 h-3" />
-                    <span>সমাপ্তি</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* End chat confirmation banner if triggered */}
-            {endChatNotice && (
-              <div className="bg-[#EBF7EE] border-b border-[#CDE5D5] px-3.5 py-2 flex items-center gap-2 text-xs text-[#1E522C] flex-shrink-0 animate-in fade-in duration-200">
-                <Check className="w-4 h-4 text-[#1FA855] shrink-0" />
-                <span className="flex-1 font-medium">{endChatNotice}</span>
-              </div>
-            )}
-
             {/* GATE: If user has not provided contact info yet or is editing profile, show Contact Form */}
-            {(!userProfile || isEditingProfile) ? (
+            {showProfileGate ? (
               <div className="flex-1 overflow-y-auto p-4 sm:p-5 bg-gradient-to-b from-[#FAF8F5] via-white to-[#F5F7FA]">
                 <div className="max-w-sm mx-auto w-full">
                   <div className="text-center mb-3.5">
@@ -672,10 +1037,10 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                       <MessagesSquare className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h4 className="text-[15px] font-bold text-[#16202E]">
-                      সরাসরি সিনিয়র কনসালটেন্টের সাথে কথা বলুন
+                      সরাসরি লাইভ এজেন্টের সাথে কথা বলুন
                     </h4>
                     <p className="text-[11.5px] text-[#5A687C] mt-1 leading-relaxed">
-                      ভিসা প্রসেসিং ও ডকুমেন্টস সংক্রান্ত তাৎক্ষণিক পরামর্শ পেতে অনুগ্রহ করে আপনার নাম ও যোগাযোগ নম্বর দিন।
+                      ভিসা প্রসেসিং ও ডকুমেন্টস সংক্রান্ত তাৎক্ষণিক সহযোগিতা পেতে অনুগ্রহ করে আপনার নাম ও যোগাযোগ নম্বর দিন।
                     </p>
                   </div>
 
@@ -752,43 +1117,22 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
             ) : (
               <>
 
-            {/* Direct WhatsApp Quick-Bar Banner */}
-            <div className="bg-[#EBF7EE] border-b border-[#CDE5D5] px-3.5 py-2 flex items-center justify-between text-xs text-[#1E522C] flex-shrink-0">
-              <span className="flex items-center gap-1.5 font-medium truncate">
-                <MessageCircle className="w-3.5 h-3.5 text-[#1FA855] shrink-0" />
-                সরাসরি সিনিয়র কনসালটেন্টের সাথে কথা বলুন
-              </span>
-              <a
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
-                  serviceContext?.title
-                    ? `Hello Mohammad (Processing Hub), I need direct consultation regarding ${serviceContext.title}.`
-                    : 'Hello Processing Hub, I am contacting you for Indian Visa Assistance.'
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={onOpenWhatsAppDirect}
-                className="shrink-0 ml-2 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1FA855] hover:bg-[#188A45] text-white font-medium text-[11px] shadow-xs transition-all cursor-pointer"
-              >
-                <span>WhatsApp</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-
             {/* Messages Body */}
             <div 
               ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-sm bg-[#FAF8F5] scroll-smooth"
+              className="chatbot-messages-body flex-1 overflow-y-auto px-4 py-4 space-y-4 text-sm bg-[#FAF8F5] overscroll-contain"
             >
               {messages.map((msg) => {
                 const isUser = msg.role === 'user';
+                const shouldAnimateEnter = !initialMessageIdsRef.current.has(msg.id);
                 return (
                   <div
                     key={msg.id}
-                    className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'} ${shouldAnimateEnter ? 'chat-msg-enter' : ''}`}
                   >
                     {!isUser && (
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#EBF7EE] to-[#DDF2E2] border border-[#C6E2CD] text-[#1FA855] flex items-center justify-center shrink-0 mt-0.5 shadow-xs font-semibold text-xs select-none" title="মোহাম্মদ - সিনিয়র কনসালটেন্ট">
-                        <span>M</span>
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#EBF7EE] to-[#DDF2E2] border border-[#C6E2CD] text-[#1FA855] flex items-center justify-center shrink-0 mt-0.5 shadow-xs font-semibold text-xs select-none" title={assignedAgent}>
+                        <span>{assignedAgent.charAt(0).toUpperCase()}</span>
                       </div>
                     )}
 
@@ -801,8 +1145,44 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                             : 'bg-white border border-[#E2DDD0] text-[#1E2519] rounded-tl-xs shadow-[0_2px_12px_rgba(0,0,0,0.035)]'
                         }`}
                       >
+                        {/* Attached Images / PDFs / Files inside Bubble */}
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className={`${msg.text ? 'mb-2' : ''} space-y-1.5`}>
+                            {msg.attachments.map((att) => (
+                              <div key={att.id}>
+                                {att.previewUrl ? (
+                                  <div className="rounded-xl overflow-hidden border border-white/25 bg-black/10 max-w-[230px]">
+                                    <img
+                                      src={att.previewUrl}
+                                      alt={att.name}
+                                      className="max-h-44 w-full object-cover"
+                                    />
+                                    <div className="px-2 py-1 text-[10px] truncate bg-black/20 text-white/95">
+                                      {att.name}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs ${
+                                    isUser
+                                      ? 'bg-white/15 border border-white/25 text-white'
+                                      : 'bg-[#F4F9F2] border border-[#CDE5D5] text-[#1E2519]'
+                                  }`}>
+                                    <FileText className="w-4 h-4 shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium truncate max-w-[165px]">{att.name}</p>
+                                      <p className={`text-[10px] ${isUser ? 'text-white/80' : 'text-[#636F5A]'}`}>
+                                        {att.mimeType === 'application/pdf' ? 'PDF' : 'File'} • {formatFileSize(att.size)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Message Content */}
-                        {isUser ? (
+                        {msg.text && (isUser ? (
                           <p className="whitespace-pre-wrap leading-relaxed text-[13.5px]">
                             {msg.text}
                           </p>
@@ -810,7 +1190,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                           <div className="markdown-body text-[13.5px] leading-relaxed">
                             <Markdown>{msg.text}</Markdown>
                           </div>
-                        )}
+                        ))}
 
                         {/* Grounding Web Search Sources if available */}
                         {!isUser && msg.sources && msg.sources.length > 0 && (
@@ -903,19 +1283,21 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                 </div>
               )}
 
-              {/* Compact CSS-based Wave Typing Indicator */}
-              {isLoading && (
-                <div className="flex gap-2 justify-start items-center animate-in fade-in duration-150">
-                  <div className="w-6 h-6 rounded-full bg-white border border-[#D5CFBF] text-[#1FA855] flex items-center justify-center shrink-0 shadow-2xs">
-                    <MessagesSquare className="w-3 h-3" />
+              {/* Compact CSS-based Human Typing Indicator (appears after natural reading pause) */}
+              {showTypingBubble && (
+                <div className="flex gap-2.5 justify-start items-center animate-fadeIn">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#EBF7EE] to-[#DDF2E2] border border-[#C6E2CD] text-[#1FA855] flex items-center justify-center shrink-0 shadow-xs font-semibold text-xs select-none" title={assignedAgent}>
+                    <span>{assignedAgent.charAt(0).toUpperCase()}</span>
                   </div>
-                  <div className="bg-white border border-[#E3DEC3] rounded-xl rounded-tl-xs px-3 py-1.5 shadow-2xs flex items-center gap-2 h-[28px]">
+                  <div className="bg-white border border-[#E2DDD0] rounded-2xl rounded-tl-xs px-3.5 py-2 shadow-2xs flex items-center gap-2">
                     <div className="flex items-center gap-1 px-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#1FA855] typing-dot-1" />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#1FA855] typing-dot-2" />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#1FA855] typing-dot-3" />
                     </div>
-                    <span className="text-[11px] text-[#5A6750] font-medium hidden sm:inline">তথ্য যাচাই ও প্রস্তুত করা হচ্ছে...</span>
+                    <span className="text-[11px] text-[#5A6750] font-medium">
+                      {assignedAgent} লিখছেন...
+                    </span>
                   </div>
                 </div>
               )}
@@ -923,8 +1305,62 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar */}
+            {/* Input Bar + Attach + Bottom Action Buttons */}
             <div className="p-3 bg-[#FAF8F5] border-t border-[#EAE5DA] flex-shrink-0">
+              {attachmentError && (
+                <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-2.5 py-1 mb-2">
+                  {attachmentError}
+                </p>
+              )}
+
+              {isCompressingFiles && (
+                <p className="text-[11px] text-[#1E522C] bg-[#EBF7EE] border border-[#C6E2CD] rounded-lg px-2.5 py-1 mb-2">
+                  ফাইল অটো-কম্প্রেস ও প্রস্তুত করা হচ্ছে...
+                </p>
+              )}
+
+              {pendingAttachments.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {pendingAttachments.map((att) => (
+                    <div
+                      key={att.id}
+                      className="inline-flex items-center gap-1.5 bg-white border border-[#D5CFBF] rounded-lg px-2 py-1 text-[11px] text-[#1E2519] shadow-2xs max-w-[230px]"
+                    >
+                      {att.previewUrl ? (
+                        <img
+                          src={att.previewUrl}
+                          alt={att.name}
+                          className="w-5 h-5 rounded object-cover shrink-0"
+                        />
+                      ) : (
+                        <FileText className="w-3.5 h-3.5 text-[#1FA855] shrink-0" />
+                      )}
+                      <span className="truncate font-medium">{att.name}</span>
+                      <span className="text-[10px] text-[#636F5A] shrink-0">
+                        ({formatFileSize(att.size)})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePendingAttachment(att.id)}
+                        className="text-[#8C9884] hover:text-red-600 p-0.5 cursor-pointer shrink-0"
+                        aria-label={`Remove ${att.name}`}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,application/pdf,.pdf,.txt,.csv"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -932,6 +1368,16 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                 }}
                 className="flex items-center gap-2"
               >
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isCompressingFiles}
+                  className="w-10 h-10 rounded-lg bg-white hover:bg-[#F3F0E8] border border-[#D5CFBF] text-[#4E5C46] hover:text-[#1FA855] disabled:opacity-40 flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+                  title="ছবি বা PDF ফাইল যুক্ত করুন"
+                  aria-label="Attach photo or PDF file"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
                 <input
                   ref={inputRef}
                   type="text"
@@ -942,21 +1388,44 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                   }}
                   placeholder={serviceContext?.title ? `${serviceContext.title} সংক্রান্ত প্রশ্ন লিখুন...` : 'আপনার প্রশ্ন লিখুন (বাংলা বা ইংরেজি)...'}
                   disabled={isLoading}
-                  className="flex-1 bg-white border border-[#D5CFBF] focus:border-[#1FA855] rounded-lg px-4 py-2.5 text-sm text-[#1E2519] placeholder-[#8A9582] focus:outline-none transition-all shadow-xs"
+                  className="flex-1 min-w-0 bg-white border border-[#D5CFBF] focus:border-[#1FA855] rounded-lg px-3.5 py-2.5 text-sm text-[#1E2519] placeholder-[#8A9582] focus:outline-none transition-all shadow-xs"
                 />
                 <button
                   type="submit"
-                  disabled={!inputText.trim() || isLoading}
+                  disabled={(!inputText.trim() && pendingAttachments.length === 0) || isLoading || isCompressingFiles}
                   className="w-10 h-10 rounded-lg bg-[#1FA855] hover:bg-[#188A45] disabled:opacity-40 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:translate-y-0.5 shrink-0"
                   aria-label="Send message"
                 >
                   <Send className="w-4 h-4 ml-0.5" />
                 </button>
               </form>
-              <div className="mt-1.5 text-center">
-                <span className="text-[10px] text-[#8C9884]">
-                  প্রসেসিং হাব অফিসিয়াল কাস্টমার সাপোর্ট ডেস্ক
-                </span>
+
+              <div className="mt-2.5 pb-1 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleEndChatManual}
+                  className="btn-3d-matte-red inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer w-auto"
+                  title="End Chat"
+                >
+                  <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>End Chat</span>
+                </button>
+                <a
+                  href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
+                    serviceContext?.title
+                      ? `Hello ${assignedAgent} (Processing Hub), I need direct assistance regarding ${serviceContext.title}.`
+                      : `Hello ${assignedAgent} (Processing Hub), I am contacting you for Indian Visa Assistance.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onOpenWhatsAppDirect}
+                  className="btn-3d-matte-green inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer w-auto"
+                >
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current flex-shrink-0" aria-hidden="true">
+                    <path d="M17.6 6.32A7.85 7.85 0 0 0 12.02 4C7.66 4 4.13 7.53 4.13 11.89c0 1.4.37 2.76 1.06 3.96L4 20l4.27-1.12a7.9 7.9 0 0 0 3.75.95h.01c4.36 0 7.89-3.53 7.89-7.89 0-2.11-.82-4.09-2.32-5.62zm-5.58 12.1h-.01a6.55 6.55 0 0 1-3.34-.92l-.24-.14-2.49.65.67-2.43-.16-.25a6.56 6.56 0 0 1-1.01-3.5c0-3.63 2.96-6.58 6.6-6.58 1.76 0 3.42.69 4.66 1.94a6.55 6.55 0 0 1 1.93 4.65c0 3.63-2.96 6.58-6.61 6.58zm3.6-4.93c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.44.1-.13.2-.5.64-.62.77-.11.13-.23.14-.42.05-.2-.1-.83-.31-1.58-.98-.58-.52-.98-1.16-1.09-1.36-.11-.2-.01-.3.09-.4.09-.09.2-.23.3-.35.1-.11.13-.2.2-.33.07-.13.03-.25-.02-.35-.05-.1-.44-1.06-.6-1.45-.16-.38-.32-.33-.44-.33-.11-.01-.24-.01-.37-.01s-.35.05-.53.25c-.18.2-.7.68-.7 1.66s.72 1.93.82 2.06c.1.13 1.41 2.15 3.42 3.02.48.21.85.33 1.14.42.48.15.92.13 1.26.08.38-.06 1.17-.48 1.34-.94.16-.46.16-.86.11-.94-.05-.09-.18-.14-.38-.24z" />
+                  </svg>
+                  <span>WhatsApp</span>
+                </a>
               </div>
             </div>
             </>

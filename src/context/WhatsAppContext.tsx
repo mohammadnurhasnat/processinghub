@@ -9,11 +9,24 @@ export interface WhatsAppRedirectConfig {
   sourceId?: string;
 }
 
+export interface AgentChatHandoff {
+  id: string;
+  name: string;
+  phone: string;
+  subject: string;
+  sectionName?: string;
+  serviceTitle?: string;
+  formattedMessage: string;
+}
+
 interface WhatsAppContextType {
   openWhatsAppModal: (config: WhatsAppRedirectConfig | string) => void;
   closeWhatsAppModal: () => void;
   redirectData: WhatsAppRedirectConfig | null;
   isOpen: boolean;
+  pendingAgentHandoff: AgentChatHandoff | null;
+  triggerAgentHandoff: (handoff: Omit<AgentChatHandoff, 'id'>) => void;
+  clearAgentHandoff: () => void;
 }
 
 const WhatsAppContext = createContext<WhatsAppContextType | undefined>(undefined);
@@ -26,7 +39,7 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 
   if (customService) {
     return {
-      title: customTitle || 'WhatsApp পরামর্শ',
+      title: customTitle || 'যোগাযোগ ও পরামর্শ',
       serviceTitle: customService,
       sectionName: sectionAttr || 'সেবা সেকশন'
     };
@@ -52,7 +65,7 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 
   if (lower.includes('tourist visa') || lower.includes('ট্যুরিস্ট')) {
     return {
-      title: 'ট্যুরিস্ট ভিসা কনসালটেশন',
+      title: 'ট্যুরিস্ট ভিসা পরামর্শ',
       serviceTitle: 'ট্যুরিস্ট ভিসা প্রসেসিং ও ডকুমেন্টেশন',
       sectionName: 'ট্যুরিস্ট ভিসা ক্যাটাগরি'
     };
@@ -68,7 +81,7 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 
   if (lower.includes('business visa') || lower.includes('বিজনেস') || lower.includes('বাণিজ্যিক')) {
     return {
-      title: 'বিজনেস ভিসা কনসালটেশন',
+      title: 'বিজনেস ভিসা পরামর্শ',
       serviceTitle: 'বিজনেস ভিসা প্রসেসিং ও স্পন্সর লেটার যাচাই',
       sectionName: 'বিজনেস ভিসা সেবা'
     };
@@ -76,9 +89,9 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 
   if (lower.includes('double entry') || lower.includes('ডবল এন্ট্রি') || lower.includes('ডাবল')) {
     return {
-      title: 'ডবল এন্ট্রি ভিসা সেবা',
-      serviceTitle: 'ডবল এন্ট্রি ভিসা প্রসেসিং ও রুট প্ল্যানিং',
-      sectionName: 'ডবল এন্ট্রি ভিসা'
+      title: 'ডাবল এন্ট্রি ভিসা সেবা',
+      serviceTitle: 'ডাবল এন্ট্রি ভিসা প্রসেসিং ও রুট প্ল্যানিং',
+      sectionName: 'ডাবল এন্ট্রি ভিসা'
     };
   }
 
@@ -100,7 +113,7 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 
   if (heroContainer || lower.includes('free consultation') || lower.includes('পরামর্শ')) {
     return {
-      title: 'ফ্রি ভিসা কনসালটেশন',
+      title: 'ফ্রি ভিসা পরামর্শ',
       serviceTitle: 'ফ্রি ভিসা পরামর্শ ও প্রাথমিক ফাইল যাচাই',
       sectionName: 'হিরো সেকশন'
     };
@@ -108,7 +121,7 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 
   if (floatingContainer) {
     return {
-      title: 'তাৎক্ষণিক WhatsApp সহায়তা',
+      title: 'তাৎক্ষণিক সহায়তা',
       serviceTitle: 'সাধারণ অনুসন্ধান ও তাৎক্ষণিক সহায়তা',
       sectionName: 'ফ্লোটিং সাপোর্ট'
     };
@@ -116,8 +129,8 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 
   if (navbarContainer) {
     return {
-      title: 'ভিসা কনসালটেশন ও সাপোর্ট',
-      serviceTitle: 'জরুরি ভিসা কনসালটেশন ও ফাইল ওপেনিং',
+      title: 'ভিসা সাপোর্ট ও যোগাযোগ',
+      serviceTitle: 'জরুরি ভিসা প্রসেসিং ও ফাইল ওপেনিং',
       sectionName: 'হেডার নেভিগেশন'
     };
   }
@@ -156,6 +169,7 @@ export const detectServiceSubject = (target: HTMLElement, url: string): { title:
 export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [redirectData, setRedirectData] = useState<WhatsAppRedirectConfig | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingAgentHandoff, setPendingAgentHandoff] = useState<AgentChatHandoff | null>(null);
 
   const openWhatsAppModal = (config: WhatsAppRedirectConfig | string) => {
     if (typeof config === 'string') {
@@ -177,6 +191,17 @@ export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setTimeout(() => {
       setRedirectData(null);
     }, 200);
+  };
+
+  const triggerAgentHandoff = (handoff: Omit<AgentChatHandoff, 'id'>) => {
+    setPendingAgentHandoff({
+      ...handoff,
+      id: `handoff-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    });
+  };
+
+  const clearAgentHandoff = () => {
+    setPendingAgentHandoff(null);
   };
 
   // Intercept all clicks on wa.me links globally across the website
@@ -223,6 +248,9 @@ export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         closeWhatsAppModal,
         redirectData,
         isOpen,
+        pendingAgentHandoff,
+        triggerAgentHandoff,
+        clearAgentHandoff,
       }}
     >
       {children}

@@ -1,19 +1,19 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { CONFIG } from '../config';
 
-// 12 Ultra-Sharp 8K High-Definition Bangladeshi Natural Beauty Assets
-import saintMartinCheradwip from '../assets/images/hd_saintmartin_cheradwip_1790792435084.jpg';
-import saintMartinCorals from '../assets/images/hd_saintmartin_corals_1790792449188.jpg';
-import coxBazarMarineDrive from '../assets/images/hd_coxsbazar_marinedrive_1790792461383.jpg';
-import coxBazarInaniBeach from '../assets/images/hd_coxsbazar_inani_beach_1790792475767.jpg';
-import sreemangalTeaGarden from '../assets/images/hd_sreemangal_teagarden_1790792486507.jpg';
-import sreemangalLawachara from '../assets/images/hd_sreemangal_lawachara_1790792497624.jpg';
-import sajekValleyClouds from '../assets/images/hd_sajek_valley_clouds_1790792510491.jpg';
-import sajekWoodenResort from '../assets/images/hd_sajek_wooden_resort_1790792524379.jpg';
-import bandarbanNilgiri from '../assets/images/hd_bandarban_nilgiri_1790792536557.jpg';
-import bandarbanBogaLake from '../assets/images/hd_bandarban_bogalake_1790792547268.jpg';
-import sundarbansRiver from '../assets/images/hd_sundarbans_river_1790792557896.jpg';
-import sundarbansMangroveBoat from '../assets/images/hd_sundarbans_mangrove_boat_1790792569900.jpg';
+// 12 Compressed WebP Bangladeshi Natural Beauty Assets for Fast Hero Loading
+import saintMartinCheradwip from '../assets/images/hd_saintmartin_cheradwip_1790792435084.webp';
+import saintMartinCorals from '../assets/images/hd_saintmartin_corals_1790792449188.webp';
+import coxBazarMarineDrive from '../assets/images/hd_coxsbazar_marinedrive_1790792461383.webp';
+import coxBazarInaniBeach from '../assets/images/hd_coxsbazar_inani_beach_1790792475767.webp';
+import sreemangalTeaGarden from '../assets/images/hd_sreemangal_teagarden_1790792486507.webp';
+import sreemangalLawachara from '../assets/images/hd_sreemangal_lawachara_1790792497624.webp';
+import sajekValleyClouds from '../assets/images/hd_sajek_valley_clouds_1790792510491.webp';
+import sajekWoodenResort from '../assets/images/hd_sajek_wooden_resort_1790792524379.webp';
+import bandarbanNilgiri from '../assets/images/hd_bandarban_nilgiri_1790792536557.webp';
+import bandarbanBogaLake from '../assets/images/hd_bandarban_bogalake_1790792547268.webp';
+import sundarbansRiver from '../assets/images/hd_sundarbans_river_1790792557896.webp';
+import sundarbansMangroveBoat from '../assets/images/hd_sundarbans_mangrove_boat_1790792569900.webp';
 
 interface HeroSlide {
   id: string;
@@ -129,7 +129,30 @@ export const Hero: React.FC = () => {
   const timerRef = useRef<number | null>(null);
 
   const activeSlideIndex = sequence[sequenceIndex] ?? 0;
+  const nextSlideIndex = sequence[(sequenceIndex + 1) % sequence.length] ?? 0;
   const currentSlide = slides[activeSlideIndex];
+
+  const [mountedSlides, setMountedSlides] = useState<Set<number>>(
+    () => new Set([sequence[0] ?? 0])
+  );
+
+  const mountSlide = useCallback((idx: number) => {
+    setMountedSlides((prev) => {
+      if (prev.has(idx)) return prev;
+      const next = new Set(prev);
+      next.add(idx);
+      return next;
+    });
+  }, []);
+
+  // Ensure active slide is always mounted immediately and preload next slide shortly after
+  useEffect(() => {
+    mountSlide(activeSlideIndex);
+    const preloadTimer = window.setTimeout(() => {
+      mountSlide(nextSlideIndex);
+    }, 350);
+    return () => clearTimeout(preloadTimer);
+  }, [activeSlideIndex, nextSlideIndex, mountSlide]);
 
   const goToNextSlide = useCallback(() => {
     setSequenceIndex((prev) => (prev + 1) % sequence.length);
@@ -162,10 +185,13 @@ export const Hero: React.FC = () => {
       aria-roledescription="carousel"
       aria-label="বাংলাদেশের প্রাকৃতিক সৌন্দর্যের দৃশ্য ও ভিসা সার্ভিস"
     >
-      {/* Background Slides Container with Crystal Clear Visibility & High Resolution */}
+      {/* Background Slides Container with Compressed WebP & Progressive Loading */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950 pointer-events-none">
         {slides.map((slide, idx) => {
           const isActive = idx === activeSlideIndex;
+          const shouldMount = isActive || mountedSlides.has(idx);
+          if (!shouldMount) return null;
+
           return (
             <div
               key={slide.id}
@@ -179,8 +205,10 @@ export const Hero: React.FC = () => {
                 alt={slide.alt}
                 className="w-full h-full object-cover object-center select-none"
                 referrerPolicy="no-referrer"
-                loading={idx < 4 ? 'eager' : 'lazy'}
+                loading={isActive ? 'eager' : 'lazy'}
+                fetchPriority={isActive ? 'high' : 'low'}
                 decoding="async"
+                onLoad={isActive ? () => mountSlide(nextSlideIndex) : undefined}
               />
             </div>
           );

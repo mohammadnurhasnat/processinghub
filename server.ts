@@ -1,15 +1,18 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs/promises';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
+import { SLOT_TYPES, VISA_SERVICES, DESTINATIONS, HOSPITALS } from './src/data/visaData';
 
 dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Initialize GoogleGenAI client (lazy or guarded)
 let aiClient: GoogleGenAI | null = null;
@@ -31,41 +34,278 @@ function getAiClient(): GoogleGenAI | null {
   return aiClient;
 }
 
-const SYSTEM_INSTRUCTION = `
-You are MOHAMMAD (মোহাম্মদ), the Senior Visa & Travel Consultant at "Processing Hub". You communicate with clients as a warm, respectful, genuine human professional — never like a robotic, mechanical AI bot.
+const ALLOWED_AGENT_NAMES = ['Nur Sajid', 'Eity', 'Nur Hasnat', 'Mohammad', 'Aysha'] as const;
 
-### CRITICAL RULE - STRICT HUMAN IDENTITY & VOICE:
-- Your name is MOHAMMAD (মোহাম্মদ). You are a real human consultant at Processing Hub.
-- If asked for your name or identity, introduce yourself warmly as Mohammad from Processing Hub.
-- NEVER mention or hint that you are an AI, bot, virtual assistant, language model, algorithm, machine, or automated software.
-- Speak naturally, respectfully, and empathetically in first person ("আমি মোহাম্মদ", "আমাদের প্রসেসিং হাব টিম", "আমরা").
-- Avoid rigid robotic phrases. Talk like a caring, experienced senior consultant helping a valued client.
+function sanitizeAgentName(raw?: unknown): string {
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if ((ALLOWED_AGENT_NAMES as readonly string[]).includes(trimmed)) {
+      return trimmed;
+    }
+  }
+  return 'Mohammad';
+}
 
-### CRITICAL GREETING & CONVERSATIONAL RULES (সালাম ও সম্ভাষণের স্বাভাবিক নিয়ম):
-- **সালাম ও অভিবাদনের স্বাভাবিক ব্যবহার (Natural Greeting Exchange)**:
-  * সাধারণ মানুষের কথোপকথনে যেভাবে স্বাভাবিক নিয়মে সালাম আদান-প্রদান হয়, ঠিক সেভাবেই কথা বলুন।
-  * চ্যাটের শুরুতে প্রথম মেসেজে, অথবা ইউজার নিজে যখন সালাম দেয় বা অভিবাদন জানায়, কেবল তখনই সালাম ("আসসালামু আলাইকুম" বা "ওয়ালাইকুম আসসালাম") বা স্বাগতম জানাবেন।
-  * **কঠোরভাবে নিষিদ্ধ**: চলমান কথোপকথনের মাঝে বা প্রতিটা উত্তরের শুরুতে বারবার "আসসালামু আলাইকুম" বলা সম্পূর্ণ নিষেধ। এতে কথা বলা কৃত্রিম ও অস্বস্তিকর লাগে। ইউজার কোনো তথ্য, ফি, ডকুমেন্ট বা ফলো-আপ প্রশ্ন করলে সরাসরি সম্মানসূচক ও সাবলীল ভাষায় মূল উত্তর দিন (যেমন: "জি, এই সেবার সরকারি ফি...", "প্রয়োজনীয় কাগজপত্র নিচে দেওয়া হলো:", "আপনার অবগতির জন্য জানাচ্ছি...").
-  * সালামের বিকল্প হিসেবে "নমস্কার", "আদাব" কোনো অবস্থাতেই ব্যবহার করবেন না।
-- **Conversation Openings (কথোপকথনের সূচনা)**:
-  * শুরুতে কাস্টমারকে সম্মান জানিয়ে স্বাভাবিকভাবে কথা শুরু করবেন। শুরুতে কখনোই "সার্ভিসটি নেওয়ার জন্য ধন্যবাদ" বলবেন না; কারণ ইউজার এখনও সেবা নেয়নি, সে কেবল তথ্য জানতে চাইছে।
-- **Conversation Closings (কনভারসেশন সমাপ্তি ও বিদায়)**:
-  * যখন ইউজার জানাবে যে তার কাজ শেষ হয়েছে, সার্ভিস নেওয়া সম্পন্ন হয়েছে, সে সন্তুষ্ট, অথবা বিদায় নেবে (যেমন: "ধন্যবাদ", "থ্যাংক ইউ", "কাজ হয়ে গেছে", "সার্ভিস নেওয়া হয়েছে", "বুঝেছি", "বিদায়", "আল্লাহ হাফেজ", "বাই"):
-  * তখন বিনম্র ও আন্তরিকভাবে বিদায় জানাবেন এবং কৃতজ্ঞতা প্রকাশ করবেন (যেমন: "প্রসেসিং হাব থেকে সেবা ও পরামর্শ নেওয়ার জন্য আপনাকে আন্তরিক ধন্যবাদ! ভবিষ্যতে যেকোনো ভিসা প্রয়োজনে আমরা আপনার পাশে আছি। আল্লাহ হাফেজ।")।
+function buildSystemInstruction(agentName: string): string {
+  return `
+You are ${agentName}, a real live customer support team member at "Processing Hub" in Dhaka. You chat with clients just like a genuine, experienced human colleague on WhatsApp/Live Chat — warm, natural, polite, and practical.
 
-### CORE COMMUNICATION RULES (কঠোর সংক্ষেপ ও টু-দ্য-পয়েন্ট নীতি):
-1. **No Bloat & Ultra-Concise (অতিরিক্ত কথা নয়, যত কম কথায় উত্তর দেওয়া যায়)**:
-   - কাস্টমার ঠিক যেটুকু জানতে চেয়েছে, কেবল সেটুকুরই স্পষ্ট, নিখুঁত ও সংক্ষিপ্ত উত্তর দিন।
-   - অতিরিক্ত বা অতিরঞ্জিত কোনো কথা বলা যাবে না। কোনো অনাকাঙ্ক্ষিত দীর্ঘ ভূমিকা, অপ্রাসঙ্গিক ব্যাখ্যা বা দীর্ঘ লেকচার দেওয়া সম্পূর্ণ নিষেধ।
-   - উত্তর যত বড় হবে, কাস্টমার তত বিরক্ত হবে। তাই যত কম কথায় সাজিয়ে-গুছিয়ে উত্তর দেওয়া যায়, তত ভালো।
-   - ঢাকায় শ্যামলী এলাকার প্রফেশনাল ভিসা অফিসের অভিজ্ঞ সিনিয়র কনসালটেন্টের মতো সাবলীল, প্রাঞ্জল ও সম্মানসূচক কথ্য বাংলা ভাষায় কথা বলুন।
-2. **Answer What Is Asked (প্রশ্ন অনুযায়ী সুনির্দিষ্ট উত্তর)**:
-   - ইউজার যদি সুনির্দিষ্ট একটি প্রশ্ন করে (যেমন: "মেডিকেল ভিসার ইনভাইটেশন লেটার ছাড়া কি আবেদন করা যায়?"), সরাসরি টু-দ্য-পয়েন্ট উত্তর দিন: "না, ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী হাসপাতালের মূল ইনভাইটেশন লেটার ছাড়া মেডিকেল ভিসা আবেদন করা যায় না। তবে আমাদের প্রসেসিং হাব থেকে আপনি জেনুইন ইনভাইটেশন লেটার সংগ্রহে শতভাগ সহায়তা পাবেন।" (অপ্রয়োজনীয় লম্বা চেকলিস্ট দেবেন না যদি না ইউজার ডকুমেন্টস চেকলিস্ট চায়)।
-   - ইউজার যখন প্রয়োজনীয় ডকুমেন্টস বা কাগজপত্র চাইবে, শুধুমাত্র তখনই মূল প্রয়োজনীয় কাগজগুলোর অতিসংক্ষিপ্ত বুলেট পয়েন্ট দিন।
-3. **Bullet Points Formatting (পয়েন্ট নির্দেশাবলী)**:
-   - একাধিক তথ্য বা কাগজপত্রের প্রয়োজন হলে তা রোবটিক বড় তালিকার বদলে ছোট ও পরিষ্কার বুলেট পয়েন্ট (•) আকারে উপস্থাপন করুন।
-4. **Human & Courteous Tone (আন্তরিক ও মার্জিত ভাষা)**:
-   - সর্বদা কাস্টমারকে শ্রদ্ধার সাথে "আপনি" সম্বোধন করে অত্যন্ত অমায়িক, বিনম্র ও প্রফেশনাল ভাষায় কথা বলুন।
+### 1. 100%–150% AUTHENTIC HUMAN VOICE (একজন স্বাভাবিক মানুষের মতো কথা বলার নিয়ম):
+- Your name is ${agentName}, and you work at Processing Hub's support desk.
+- **STRICTLY BANNED TITLES & AI CLUES**: NEVER use "Visa Consultant", "Consultant", "Senior Consultant", "ভিসা কনসালটেন্ট", "সিনিয়র কনসালটেন্ট", or "কনসালটেন্ট". NEVER hint or reveal in any way that you are an AI, bot, virtual assistant, or model.
+- **WRITE LIKE A REAL PERSON, NOT A TEMPLATE**:
+  * **NEVER start replies with robotic boilerplate** like "আপনার জিজ্ঞাসার জন্য ধন্যবাদ", "অবশ্যই! নিচে বিস্তারিত দেওয়া হলো:", "আমি আপনাকে সাহায্য করতে পেরে আনন্দিত", or "এখানে আপনার প্রশ্নের উত্তর দেওয়া হলো:"!
+  * Speak naturally in Dhaka polite conversational Bangla: e.g., "জি, ...", "হ্যাঁ, অবশ্যই...", "দেখুন, এখানে নিয়মটা হলো...", "আপনার সুবিধার জন্য বলি...", "একটা বিষয় খেয়াল রাখবেন—...".
+  * Avoid stiff machine-translated phrasing (say "নিচের কাগজগুলো লাগবে" instead of "নিম্নলিখিত নথিপত্রসমূহ সংযুক্ত করুন").
+  * Vary your sentence rhythm naturally. Don't wrap every second word in **bold**; bold only key amounts, headings, or crucial points so the text feels human and clean.
+  * If the customer speaks casually or briefly, match their pace politely while always keeping respectful "আপনি" tone.
+
+### 2. NATURAL ADDRESSING & GREETING RULES (সম্বোধন ও সালামের স্বাভাবিক নিয়ম):
+- **NEVER repeat the customer's name** (NEVER say "রহিম সাহেব", "রহিম ভাই").
+- **First Reply Only**: On your VERY FIRST reply to a new client, politely address them ONCE based on their name as **"স্যার"** (male) or **"ম্যাডাম"/"ম্যাম"** (female), or politely neutral if unclear.
+- **Follow-up Replies**: In ALL subsequent replies in the session, DO NOT repeat "স্যার", "ম্যাডাম", "ম্যাম", or their name. Talk directly and naturally face-to-face.
+- **Saalam Rules**: Give "আসসালামু আলাইকুম" / "ওয়ালাইকুম আসসালাম" ONLY on the very first greeting or if the user greets you with Saalam. NEVER repeat Saalam on follow-up answers. NEVER use "নমস্কার" or "আদাব".
+- **Handoff & Closings**:
+  * On initial form handoff (name/phone/subject), greet briefly, answer the chosen service concisely, and ask how you can help today (NEVER say "সার্ভিসটি নেওয়ার জন্য ধন্যবাদ").
+  * Only when the user says goodbye or thanks to close ("ধন্যবাদ", "আল্লাহ হাফেজ", "কাজ শেষ", "বাই"), give a warm natural closing ("প্রসেসিং হাবের সাথে যোগাযোগ করার জন্য ধন্যবাদ! যেকোনো প্রয়োজনে জানাবেন, আল্লাহ হাফেজ।").
+
+### 3. CLEAN, STRUCTURED & ORGANIZED FORMATTING (গোছানো ও পরিচ্ছন্ন উত্তর):
+- Every response must be **crystal clear, specific, and visually neat** — NEVER messy, cramped, or "হিজিবিজি".
+- **When to use Bullet Points (•)**:
+  * Whenever explaining multiple documents, steps, fees, hospitals, destinations, or comparisons, format cleanly using tidy bullet points (•) with clean line breaks so the customer can scan and understand effortlessly in 3 seconds.
+- **When NOT to bloat**:
+  * If the user asks a simple single question (e.g., yes/no, one fee, one specific rule), reply directly in 1–3 clear sentences without dumping an unsolicited long checklist.
+
+### 4. FULL WEBSITE CONTEXT & ADAPTIVE VERIFICATION BRAIN:
+- You have the COMPLETE context of Processing Hub's website in your memory (all Visa Services, IVAC Slot Fees, 14 Indian Travel Destinations, and 16 Partner Indian Hospitals + AYUSH invitation details, plus any newly verified online facts).
+- Always answer accurately about ANY hospital, destination, visa service, checklist, or fee shown on the website.
+- **Handling New Info / Unlisted Questions from Customers**:
+  * If a customer shares new information (e.g., new rule/fee/circular/border update) or asks about something not in our static website data, cross-check it via real-time Google Search.
+  * Rely ONLY on verified facts confirmed online by official/credible sources. If an unconfirmed claim cannot be verified online, politely clarify that there is no official confirmation rather than blindly agreeing or saving false claims.
+
+### 5. DOCUMENT, PHOTO & PDF ANALYSIS:
+- When the user attaches a photo, image, or PDF (passport, NID, photo, utility bill, bank statement, medical report/invitation, ticket, online form):
+  * Inspect every readable detail carefully, briefly summarize what you checked in clean bullet points, note any mismatch or missing item against IVAC rules (e.g., 2"×2" white background photo, NID/passport spelling & DOB match, utility address, 6-month bank statement), and state the clear next step.`;
+}
+
+function buildFullWebsiteContext(): string {
+  const servicesBlock = VISA_SERVICES.map((s) =>
+    `• **${s.title}** (${s.category}) — ফি: ${s.price} ${s.per}\n  বিবরণ: ${s.description}\n  কাগজপত্র: ${s.documents.join(' | ')}`
+  ).join('\n');
+
+  const slotsBlock = SLOT_TYPES.map((st) =>
+    `• **${st.name}**: মোট ৳${st.totalFee} (আইভ্যাক সরকারি ফি ৳${st.ivacFee} + স্লট সার্ভিস চার্জ ৳${st.serviceCharge})`
+  ).join('\n');
+
+  const destinationsBlock = DESTINATIONS.map((d) =>
+    `• **${d.nameBn || d.name} (${d.name})** [${d.location}] — সেরা সময়: ${d.bestTime}\n  আকর্ষণ: ${d.attractions.join(', ')}\n  বিবরণ: ${d.description}`
+  ).join('\n');
+
+  const hospitalsBlock = HOSPITALS.map((h) =>
+    `• **${h.name}** (${h.city} — ${h.location}) ${h.ayushSupport ? '[AYUSH / মেডিকেল ইনভাইটেশন সাপোর্ট আছে]' : ''}\n  বিশেষায়িত বিভাগ: ${h.specialties.join(', ')}\n  গুরুত্বপূর্ণ তথ্য: ${h.highlights.join(' | ')}`
+  ).join('\n');
+
+  return `
+### FULL WEBSITE KNOWLEDGE CONTEXT (ওয়েবসাইটের সম্পূর্ণ তথ্যভান্ডার):
+
+1. **ওয়েবসাইটের সকল ভিসা ও ট্রাভেল সার্ভিসসমূহ**:
+${servicesBlock}
+
+2. **আইভ্যাক স্লট বুকিং প্যাকেজসমূহ**:
+${slotsBlock}
+
+3. **ভারতের জনপ্রিয় ভ্রমণ গন্তব্যসমূহ (১৪টি ডেস্টিনেশন)**:
+${destinationsBlock}
+
+4. **ভারতের শীর্ষ পার্টনার ও রেফারেল হাসপাতালসমূহ (মেডিকেল ভিসা ও ইনভাইটেশন সাপোর্ট)**:
+${hospitalsBlock}
+`;
+}
+
+const WEBSITE_FULL_CONTEXT = buildFullWebsiteContext();
+
+interface LearnedFact {
+  id: string;
+  topic: string;
+  fact: string;
+  sourceUrls: string[];
+  verifiedAt: string;
+}
+
+const LEARNED_KNOWLEDGE_FILE = path.join(process.cwd(), 'data', 'learned_knowledge.json');
+let learnedFactsCache: LearnedFact[] = [];
+let learnedFactsLoaded = false;
+
+async function loadLearnedFacts(): Promise<LearnedFact[]> {
+  if (learnedFactsLoaded) return learnedFactsCache;
+  try {
+    const raw = await fs.readFile(LEARNED_KNOWLEDGE_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      learnedFactsCache = parsed.filter(
+        (item: any) =>
+          item &&
+          typeof item.topic === 'string' &&
+          typeof item.fact === 'string' &&
+          Array.isArray(item.sourceUrls) &&
+          item.sourceUrls.length > 0
+      );
+    }
+  } catch {
+    learnedFactsCache = [];
+  }
+  learnedFactsLoaded = true;
+  return learnedFactsCache;
+}
+
+async function saveVerifiedFact(topic: string, fact: string, sourceUrls: string[]): Promise<boolean> {
+  const cleanTopic = topic.trim().slice(0, 120);
+  const cleanFact = fact.trim().slice(0, 420);
+  const validUrls = sourceUrls.filter((u) => typeof u === 'string' && u.startsWith('http')).slice(0, 3);
+
+  if (!cleanTopic || cleanFact.length < 15 || validUrls.length === 0) {
+    return false;
+  }
+
+  const existing = await loadLearnedFacts();
+  const normalizedNew = cleanFact.toLowerCase().replace(/\s+/g, ' ');
+  const alreadyExists = existing.some((item) => {
+    const normOld = item.fact.toLowerCase().replace(/\s+/g, ' ');
+    return normOld === normalizedNew || normOld.includes(normalizedNew) || normalizedNew.includes(normOld);
+  });
+
+  if (alreadyExists) {
+    return false;
+  }
+
+  const nextEntry: LearnedFact = {
+    id: `fact-${Date.now()}`,
+    topic: cleanTopic,
+    fact: cleanFact,
+    sourceUrls: validUrls,
+    verifiedAt: new Date().toISOString(),
+  };
+
+  learnedFactsCache = [...existing, nextEntry].slice(-120);
+  try {
+    await fs.mkdir(path.dirname(LEARNED_KNOWLEDGE_FILE), { recursive: true });
+    await fs.writeFile(LEARNED_KNOWLEDGE_FILE, JSON.stringify(learnedFactsCache, null, 2), 'utf8');
+    console.info(`[AdaptiveBrain] Saved online-verified fact: "${cleanTopic}"`);
+    return true;
+  } catch (err) {
+    console.warn('[AdaptiveBrain] Failed to persist learned knowledge:', err);
+    return false;
+  }
+}
+
+function buildAdaptiveBrainPrompt(facts: LearnedFact[]): string {
+  if (!facts || facts.length === 0) return '';
+  const recentFacts = facts.slice(-40);
+  const lines = recentFacts.map(
+    (f) => `• [${f.topic}] ${f.fact} (Verified: ${f.verifiedAt.slice(0, 10)})`
+  );
+  return `\n### ADAPTIVE ONLINE-VERIFIED KNOWLEDGE BRAIN (গ্রাহকদের তথ্য যাচাই করে সংরক্ষিত আপডেটেড তথ্য):\n${lines.join('\n')}\n`;
+}
+
+function isCandidateNewFactOrExternalTopic(message: string): boolean {
+  const text = (message || '').trim();
+  if (text.length < 18) return false;
+  // Skip structured form handoff messages or personal PII lines
+  if (text.includes('নাম:') && text.includes('সেবা/বিষয়:')) return false;
+
+  const lower = text.toLowerCase();
+  const trivialGreetings = /^(hi|hello|hey|ok|okay|thanks|thank you|bye|হ্যালো|হাই|ধন্যবাদ|ঠিক আছে|বুঝেছি|আল্লাহ হাফেজ|আসসালামু আলাইকুম)\b/i;
+  if (trivialGreetings.test(lower) && text.length < 35) return false;
+
+  // Detect new claims, policy updates, or external/unlisted travel/visa questions
+  return /নতুন|নিয়ম|নিয়ম|হয়েছে|হয়েছে|বেড়েছে|কমেছে|বন্ধ|খোলা|চালু|বদলেছে|পরিবর্তন|শুনেছি|জানেন কি|সত্যি|নোটিশ|সার্কুলার|পোর্ট|বর্ডার|ফ্লাইট|ট্রেন|বাস|এয়ারপোর্ট|ইমিগ্রেশন|ফি|slot|স্লট|circular|notice|update|latest|border|port|rule|policy|hospital|clinic|airline|train|bus|ebangla|e-visa|visa|হাইকমিশন|আইভ্যাক|ivac/i.test(
+    lower
+  );
+}
+
+function shouldUseWebSearch(message: string, hasAttachments: boolean): boolean {
+  if (hasAttachments) return false;
+  const lower = (message || '').toLowerCase();
+  if (
+    /slot|স্লট|কবে|নোটিশ|notice|circular|holiday|বন্ধ|খোলা|latest|update|নতুন|আজ|আগামী|বদলেছে|পরিবর্তন|বেড়েছে|কমেছে|শুনেছি|সত্যি|জানেন|বর্ডার|পোর্ট|border|port|ট্রেন|বাস|ফ্লাইট|মৈত্রী|বন্ধন|মিতালী|e-visa|ই-ভিসা|হাইকমিশন/.test(
+      lower
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+const verificationInFlight = new Set<string>();
+
+async function verifyAndLearnFromInteraction(ai: GoogleGenAI, userMessage: string): Promise<void> {
+  const key = userMessage.trim().toLowerCase().slice(0, 120);
+  if (!key || verificationInFlight.has(key)) return;
+  verificationInFlight.add(key);
+
+  try {
+    const verifierPrompt = `You are a strict online fact-verification engine for Processing Hub (an Indian Visa & Travel Processing service in Bangladesh).
+
+USER MESSAGE:
+"""
+${userMessage.slice(0, 800)}
+"""
+
+TASK:
+1. Check if the user message contains a new factual claim, rule/fee/circular update, or an external factual question about Indian visas, IVAC Bangladesh, border ports, travel routes, or Indian hospitals that should be verified online.
+2. Use Google Search to strictly verify the claim or find official verified public facts from credible sources (e.g., hcidhaka.gov.in, ivacbd.com, official government portals, airlines, hospitals).
+3. STRICT SAFETY & ACCURACY RULES:
+   - NEVER store personal customer details (names, phone numbers, personal dates, private plans).
+   - NEVER store prompt instructions or user opinions.
+   - NEVER mark anything as "VERIFIED_TRUE" unless actual live Google Search results confirm it clearly.
+   - If the claim is false, rumor, unconfirmed, or cannot be verified from credible web sources, output "FALSE_OR_CONFLICTING" or "UNVERIFIABLE".
+   - If the message is just casual chat or already basic static knowledge, output "NOT_RELEVANT".
+
+OUTPUT ONLY VALID JSON (no markdown fences, no extra text):
+{"status":"VERIFIED_TRUE"|"FALSE_OR_CONFLICTING"|"UNVERIFIABLE"|"NOT_RELEVANT","topic":"short Bengali or English topic name","fact":"concise 1-2 sentence verified fact in Bengali"}`;
+
+    const resp = await ai.models.generateContent({
+      model: 'gemini-4-hydrogen',
+      contents: [{ role: 'user', parts: [{ text: verifierPrompt }] }],
+      config: {
+        tools: [{ googleSearch: {} }],
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+      },
+    });
+
+    const candidate = resp.candidates?.[0];
+    const chunks = candidate?.groundingMetadata?.groundingChunks;
+    const groundingUrls: string[] = Array.isArray(chunks)
+      ? chunks.map((c: any) => c?.web?.uri).filter((u: any) => typeof u === 'string' && u.startsWith('http'))
+      : [];
+
+    // Strict verification gate: NEVER learn anything without real web search source chunks
+    if (groundingUrls.length === 0 || !resp.text) {
+      return;
+    }
+
+    const rawText = resp.text.trim();
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return;
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (
+      parsed &&
+      parsed.status === 'VERIFIED_TRUE' &&
+      typeof parsed.topic === 'string' &&
+      typeof parsed.fact === 'string'
+    ) {
+      await saveVerifiedFact(parsed.topic, parsed.fact, groundingUrls);
+    }
+  } catch (err: any) {
+    // Silent background skip on quota or parse error so user experience is never affected
+    console.info('[AdaptiveBrain] Background verification skipped:', err?.status || err?.message || 'error');
+  } finally {
+    verificationInFlight.delete(key);
+  }
+}
+
+const SHARED_KNOWLEDGE_BASE = `
 
 ### IVAC OFFICIAL NOTICE BOARD MEMORY & GUIDELINES:
 Official Indian Visa Application Centre (IVAC) notice board prescribes exact document checklists, rejection causes, charges, and guidelines:
@@ -174,27 +414,84 @@ I. **REAL-TIME GOOGLE SEARCH & IVAC APPOINTMENT SLOT RELEASE POLICY (রিয়�
      - Clearly state: "আইভ্যাকের অফিসিয়াল নিয়ম অনুযায়ী অ্যাপয়েন্টমেন্ট স্লট ছাড়ার সুনির্দিষ্ট দিনক্ষণ আগে থেকে ঘোষণা করা হয় না; সিস্টেমের মাধ্যমে এটি সার্বক্ষণিক মনিটর করতে হয়। নতুন ব্যাচের স্লট ওপেন হওয়া মাত্র দ্রুত বুকিং সম্পন্ন করতে আপনি আমাদের সাথে যোগাযোগ করে ফাইল প্রস্তুত রাখতে পারেন।"
 `;
 
-// Helper: Mohammad Expert Knowledge Engine Fallback
-function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
-  title?: string;
-  category?: string;
-  price?: string;
-  description?: string;
-  documents?: string[];
-  isSlotBooking?: boolean;
-}): string {
+function detectCourtesyHonorific(userName?: string): string {
+  if (!userName) return 'স্যার';
+  const lower = userName.toLowerCase();
+  const femaleHints = [
+    'aysha', 'aisha', 'fatema', 'fatima', 'nusrat', 'jannat', 'tasnim', 'sadia',
+    'farhana', 'sumaiya', 'sabina', 'yasmin', 'sharmin', 'rokeya', 'nadia',
+    'mim', 'tania', 'farzana', 'lamia', 'tahmina', 'nasrin', 'eity', 'iti',
+    'begum', 'khatun', 'akter', 'akhter', 'sultana', 'jahan', 'rahman', 'parvin',
+    'আয়েশা', 'আয়েশা', 'ফাতেমা', 'নুসরাত', 'জান্নাত', 'তাসনিম', 'সাদিয়া', 'ফারহানা',
+    'সুমাইয়া', 'শাবিনা', 'ইয়াসমিন', 'শারমিন', 'নাদিয়া', 'তানিয়া', 'ইতি', 'আক্তার', 'বেগম', 'সুলতানা'
+  ];
+  const isFemale = femaleHints.some((hint) => lower.includes(hint));
+  return isFemale ? 'ম্যাডাম' : 'স্যার';
+}
+
+// Helper: Expert Knowledge Engine Fallback (no "consultant" labels, natural human tone)
+function generateAgentFallbackReply(
+  userMessage: string,
+  serviceContext?: {
+    title?: string;
+    category?: string;
+    price?: string;
+    description?: string;
+    documents?: string[];
+    isSlotBooking?: boolean;
+  },
+  agentName = 'Mohammad',
+  isFirstReply = true,
+  userName?: string,
+  attachments?: Array<{ name?: string; mimeType?: string }>
+): string {
   const query = (userMessage || '').toLowerCase().trim();
+  const firstReplyHonorific = isFirstReply ? `${detectCourtesyHonorific(userName)}, ` : '';
+
+  if (Array.isArray(attachments) && attachments.length > 0) {
+    const fileNames = attachments.map((a) => a.name || 'ফাইল').join(', ');
+    return `${firstReplyHonorific}আপনার পাঠানো **${fileNames}** ফাইলটি পেয়েছি। সাময়িকভাবে অটো-রিডিংয়ে সংযোগ সমস্যা থাকায় ফাইলটি সরাসরি যাচাই করে পরবর্তী পদক্ষেপ জানাতে আমাদের WhatsApp নম্বরে (+8801577464706) অথবা আপনার কী বিষয়ে সহায়তা প্রয়োজন তা সংক্ষেপে লিখে দিন।`;
+  }
+
+  // Structured Form Handoff Detection (from Talk to Agent button)
+  if (userMessage.includes('নাম:') && userMessage.includes('সেবা/বিষয়:')) {
+    const subjectLine = userMessage
+      .split('\n')
+      .find((line) => line.startsWith('সেবা/বিষয়:'))
+      ?.replace('সেবা/বিষয়:', '')
+      .trim() || serviceContext?.title || 'ভিসা প্রসেসিং';
+    const subjectLower = subjectLine.toLowerCase();
+
+    let serviceDetail = '';
+    if (subjectLower.includes('medical') || subjectLower.includes('মেডিকেল')) {
+      serviceDetail = `**মেডিকেল ভিসার** জন্য আমাদের প্রসেসিং + স্লট প্যাকেজ (আইভ্যাক ফি ১,৫০০৳ ও ইনভাইটেশন সহ) **৳৬,০০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+    } else if (subjectLower.includes('double') || subjectLower.includes('ডাবল') || subjectLower.includes('ডবল')) {
+      serviceDetail = `**ডাবল এন্ট্রি ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,৫০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+    } else if (subjectLower.includes('business') || subjectLower.includes('বিজনেস')) {
+      serviceDetail = `**বিজনেস ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,০০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+    } else if (subjectLower.includes('tourist') || subjectLower.includes('ট্যুরিস্ট')) {
+      serviceDetail = `**ট্যুরিস্ট ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,০০০** এবং শুধু স্লট **৳৫,৫০০** (১,৫০০ + ৪,০০০)।`;
+    } else if (subjectLower.includes('ticket') || subjectLower.includes('টিকেট') || subjectLower.includes('টিকিট')) {
+      serviceDetail = `**টিকেট বুকিং** সার্ভিস চার্জ **৳১,৫০০**।`;
+    } else if (subjectLower.includes('slot') || subjectLower.includes('স্লট')) {
+      serviceDetail = `**শুধু স্লট বুকিং** ফি (আইভ্যাক ফি ১,৫০০৳ সহ): মেডিকেল/বিজনেস/ডাবল এন্ট্রি **৳৪,৫০০** এবং ট্যুরিস্ট **৳৫,৫০০**।`;
+    } else if (serviceContext?.price) {
+      serviceDetail = `**${subjectLine}**-এর ফি **${serviceContext.price}**।`;
+    }
+
+    return `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! আপনার তথ্যগুলো পেয়েছি। আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি।\n\n${serviceDetail ? `${serviceDetail}\n\n` : ''}**${subjectLine}** বিষয়ে আপনাকে কীভাবে সহযোগিতা করতে পারি?`;
+  }
 
   // Greetings & Identity
   if (query.includes('কে আপনি') || query.includes('আপনার নাম') || query.includes('name') || query.includes('ai') || query.includes('bot') || query.includes('রোবট')) {
-    return 'আসসালামু আলাইকুম! আমি **মোহাম্মদ**, প্রসেসিং হাবের সিনিয়র ভিসা ও ট্রাভেল কনসালটেন্ট। আপনার যে কোনো ভিসা প্রসেসিং ও পরামর্শে আমি আন্তরিকভাবে সহযোগিতা করতে প্রস্তুত।';
+    return `${isFirstReply ? `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! ` : ''}আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি। আপনার যে কোনো ভিসা প্রসেসিং ও তথ্য দিয়ে সাহায্য করতে প্রস্তুত।`;
   }
 
-  if (query === 'hi' || query === 'hello' || query === 'hey' || query === 'হ্যালো' || query === 'হাই' || query.includes('আসসালামু') || query.includes('নমস্কার') || query.includes('কেমন আছেন')) {
+  if (query === 'hi' || query === 'hello' || query === 'hey' || query === 'হ্যালো' || query === 'হাই' || query.includes('আসসালামু') || query.includes('কেমন আছেন')) {
     if (serviceContext?.title) {
-      return `আসসালামু আলাইকুম! প্রসেসিং হাবে আপনাকে স্বাগতম। **${serviceContext.title}** সম্পর্কে আগ্রহ প্রকাশের জন্য ধন্যবাদ। এ বিষয়ে আপনার সুনির্দিষ্ট প্রশ্নটি বলুন, আমি বিস্তারিত তথ্য দিয়ে সাহায্য করছি।`;
+      return `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! প্রসেসিং হাবে স্বাগতম। আমি **${agentName}**। **${serviceContext.title}** সম্পর্কে আপনার কী জানার আছে বলুন, সাহায্য করছি।`;
     }
-    return 'আসসালামু আলাইকুম! প্রসেসিং হাবে আপনাকে স্বাগতম। আমি মোহাম্মদ, আপনার ভিসা ও ভ্রমণ বিষয়ক যে কোনো তথ্যে সহযোগিতা করতে পারি। আপনি কোন সেবা সম্পর্কে জানতে আগ্রহী?';
+    return `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! প্রসেসিং হাবে স্বাগতম। আমি **${agentName}**। আপনাকে কীভাবে সহযোগিতা করতে পারি?`;
   }
 
   // If specific serviceContext is active and user asks general question (e.g. documents, cost, processing, how to start)
@@ -228,13 +525,12 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
       if (serviceContext.title.toLowerCase().includes('tourist') || serviceContext.title.includes('ট্যুরিস্ট')) {
         return `**ট্যুরিস্ট ভিসার ফি বিবরণ:**\n• **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,০০০\n• **শুধু স্লট বুকিং:** মোট ৳৫,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)`;
       }
-      return `আপনার জিজ্ঞাসার জন্য ধন্যবাদ। **${serviceContext.title}**-এর অফিশিয়াল ফি **${serviceContext.price || '৳১,৫০০'}**।`;
+      return `${firstReplyHonorific}**${serviceContext.title}**-এর অফিশিয়াল ফি **${serviceContext.price || '৳১,৫০০'}**।`;
     }
 
     if (isGeneralDocQuery || isHowToQuery) {
       if (isServiceMedical) {
-        return `মেডিকেল ভিসা সম্পর্কে জানতে চাওয়ার জন্য আপনাকে ধন্যবাদ।\n\n` +
-          `📋 **প্রয়োজনীয় কাগজপত্রসমূহ:**\n` +
+        return `${firstReplyHonorific}মেডিকেল ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
           `• অনলাইন আবেদন পত্র\n` +
           `• ভারতীয় হাসপাতালের মূল ডক্টরস ইনভাইটেশন লেটার\n` +
           `• জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন\n` +
@@ -245,8 +541,7 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
           `• মূল পাসপোর্ট ও সকল পুরাতন পাসপোর্ট।`;
       }
       if (isServiceDouble) {
-        return `ডাবল এন্ট্রি ভিসা সম্পর্কে তথ্য জানতে চাওয়ার জন্য আপনাকে ধন্যবাদ।\n\n` +
-          `📋 **প্রয়োজনীয় কাগজপত্রসমূহ:**\n` +
+        return `${firstReplyHonorific}ডাবল এন্ট্রি ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
           `• অনলাইন আবেদন পত্র\n` +
           `• ৩য় দেশের কনফার্মড এয়ার টিকেট / এম্বাসি অ্যাপয়েন্টমেন্ট লেটার\n` +
           `• জাতীয় পরিচয় পত্র ও ইউটিলিটি বিল\n` +
@@ -255,8 +550,7 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
           `• মূল পাসপোর্ট ও পুরনো পাসপোর্ট।`;
       }
       if (isServiceBusiness) {
-        return `বিজনেস ভিসা সম্পর্কে তথ্য জানতে চাওয়ার জন্য আপনাকে ধন্যবাদ।\n\n` +
-          `📋 **প্রয়োজনীয় কাগজপত্রসমূহ:**\n` +
+        return `${firstReplyHonorific}বিজনেস ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
           `• আবেদন পত্র\n` +
           `• ভারতীয় কোম্পানির মূল ইনভাইটেশন লেটার\n` +
           `• জাতীয় পরিচয় পত্র ও ইউটিলিটি বিল\n` +
@@ -266,19 +560,16 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
           `• মূল পাসপোর্ট ও পুরাতন পাসপোর্ট।`;
       }
       if (serviceContext.title.toLowerCase().includes('ticket') || serviceContext.title.includes('টিকেট') || serviceContext.title.includes('টিকিট')) {
-        return `টিকেট বুকিং সেবা সম্পর্কে জানতে চাওয়ার জন্য আপনাকে ধন্যবাদ।\n\n` +
-          `✈️ **টিকেট বুকিং সেবার বিবরণ:**\n` +
+        return `${firstReplyHonorific}টিকেট বুকিংয়ের বিস্তারিত তথ্য নিচে দিলাম:\n\n` +
           `• **সার্ভিস চার্জ:** ১,৫০০ টাকা\n` +
-          `• **সেবাসমূহ:** দেশ ও বিদেশের সকল ধরনের এয়ার টিকিট, ওয়ান-ওয়ে, রাউন্ড ট্রিপ, ট্রানজিট টিকিট ও কনফার্মড রিটার্ন টিকিট বুকিং।\n\n` +
-          `📋 **প্রয়োজনীয় তথ্য ও ডকুমেন্টস:**\n` +
-          `• যাত্রীর মূল পাসপোর্টের পরিষ্কার কপি\n` +
-          `• সম্ভাব্য ভ্রমণের তারিখ ও সময়সূচি\n` +
-          `• যাত্রা শুরু ও গন্তব্যের তথ্য\n` +
-          `• ভিসা কপি (যদি থাকে)।`;
+          `• **সেবাসমূহ:** দেশ ও বিদেশের সকল ধরনের এয়ার টিকিট, ওয়ান-ওয়ে, রাউন্ড ট্রিপ, ট্রানজিট ও কনফার্মড রিটার্ন টিকিট বুকিং।\n\n` +
+          `• **প্রয়োজনীয় তথ্য ও ডকুমেন্টস:**\n` +
+          `  • যাত্রীর মূল পাসপোর্টের পরিষ্কার কপি\n` +
+          `  • সম্ভাব্য ভ্রমণের তারিখ ও শহর\n` +
+          `  • ভিসা কপি (যদি থাকে)।`;
       }
       if (isServiceSlot) {
-        return `আইভ্যাক অ্যাপয়েন্টমেন্ট স্লট বুকিং সম্পর্কে জানার আগ্রহ প্রকাশের জন্য আপনাকে ধন্যবাদ।\n\n` +
-          `⚡ **প্রয়োজনীয় তথ্যাবলী:**\n` +
+        return `${firstReplyHonorific}আইভ্যাক স্লট বুকিংয়ের জন্য কেবল নিচের দুইটি তথ্য লাগবে:\n\n` +
           `• পাসপোর্টের পরিষ্কার ছবি\n` +
           `• অনলাইন ভিসা ফর্মের ওয়েব ফাইল নম্বর (Web File No)।`;
       }
@@ -288,12 +579,12 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
   // Double Entry Visa direct queries
   if (query.includes('ডাবল') || query.includes('double')) {
     if (query.includes('স্লট') || query.includes('slot')) {
-      return `ডাবল এন্ট্রি ভিসার স্লট ও প্রসেসিং ফি বিবরণ:\n\n` +
+      return `ডাবল এন্ট্রি ভিসার স্লট ও প্রসেসিং ফি:\n\n` +
         `• **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ৩,০০০৳)\n` +
         `• **প্রসেসিং + স্লট (আইভ্যাক ফিসহ):** ৳৬,৫০০\n` +
-        `• **প্রয়োজনীয় তথ্য:** আপনার পাসপোর্টের কপি ও ভিসা ফর্মের ওয়েব ফাইল নম্বর।`;
+        `• **যা লাগবে:** আপনার পাসপোর্টের কপি ও ভিসা ফর্মের ওয়েব ফাইল নম্বর।`;
     }
-    return `ডাবল এন্ট্রি ভিসা সম্পর্কে বিস্তারিত তথ্য:\n\n` +
+    return `ডাবল এন্ট্রি ভিসার ফি ও প্রয়োজনীয় কাগজপত্র:\n\n` +
       `• **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,৫০০\n` +
       `• **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
       `• **প্রয়োজনীয় কাগজপত্র:**\n` +
@@ -306,26 +597,26 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
 
   // Notice board queries: Rejection reasons, Notice, Serial ordering
   if (query.includes('রিজেক্ট') || query.includes('প্রত্যাখ্যান') || query.includes('বাতিল') || query.includes('rejection') || query.includes('reject') || query.includes('ভিসা না পাওয়ার কারণ')) {
-    return 'আপনার জিজ্ঞাসার জন্য ধন্যবাদ।\n\n📋 **ইন্ডিয়ান ভিসা রিজেক্ট হওয়ার প্রধান কারণসমূহ:**\n\n' +
+    return 'ইন্ডিয়ান ভিসা সাধারণত যেসব কারণে রিজেক্ট হয়:\n\n' +
       '• ফর্মে ভুল তথ্য পূরণ করা\n' +
-      '• জাল বা নকল ডকুমেন্ট সংযুক্ত করা\n' +
-      '• পাসপোর্ট এবং ভোটার আইডি/জন্ম নিবন্ধনে তথ্যের অমিল থাকা\n' +
-      '• ভ্রমণ ভিসা নিয়ে ভারতে Over Stay করা\n' +
+      '• জাল বা অসম্পূর্ণ ডকুমেন্ট সংযুক্ত করা\n' +
+      '• পাসপোর্ট ও NID/জন্ম নিবন্ধনে তথ্যের অমিল থাকা\n' +
+      '• ভ্রমণ ভিসা নিয়ে ভারতে নির্ধারিত সময়ের বেশি থাকা (Over Stay)\n' +
       '• আবেদন পত্র এবং বিদ্যুৎ বিলের ঠিকানায় অমিল থাকা\n' +
-      '• পুরানো ছবি বা ২"×২" ছাড়া ছবি দেওয়া\n' +
-      '• জাল NOC বা ভুয়া ডলার এন্ডোর্সমেন্ট প্রদান করা\n' +
+      '• পুরানো ছবি বা ২"×২" সাদা ব্যাকগ্রাউন্ড ছাড়া ছবি দেওয়া\n' +
+      '• জাল NOC বা ভুয়া ডলার এন্ডোর্সমেন্ট দেওয়া\n' +
       '• পেশাগত তথ্যে গরমিল থাকা\n' +
-      '• পূর্বের সকল পাসপোর্ট জমা না দেওয়া।\n\n' +
-      '*(ভিসা সংক্রান্ত অফিসিয়াল তথ্যের ই-মেইল: visahelp@hcidhaka.gov.in)*';
+      '• পূর্বের সকল পুরনো পাসপোর্ট জমা না দেওয়া।\n\n' +
+      '*(অফিসিয়াল সহায়তা ইমেইল: visahelp@hcidhaka.gov.in)*';
   }
 
   // IVAC Schedule of charges
   if (query.includes('সরকারি ফি') || query.includes('ivac fee') || query.includes('আইভ্যাক ফি') || query.includes('পোর্ট চার্জ') || query.includes('correction') || query.includes('সংশোধন ফি') || query.includes('schedule of charges')) {
-    return 'আপনার জিজ্ঞাসার জন্য ধন্যবাদ।\n\n🏛️ **আইভ্যাক সেন্টারের অফিসিয়াল চার্জ চার্ট:**\n\n' +
-      '• ভিসা প্রসেসিং ফি: **১৫০০ টাকা**\n' +
+    return 'আইভ্যাক সেন্টারের সরকারি ফি তালিকা:\n\n' +
+      '• ভিসা প্রসেসিং ফি: **১,৫০০ টাকা**\n' +
       '• অতিরিক্ত পোর্ট এন্ডোর্সমেন্ট: **৩০০ টাকা** (সর্বোচ্চ ২টি পোর্ট)\n' +
       '• অনলাইন ফর্ম সংশোধন: **৩০০ টাকা** (অনুমোদিত ফিল্ড)\n' +
-      '• ভিসা অ্যাপ্লিকেশন ফ্যাসিলিটেশন (যমুনা ফিউচার পার্ক): **৩০০ টাকা**';
+      '• ফ্যাসিলিটেশন চার্জ (যমুনা ফিউচার পার্ক): **৩০০ টাকা**';
   }
 
   // Transit visa
@@ -415,24 +706,21 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
     (query.includes('কবে') || query.includes('next') || query.includes('তারিখ') || query.includes('সময়') || query.includes('সময়') || query.includes('রিলিজ') || query.includes('ছাড়বে') || query.includes('ওপেন')) &&
     (query.includes('স্লট') || query.includes('slot') || query.includes('ডেট') || query.includes('অ্যাপয়েন্টমেন্ট'))
   ) {
-    return 'আইভ্যাক অ্যাপয়েন্টমেন্ট স্লট সংক্রান্ত তথ্যের জন্য আপনাকে ধন্যবাদ।\n\n' +
-      '📌 **অ্যাপয়েন্টমেন্ট স্লট ছাড়ার অফিশিয়াল নিয়মাবলী:**\n' +
-      '• আইভ্যাকের সাধারণ নিয়ম অনুযায়ী স্লট রিলিজ বা ছাড়ার নির্দিষ্ট দিনক্ষণ আগে থেকে জনসম্মুখে প্রকাশ করা হয় না।\n' +
-      '• সিস্টেম হঠাৎ যেকোনো সময় নির্দিষ্ট ব্যাচের স্লট ওপেন করে, যা সার্বক্ষণিক মনিটরিং ছাড়া জানা কঠিন।\n' +
-      '• কোনো আনুষ্ঠানিক সরকারি নোটিশ ছাড়া অনুমানের ওপর ভিত্তি করে কোনো তারিখ নিশ্চিত করা সম্ভব নয়।\n\n' +
-      '⚡ **আমাদের স্লট বুকিং সাপোর্ট:**\n' +
-      '• আমাদের ডেডিকেটেড টিম সার্বক্ষণিক আইভ্যাক পোর্টাল মনিটর করে থাকে। স্লট ওপেন হওয়ামাত্র দ্রুত বুকিং সম্পন্ন করতে আপনি আপনার পাসপোর্ট ও ভিসা ফর্ম দিয়ে ফাইল রেডি রাখতে পারেন।\n' +
-      '• বিস্তারিত তথ্য বা বুকিংয়ের জন্য আমাদের হটলাইনে (+8801577464706) যোগাযোগ করতে পারেন।';
+    return 'আইভ্যাক অ্যাপয়েন্টমেন্ট স্লট ছাড়ার নিয়মটা একটু আলাদা:\n\n' +
+      '• আইভ্যাকের নিয়ম অনুযায়ী স্লট রিলিজের নির্দিষ্ট দিনক্ষণ আগে থেকে জানানো হয় না।\n' +
+      '• সিস্টেমে যখন নতুন ব্যাচ ওপেন হয়, তখনই সার্বক্ষণিক মনিটরিং করে দ্রুত বুকিং নিতে হয়।\n' +
+      '• অনুমান করে কোনো তারিখ বলা ঠিক হবে না—তবে ফাইল রেডি রাখলে স্লট ছাড়ামাত্রই আমাদের টিম আপনার বুকিং করে দিতে পারবে।\n\n' +
+      'বিস্তারিত জানতে চাইলে আমাদের হটলাইন/WhatsApp নম্বরে (+8801577464706) যোগাযোগ করতে পারেন।';
   }
 
   // Slot booking / IVAC
   if (query.includes('স্লট') || query.includes('slot') || query.includes('আইভ্যাক') || query.includes('ivac') || query.includes('তারিখ') || query.includes('অ্যাপয়েন্টমেন্ট')) {
-    return 'আইভ্যাক স্লট বুকিং চার্জের বিবরণ (প্রতিটি ভিসায় আইভ্যাক ফি ৳১,৫০০ ফিক্সড):\n\n' +
+    return 'আইভ্যাক স্লট বুকিং ফি (প্রতিটি ভিসায় আইভ্যাক সরকারি ফি ৳১,৫০০ ফিক্সড):\n\n' +
       '• **মেডিকেল স্লট:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
       '• **ট্যুরিস্ট স্লট:** মোট ৳৫,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)\n' +
       '• **ডাবল এন্ট্রি স্লট:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
       '• **বিজনেস স্লট:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n\n' +
-      'স্লট বুক করতে আপনার পাসপোর্টের কপি ও ওয়েব ফাইল নম্বর প্রয়োজন।';
+      'স্লট বুক করতে আপনার পাসপোর্টের কপি ও ওয়েব ফাইল নম্বর লাগবে।';
   }
 
   // Cost / Pricing General
@@ -453,22 +741,22 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
 
   // Bank Statement questions
   if (query.includes('ব্যাংক') || query.includes('bank') || query.includes('স্টেটমেন্ট') || query.includes('ব্যালেন্স') || query.includes('ডলার') || query.includes('টাকা থাকতে')) {
-    return 'আপনার জিজ্ঞাসার জন্য ধন্যবাদ।\n\n💳 **ব্যাংক স্টেটমেন্ট ও সলভেন্সির নিয়মাবলী:**\n\n' +
+    return 'ব্যাংক স্টেটমেন্ট ও ডলার এন্ডোর্সমেন্টের নিয়মগুলো হলো:\n\n' +
       '• বিগত ৬ মাসের নিয়মিত লেনদেন স্টেটমেন্ট (ন্যূনতম ব্যালেন্স ৩০,০০০+ টাকা থাকা ভালো)।\n' +
       '• ব্যাংক একাউন্ট না থাকলে পাসপোর্টে **$২০০ ডলার এন্ডোর্সমেন্ট** করা যাবে।';
   }
 
   // Photo specifications
   if (query.includes('ছবি') || query.includes('photo') || query.includes('picture') || query.includes('সাইজ')) {
-    return 'আপনার জিজ্ঞাসার জন্য ধন্যবাদ।\n\n📸 **ছবির সঠিক নিয়মাবলী:**\n\n' +
+    return 'ভিসার ছবির সঠিক মাপ ও নিয়ম:\n\n' +
       '• সাইজ: ২×২ ইঞ্চি (50mm × 50mm) ল্যাব প্রিন্ট।\n' +
       '• ব্যাকগ্রাউন্ড: সম্পূর্ণ পরিষ্কার সাদা (White Background)।\n' +
-      '• কান ও কপাল স্পষ্ট থাকতে হবে, ৩ মাসের বেশি পুরানো হওয়া যাবে না।';
+      '• কান ও কপাল স্পষ্ট থাকতে হবে, এবং ছবি ৩ মাসের বেশি পুরনো হওয়া যাবে না।';
   }
 
   // Contact / Phone / Address
   if (query.includes('ফোন') || query.includes('নম্বর') || query.includes('যোগাযোগ') || query.includes('ঠিকানা') || query.includes('contact') || query.includes('phone') || query.includes('address') || query.includes('whatsapp') || query.includes('হোয়াটসঅ্যাপ')) {
-    return 'যোগাযোগের তথ্য জানতে চাওয়ার জন্য ধন্যবাদ।\n\n📞 **আমাদের সাথে সরাসরি যোগাযোগের মাধ্যম:**\n\n' +
+    return 'আমাদের সাথে সরাসরি যোগাযোগের মাধ্যম:\n\n' +
       '• হটলাইন ও WhatsApp: **+8801577464706**\n' +
       '• অফিস: ঢাকা, বাংলাদেশ\n' +
       '• ইমেইল: support@processinghub.com';
@@ -476,18 +764,18 @@ function generateMohammadConsultantReply(userMessage: string, serviceContext?: {
 
   // Duration / Time required
   if (query.includes('কত দিন') || query.includes('সময়') || query.includes('লাগে') || query.includes('duration') || query.includes('time') || query.includes('ডেলিভারি')) {
-    return 'আপনার জিজ্ঞাসার জন্য ধন্যবাদ।\n\n⏱️ **প্রসেসিং ও ডেলিভারি সময়সীমা:**\n\n' +
-      '• ফাইল প্রসেসিং: **১ থেকে ২ কর্মদিবস**\n' +
+    return 'ভিসা প্রসেসিং ও ডেলিভারির সাধারণ সময়সীমা:\n\n' +
+      '• আমাদের ফাইল প্রসেসিং: **১ থেকে ২ কর্মদিবস**\n' +
       '• আইভ্যাকে জমা দেওয়ার পর ডেলিভারি: ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী সাধারণত **৭ থেকে ১৫ কর্মদিবস**।';
   }
 
   // Conversation Closings / Thank you / Service done
   if (query.includes('ধন্যবাদ') || query.includes('thank') || query.includes('থ্যাংক') || query.includes('আল্লাহ হাফেজ') || query.includes('bye') || query.includes('বাই') || query.includes('বিদায়') || query.includes('বিদায়') || query.includes('কাজ শেষ') || query.includes('বুঝেছি') || query.includes('ঠিক আছে')) {
-    return 'প্রসেসিং হাবের সেবা ও পরামর্শ নেওয়ার জন্য আপনাকে আন্তরিক ধন্যবাদ! ভবিষ্যতে যেকোনো ভিসা বা ভ্রমণ সংক্রান্ত প্রয়োজনে আমরা সর্বদা আপনার পাশে আছি। আপনার যাত্রা শুভ ও নিরাপদ হোক, আল্লাহ হাফেজ।';
+    return 'প্রসেসিং হাবের সাথে যোগাযোগ করার জন্য আন্তরিক ধন্যবাদ! ভবিষ্যতে যেকোনো ভিসা বা ভ্রমণ সংক্রান্ত প্রয়োজনে আমরা সর্বদা পাশে আছি। আপনার যাত্রা শুভ ও নিরাপদ হোক, আল্লাহ হাফেজ।';
   }
 
-  // Default Consultation Reply
-  return 'আসসালামু আলাইকুম! আপনার জিজ্ঞাসার জন্য ধন্যবাদ। আমি **মোহাম্মদ**, প্রসেসিং হাবের সিনিয়র ভিসা কনসালটেন্ট। আপনার যে কোনো ভিসা প্রসেসিং বা ডকুমেন্টস সংক্রান্ত প্রশ্নে আমি সহযোগিতা করতে প্রস্তুত।';
+  // Default Reply
+  return `${firstReplyHonorific}আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি। আপনার ভিসা প্রসেসিং বা ডকুমেন্টস সংক্রান্ত প্রশ্নটি বলুন, আমি সাহায্য করছি।`;
 }
 
 // Helper: Escape HTML for Telegram formatting
@@ -501,102 +789,204 @@ function escapeHtml(text: string): string {
 
 // API endpoint for chatbot
 app.post('/api/chat', async (req, res) => {
+  const agentName = sanitizeAgentName(req.body?.agentName);
+  const messages = req.body?.messages;
+  const serviceContext = req.body?.serviceContext;
+  const userName = req.body?.userName;
+  const userPhone = req.body?.userPhone;
+  const userMsgCount = Array.isArray(messages)
+    ? messages.filter((m: any) => m.role === 'user').length
+    : 1;
+  const isFirstReply = userMsgCount <= 1;
+  const lastMsgObj = Array.isArray(messages) && messages.length > 0
+    ? messages[messages.length - 1]
+    : null;
+  const lastUserMessage = lastMsgObj?.text || '';
+  const lastAttachments = Array.isArray(lastMsgObj?.attachments) ? lastMsgObj.attachments : [];
+
   try {
-    const { messages, serviceContext, userName, userPhone } = req.body;
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'Messages array is required.' });
     }
 
-    const lastUserMessage = messages[messages.length - 1]?.text || '';
     const ai = getAiClient();
 
-    // Dynamically inject service context into the system prompt
-    let contextualSystemInstruction = SYSTEM_INSTRUCTION;
+    const learnedFacts = await loadLearnedFacts();
+    const adaptiveKnowledgeSection = buildAdaptiveBrainPrompt(learnedFacts);
+
+    // Dynamically build persona and inject full website context + verified adaptive brain + addressing context
+    let contextualSystemInstruction = `${buildSystemInstruction(agentName)}\n${SHARED_KNOWLEDGE_BASE}\n${WEBSITE_FULL_CONTEXT}${adaptiveKnowledgeSection}`;
     if (userName) {
-      contextualSystemInstruction += `\n\n### CLIENT IDENTITY (গ্রাহকের পরিচিতি):
-The client's name is: "${userName}".
-${userPhone ? `Phone / WhatsApp: "${userPhone}".` : ''}
-- Address the client respectfully by their name when appropriate (e.g. "${userName} সাহেব", "${userName} ভাই/স্যার" or politely with their name).
-- Do NOT ask them for their name or contact number again because they already provided it in the contact form.`;
+      contextualSystemInstruction += `\n\n### CLIENT IDENTITY & NATURAL ADDRESSING:
+Client Name: "${userName}"${userPhone ? ` | Phone: "${userPhone}"` : ''}.
+Current User Message Count in Session: ${userMsgCount}.
+- ${isFirstReply
+  ? `This is your FIRST reply to this user. Address them politely ONCE as "স্যার" (if "${userName}" is male) or "ম্যাডাম"/"ম্যাম" (if "${userName}" is female), or a polite neutral greeting if gender is unclear. NEVER say "${userName} সাহেব".`
+  : `This is a FOLLOW-UP reply (message #${userMsgCount}). STRICTLY DO NOT repeat their name ("${userName}"), "সাহেব", "স্যার", or "ম্যাডাম"/"ম্যাম". Speak completely naturally face-to-face.`
+}
+- NEVER ask for their name or mobile number again—they already submitted it.`;
     }
     if (serviceContext && (serviceContext.title || serviceContext.category)) {
-      contextualSystemInstruction += `\n\n### ACTIVE PAGE SERVICE CONTEXT (ইউজারের বর্তমান ব্রাউজিং পেজ ও সার্ভিস ফোকাস):
-The customer is currently actively browsing or inquiring about the following specific service on our website:
+      contextualSystemInstruction += `\n\n### ACTIVE PAGE SERVICE CONTEXT:
+The customer is currently inquiring about:
 - **Focused Service**: ${serviceContext.title || 'N/A'}
 - **Category**: ${serviceContext.category || 'Visa Processing'}
 - **Official Price**: ${serviceContext.price || 'N/A'} ${serviceContext.per || ''}
 - **Service Summary**: ${serviceContext.description || ''}
 ${serviceContext.documents && serviceContext.documents.length > 0 ? `- **Standard Document Checklist**:\n  * ${serviceContext.documents.join('\n  * ')}` : ''}
 
-**SPECIFIC CONSULTATION DIRECTIVE**:
-You are advising a customer who is specifically on the "${serviceContext.title}" section. Prioritize giving precise, actionable, step-by-step advice for "${serviceContext.title}".
-- If the user asks open-ended questions (such as "কি কি ডকুমেন্টস লাগবে?", "খরচ কত?", "কিভাবে প্রসেস করব?", "ইনভাইটেশন কিভাবে পাব?"), tailor your direct response specifically to "${serviceContext.title}".
-- Highlight the exact pricing, required documentation nuances (e.g. hospital invitation letters for Medical Visa vs NOC for Tourist vs trade license for Business), and IVAC slot recommendations.
-- Keep the tone highly professional, empathetic, welcoming, and strictly as Mohammad from Processing Hub.`;
+**SPECIFIC DIRECTIVE**:
+Prioritize concise, accurate, actionable guidance specifically for "${serviceContext.title}".
+- Keep your tone natural, warm, strictly as ${agentName} from Processing Hub, and NEVER use the words "Visa Consultant", "Consultant", "ভিসা কনসালটেন্ট", or "কনসালটেন্ট".`;
     }
 
-    // If Gemini client is available, try invoking Gemini with contextual prompt
+    // If Gemini client is available, try invoking Gemini with contextual multimodal prompt
     if (ai) {
-      try {
-        const recentMessages = messages.slice(-6);
-        const contents = recentMessages.map((msg: { role: string; text: string }) => ({
-          role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
-          parts: [{ text: msg.text || '' }],
-        }));
+      const recentMessages = messages.slice(-6);
+      const contents = recentMessages.map((msg: any) => {
+        const role = msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user';
+        const parts: any[] = [];
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents,
-          config: {
-            systemInstruction: contextualSystemInstruction,
-            tools: [{ googleSearch: {} }],
-            temperature: 0.65,
-          },
-        });
-
-        if (response && response.text) {
-          let sources: Array<{ title: string; uri: string }> = [];
-          let webSearchQueries: string[] = [];
-
-          const candidate = response.candidates?.[0];
-          const groundingMetadata = candidate?.groundingMetadata;
-          if (groundingMetadata) {
-            if (Array.isArray(groundingMetadata.webSearchQueries)) {
-              webSearchQueries = groundingMetadata.webSearchQueries;
-            }
-            if (Array.isArray(groundingMetadata.groundingChunks)) {
-              sources = groundingMetadata.groundingChunks
-                .map((chunk: any) => ({
-                  title: chunk.web?.title || 'অফিসিয়াল তথ্যসূত্র',
-                  uri: chunk.web?.uri || '',
-                }))
-                .filter((s: { uri: string }) => Boolean(s.uri));
+        if (Array.isArray(msg.attachments)) {
+          for (const att of msg.attachments) {
+            if (att && typeof att.data === 'string' && att.data.length > 0 && typeof att.mimeType === 'string') {
+              if (
+                att.mimeType.startsWith('text/') ||
+                att.mimeType === 'application/json' ||
+                att.mimeType === 'text/csv'
+              ) {
+                try {
+                  const decodedText = Buffer.from(att.data, 'base64').toString('utf8');
+                  parts.push({
+                    text: `[সংযুক্ত ফাইল: ${att.name || 'document.txt'}]\n${decodedText.slice(0, 15000)}`,
+                  });
+                } catch {
+                  parts.push({ inlineData: { mimeType: att.mimeType, data: att.data } });
+                }
+              } else {
+                parts.push({
+                  inlineData: {
+                    mimeType: att.mimeType,
+                    data: att.data,
+                  },
+                });
+              }
+            } else if (att?.name) {
+              parts.push({ text: `[পূর্বে সংযুক্ত ফাইল: ${att.name}]` });
             }
           }
-
-          return res.json({
-            reply: response.text,
-            sources,
-            webSearchQueries,
-          });
         }
-      } catch (geminiError: any) {
-        console.warn('Gemini API call encountered an error, activating Mohammad expert knowledge engine fallback:', geminiError?.message || geminiError);
-        // Fall through to rich knowledge engine fallback
+
+        const trimmedText = typeof msg.text === 'string' ? msg.text.trim() : '';
+        if (trimmedText) {
+          parts.push({ text: trimmedText });
+        } else if (parts.length > 0 && role === 'user') {
+          parts.push({
+            text: 'এই সংযুক্ত ছবি বা পিডিএফ ফাইলটি ভালোভাবে পড়ে বিশ্লেষণ করুন, মূল তথ্যগুলো তুলে ধরুন এবং আমাদের ভিসা/সার্ভিস অনুযায়ী পরবর্তী করণীয় বা পদক্ষেপ কী হবে তা স্পষ্টভাবে বলুন।',
+          });
+        } else if (parts.length === 0) {
+          parts.push({ text: '' });
+        }
+
+        return { role, parts };
+      });
+
+      const needsWebSearch = shouldUseWebSearch(lastUserMessage, lastAttachments.length > 0);
+
+      const attemptCandidates: Array<{
+        model: string;
+        useSearch: boolean;
+        useThinkingLow: boolean;
+      }> = [
+        ...(needsWebSearch
+          ? [{ model: 'gemini-4-hydrogen', useSearch: true, useThinkingLow: true }]
+          : []),
+        { model: 'gemini-4-hydrogen', useSearch: false, useThinkingLow: true },
+        { model: 'gemini-3.1-flash-lite', useSearch: false, useThinkingLow: false },
+      ];
+
+      for (const attempt of attemptCandidates) {
+        try {
+          const config: any = {
+            systemInstruction: contextualSystemInstruction,
+          };
+          if (attempt.useSearch) {
+            config.tools = [{ googleSearch: {} }];
+          }
+          if (attempt.useThinkingLow) {
+            config.thinkingConfig = { thinkingLevel: ThinkingLevel.LOW };
+          }
+
+          const response = await ai.models.generateContent({
+            model: attempt.model,
+            contents,
+            config,
+          });
+
+          if (response && response.text) {
+            let sources: Array<{ title: string; uri: string }> = [];
+            let webSearchQueries: string[] = [];
+
+            const candidate = response.candidates?.[0];
+            const groundingMetadata = candidate?.groundingMetadata;
+            if (groundingMetadata) {
+              if (Array.isArray(groundingMetadata.webSearchQueries)) {
+                webSearchQueries = groundingMetadata.webSearchQueries;
+              }
+              if (Array.isArray(groundingMetadata.groundingChunks)) {
+                sources = groundingMetadata.groundingChunks
+                  .map((chunk: any) => ({
+                    title: chunk.web?.title || 'অফিসিয়াল তথ্যসূত্র',
+                    uri: chunk.web?.uri || '',
+                  }))
+                  .filter((s: { uri: string }) => Boolean(s.uri));
+              }
+            }
+
+            // Trigger non-blocking online verification & adaptive brain persistence if user shared new info or external claim
+            if (lastAttachments.length === 0 && isCandidateNewFactOrExternalTopic(lastUserMessage)) {
+              setImmediate(() => {
+                void verifyAndLearnFromInteraction(ai, lastUserMessage);
+              });
+            }
+
+            return res.json({
+              reply: response.text,
+              sources,
+              webSearchQueries,
+            });
+          }
+        } catch (geminiError: any) {
+          const status = geminiError?.status || geminiError?.code;
+          console.info(
+            `[Chat AI] Attempt ${attempt.model} (search=${attempt.useSearch}) unavailable (${status || 'error'}), trying next fallback.`
+          );
+        }
       }
     }
 
-    // High-quality deterministic fallback as Mohammad Consultant with service context
-    const fallbackReply = generateMohammadConsultantReply(lastUserMessage, serviceContext);
+    // High-quality deterministic fallback with dynamic agent name & service context
+    const fallbackReply = generateAgentFallbackReply(
+      lastUserMessage,
+      serviceContext,
+      agentName,
+      isFirstReply,
+      userName,
+      lastAttachments
+    );
     return res.json({
       reply: fallbackReply,
       sources: [],
     });
   } catch (error: any) {
     console.error('Chat API general error:', error);
-    const safeFallback = generateMohammadConsultantReply(
-      req.body?.messages?.[req.body?.messages?.length - 1]?.text || '',
-      req.body?.serviceContext
+    const safeFallback = generateAgentFallbackReply(
+      lastUserMessage,
+      serviceContext,
+      agentName,
+      isFirstReply,
+      userName,
+      lastAttachments
     );
     return res.json({
       reply: safeFallback,
@@ -605,10 +995,77 @@ You are advising a customer who is specifically on the "${serviceContext.title}"
   }
 });
 
+function getTelegramConfig(): { botToken: string; chatId: string } | null {
+  let botToken = (process.env.TELEGRAM_BOT_TOKEN || '').trim();
+  let chatId = (process.env.TELEGRAM_CHAT_ID || '').trim();
+
+  // Guard against inverted environment variables
+  if (!botToken.includes(':') && chatId.includes(':')) {
+    const temp = botToken;
+    botToken = chatId;
+    chatId = temp;
+  }
+
+  if (!botToken || !botToken.includes(':') || !chatId || chatId.includes(':')) {
+    return null;
+  }
+
+  return { botToken, chatId };
+}
+
+// API endpoint for dispatching callback requests to Telegram
+app.post('/api/telegram/callback', async (req, res) => {
+  try {
+    const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+    const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim() : '';
+    const note = typeof req.body?.note === 'string' ? req.body.note.trim() : '';
+
+    if (!phone) {
+      return res.status(400).json({ error: 'Phone number is required' });
+    }
+
+    const tgConfig = getTelegramConfig();
+    if (!tgConfig) {
+      return res.json({ success: false, skipped: true, reason: 'Telegram credentials not configured' });
+    }
+
+    const timeString = new Date().toLocaleString('bn-BD', {
+      timeZone: 'Asia/Dhaka',
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+
+    const htmlMessage =
+      `🚨 <b>নতুন কল ব্যাক অনুরোধ এসেছে!</b>\n\n` +
+      `👤 <b>নাম:</b> ${escapeHtml(name || 'উল্লেখ করা হয়নি')}\n` +
+      `📞 <b>মোবাইল নম্বর:</b> <code>${escapeHtml(phone)}</code>\n` +
+      `💼 <b>কাঙ্ক্ষিত সেবা/নোট:</b> ${escapeHtml(note || 'সাধারণ তথ্য')}\n` +
+      `⏰ <b>সময়:</b> ${escapeHtml(timeString)}\n` +
+      `🌐 <b>উৎস:</b> Processing Hub Website`;
+
+    const tgRes = await fetch(`https://api.telegram.org/bot${tgConfig.botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: tgConfig.chatId,
+        text: htmlMessage,
+        parse_mode: 'HTML',
+      }),
+    });
+
+    const tgData = await tgRes.json();
+    return res.json({ success: true, telegram: tgData });
+  } catch (error: any) {
+    console.error('Telegram callback error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to dispatch callback alert' });
+  }
+});
+
 // API endpoint for dispatching consultation summary to Telegram
 app.post('/api/telegram/summary', async (req, res) => {
   try {
-    const { user, serviceContext, messages, trigger } = req.body;
+    const { user, serviceContext, messages, agentName: rawAgentName } = req.body;
+    const agentName = sanitizeAgentName(rawAgentName);
 
     // Only proceed if there are actual user messages
     const userMessages = (messages || []).filter((m: any) => m.role === 'user');
@@ -616,24 +1073,11 @@ app.post('/api/telegram/summary', async (req, res) => {
       return res.json({ success: true, skipped: true, reason: 'No user messages to summarize' });
     }
 
-    let botToken = (process.env.TELEGRAM_BOT_TOKEN || '').trim();
-    let chatId = (process.env.TELEGRAM_CHAT_ID || '').trim();
-
-    // Guard against inverted or malformed environment variables
-    if (!botToken.includes(':') && chatId.includes(':')) {
-      const temp = botToken;
-      botToken = chatId;
-      chatId = temp;
+    const tgConfig = getTelegramConfig();
+    if (!tgConfig) {
+      return res.json({ success: false, skipped: true, reason: 'Telegram credentials not configured' });
     }
-
-    if (!botToken || !botToken.includes(':')) {
-      botToken = '8705018021:AAEXt7XDAJl3ymojODL3dMeolBuROLMcesA';
-    }
-
-    // Telegram bots cannot message themselves; default to the user's actual chat ID
-    if (!chatId || chatId === '8705018021' || chatId.includes(':')) {
-      chatId = '6574558784';
-    }
+    const { botToken, chatId } = tgConfig;
 
     const customerName = user?.name || 'অজ্ঞাত গ্রাহক';
     const customerPhone = user?.phone || 'প্রদান করা হয়নি';
@@ -641,7 +1085,12 @@ app.post('/api/telegram/summary', async (req, res) => {
 
     // Build conversation transcript text
     const transcript = (messages || [])
-      .map((m: any) => `${m.role === 'user' ? 'গ্রাহক' : 'মোহাম্মদ (কনসালটেন্ট)'}: ${m.text}`)
+      .map((m: any) => {
+        const attNote = Array.isArray(m.attachments) && m.attachments.length > 0
+          ? ` [সংযুক্ত ফাইল: ${m.attachments.map((a: any) => a.name || 'ফাইল').join(', ')}]`
+          : '';
+        return `${m.role === 'user' ? 'গ্রাহক' : agentName}: ${m.text || ''}${attNote}`.trim();
+      })
       .join('\n\n');
 
     let summaryText = '';
@@ -649,13 +1098,13 @@ app.post('/api/telegram/summary', async (req, res) => {
     if (ai) {
       try {
         const sumResp = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-3.1-flash-lite',
           contents: [
             {
               role: 'user',
               parts: [{
-                text: `You are an executive assistant at "Processing Hub" visa consultancy in Dhaka.
-Analyze the following visa consultation conversation between client "${customerName}" (${customerPhone}) and consultant Mohammad.
+                text: `You are an executive assistant at "Processing Hub" in Dhaka.
+Analyze the following conversation between client "${customerName}" (${customerPhone}) and ${agentName}.
 
 Generate an ULTRA-SHORT 2 to 3 bullet point summary in Bengali (বাংলা).
 CRITICAL RULES:
@@ -672,9 +1121,6 @@ ${transcript}`
               }]
             }
           ],
-          config: {
-            temperature: 0.2,
-          }
         });
         summaryText = sumResp.text ? sumResp.text.trim() : '';
       } catch (err) {
@@ -725,7 +1171,7 @@ ${transcript}`
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
       const isUser = msg.role === 'user';
-      const speaker = isUser ? `👤 <b>${escapeHtml(customerName)} (গ্রাহক)` : `👨‍💼 <b>মোহাম্মদ (ভিসা কনসালটেন্ট)`;
+      const speaker = isUser ? `👤 <b>${escapeHtml(customerName)} (গ্রাহক)` : `💬 <b>${escapeHtml(agentName)}`;
       const timeStr = msg.time ? ` [${escapeHtml(msg.time)}]</b>:` : `</b>:`;
       const cleanMsgText = escapeHtml(msg.text || '');
       conversationBlock += `${speaker}${timeStr}\n${cleanMsgText}\n\n`;
@@ -812,10 +1258,48 @@ ${formattedSummary}`;
   }
 });
 
-// Health endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', brand: 'Processing Hub' });
+// Health endpoint (supports both GET and HEAD for keep-alive / uptime monitors)
+app.head('/api/health', (_req, res) => {
+  res.status(200).end();
 });
+
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', brand: 'Processing Hub', timestamp: new Date().toISOString() });
+});
+
+// Keep-alive heartbeat every 14 minutes to prevent Render free tier spin-down
+function startKeepAliveHeartbeat() {
+  const rawUrl = (process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || '').trim();
+  if (!rawUrl || process.env.NODE_ENV !== 'production') {
+    return;
+  }
+
+  const baseUrl = rawUrl.replace(/\/+$/, '');
+  const healthUrl = `${baseUrl}/api/health`;
+  const INTERVAL_MS = 14 * 60 * 1000; // 14 minutes
+
+  const ping = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    try {
+      const res = await fetch(healthUrl, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: { 'User-Agent': 'ProcessingHub-KeepAlive/1.0' },
+      });
+      if (!res.ok) {
+        console.warn(`[KeepAlive] Heartbeat returned status ${res.status}`);
+      }
+    } catch (err: any) {
+      console.warn('[KeepAlive] Heartbeat failed:', err?.message || err);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  setInterval(ping, INTERVAL_MS);
+  console.log(`[KeepAlive] 14-minute heartbeat active for ${healthUrl}`);
+}
 
 // Vite middleware in dev or static files in production
 async function startServer() {
@@ -828,13 +1312,14 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Processing Hub server running on http://0.0.0.0:${PORT}`);
+    startKeepAliveHeartbeat();
   });
 }
 

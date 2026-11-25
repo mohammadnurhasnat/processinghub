@@ -192,7 +192,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
 
           <p className="text-xs text-[#6B7563] leading-relaxed">
             {service.isSlotBooking 
-              ? 'আপনার প্রস্তুত থাকা তথ্যে টিক দিন এবং নিচে WhatsApp-এ ক্লিক করে দ্রুত স্লট কনফার্ম করুন:'
+              ? 'আপনার প্রস্তুত থাকা তথ্যে টিক দিন এবং নিচে ক্লিক করে WhatsApp বা এজেন্টের মাধ্যমে দ্রুত স্লট কনফার্ম করুন:'
               : 'আপনার সংগ্রহে থাকা ডকুমেন্টসগুলোতে টিক চিহ্ন দিন। কোনো ডকুমেন্ট বাকি থাকলে আমরা ফাইল প্রসেসিংয়ে সহায়তা করব:'
             }
           </p>
@@ -310,7 +310,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               rel="noopener noreferrer"
               className="btn-3d-matte-green flex-[1.2] sm:flex-initial inline-flex items-center justify-center px-3.5 sm:px-4.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center"
             >
-              <span>WhatsApp-এ পাঠান</span>
+              <span>WhatsApp / Agent</span>
             </a>
           </div>
         </div>
