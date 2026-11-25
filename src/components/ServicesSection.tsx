@@ -20,7 +20,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
           আপনার প্রয়োজনীয় ভিসা বেছে নিন
         </h2>
         <p className="text-[#4E5C46] text-sm sm:text-base leading-relaxed mt-2">
-          ট্যুরিস্ট, মেডিকেল কিংবা বিজনেস—প্রতিটি ভিসার জন্য রয়েছে আমাদের ডেডিকেটেড এক্সপার্ট টিম ও সহজ প্রসেসিং ব্যবস্থা।
+          ট্যুরিস্ট, মেডিকেল ও অ্যাটেনডেন্ট, ডাবল এন্ট্রি (X-3), বিজনেস, স্টুডেন্ট, ট্রানজিট, এন্ট্রি (X-Misc) কিংবা স্পাউস (X-1)—প্রতিটি ভিসার জন্য রয়েছে আমাদের ডেডিকেটেড টিম ও সহজ প্রসেসিং ব্যবস্থা।
         </p>
       </div>
 
@@ -70,9 +70,9 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
                 <div className="gear-price text-left">
                   <span className="lbl text-left">
                     {service.isSlotBooking
-                      ? 'শুধু স্লট ফি'
+                      ? 'শুধু স্লট ফি (শুরু)'
                       : service.id === 'ticket-booking'
-                        ? 'সার্ভিস ফি'
+                        ? 'অতিরিক্ত সার্ভিস ফি'
                         : 'মোট ফি (আইভ্যাক ফিসহ)'}
                   </span>
                   <div className="flex items-baseline gap-1 justify-start text-left">

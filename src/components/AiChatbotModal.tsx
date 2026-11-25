@@ -10,8 +10,6 @@ import {
   Copy, 
   Search,
   Tag,
-  Volume2,
-  VolumeX,
   User,
   Phone,
   ShieldCheck,
@@ -179,6 +177,109 @@ const getWelcomeMessage = (
 };
 
 const STORAGE_KEY = 'processinghub_chat_history_v1';
+const USER_MEMORY_KEY = 'processinghub_user_chat_memory_v1';
+
+interface ArchivedSession {
+  id: string;
+  endedAt: string;
+  serviceTitle?: string;
+  messages: Array<{ role: 'user' | 'assistant'; text: string }>;
+}
+
+const normalizeUserMemoryKey = (phone?: string): string => {
+  const digits = (phone || '').replace(/\D/g, '');
+  if (digits.length >= 10) return digits.slice(-10);
+  return digits || 'guest';
+};
+
+const loadUserPastSessions = (phone?: string): ArchivedSession[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(USER_MEMORY_KEY);
+    if (!raw) return [];
+    const map = JSON.parse(raw) as Record<string, ArchivedSession[]>;
+    const key = normalizeUserMemoryKey(phone);
+    return Array.isArray(map[key]) ? map[key].slice(-5) : [];
+  } catch {
+    return [];
+  }
+};
+
+const archiveUserSessionLocally = (
+  phone: string | undefined,
+  msgs: ChatMessage[],
+  serviceTitle?: string
+): ArchivedSession | null => {
+  const userMsgs = msgs.filter((m) => m.role === 'user');
+  if (userMsgs.length === 0) return null;
+
+  const compactMessages = msgs
+    .filter((m) => !(m.role === 'assistant' && m.id.startsWith('welcome-')))
+    .slice(-16)
+    .map((m) => {
+      const attSummary =
+        m.attachments && m.attachments.length > 0
+          ? ` [ফাইল: ${m.attachments.map((a) => a.name).join(', ')}]`
+          : '';
+      return {
+        role: m.role,
+        text: `${(m.text || '').trim()}${attSummary}`.trim().slice(0, 360),
+      };
+    })
+    .filter((m) => m.text.length > 0);
+
+  if (compactMessages.length === 0) return null;
+
+  const sessionRecord: ArchivedSession = {
+    id: `sess-${Date.now()}`,
+    endedAt: new Date().toISOString(),
+    serviceTitle,
+    messages: compactMessages,
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(USER_MEMORY_KEY);
+      const map: Record<string, ArchivedSession[]> = raw ? JSON.parse(raw) : {};
+      const key = normalizeUserMemoryKey(phone);
+      const prev = Array.isArray(map[key]) ? map[key] : [];
+      map[key] = [...prev, sessionRecord].slice(-5);
+      localStorage.setItem(USER_MEMORY_KEY, JSON.stringify(map));
+    } catch (err) {
+      console.error('Failed to archive user chat memory:', err);
+    }
+  }
+
+  return sessionRecord;
+};
+
+// Ensure Unicode bullet characters (•, ●, ▪, ◦) and single-newline lists render as proper separated Markdown <ul><li> lists
+const normalizeMarkdownBullets = (raw: string): string => {
+  if (!raw) return '';
+  const preprocessed = raw
+    .replace(/\r\n/g, '\n')
+    // Split accidental inline bullets (e.g., "কপি। • **পাসপোর্ট:**") onto separate lines
+    .replace(/([।.!?)])\s+[•●▪◦]\s+/g, '$1\n- ');
+
+  const lines = preprocessed.split('\n');
+  const out: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].replace(/^([ \t]*)[•●▪◦]\s+/, '$1- ');
+    const isListLine = /^[ \t]*(?:[-*]|\d+\.)\s+/.test(line);
+    const prevLine = out.length > 0 ? out[out.length - 1] : '';
+    const prevIsListLine = /^[ \t]*(?:[-*]|\d+\.)\s+/.test(prevLine);
+
+    if (isListLine && prevLine.trim() !== '' && !prevIsListLine) {
+      out.push('');
+    } else if (!isListLine && line.trim() !== '' && prevIsListLine) {
+      out.push('');
+    }
+    out.push(line);
+  }
+
+  return out.join('\n');
+};
 
 export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({ 
   isOpen, 
@@ -262,7 +363,6 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showTypingBubble, setShowTypingBubble] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(soundEffects.getMuted());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -530,6 +630,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           userName: activeProfile?.name,
           userPhone: activeProfile?.phone,
           agentName: activeAgent,
+          pastConversations: loadUserPastSessions(activeProfile?.phone),
           serviceContext: serviceContext ? {
             id: serviceContext.id,
             title: serviceContext.title,
@@ -746,7 +847,41 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   };
 
   const handleEndChatManual = () => {
+    const {
+      messages: currentMessages,
+      userProfile: currentProfile,
+      serviceContext: currentService,
+    } = latestChatRef.current;
+
+    // 1. Silently dispatch Telegram summary if there were user messages
     triggerTelegramSummary('manual');
+
+    // 2. Archive this finished chat into per-user memory (local + server) so future new chats remember the user
+    const archivedSession = archiveUserSessionLocally(
+      currentProfile?.phone,
+      currentMessages,
+      currentService?.title
+    );
+
+    if (archivedSession) {
+      try {
+        fetch('/api/chat/end-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            userName: currentProfile?.name,
+            userPhone: currentProfile?.phone,
+            session: archivedSession,
+          }),
+        }).catch(() => {});
+      } catch {
+        // Ignore background persistence errors
+      }
+    }
+
+    // 3. Conclude and clear the active chat completely so reopening always starts a brand-new chat
+    handleResetChat();
     onClose();
   };
 
@@ -812,10 +947,16 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     }
     setIsLoading(false);
     setShowTypingBubble(false);
+    setInputText('');
+    setPendingAttachments([]);
+    setAttachmentError(null);
 
     const nextAgent = pickRandomAgent(assignedAgent);
     setAssignedAgent(nextAgent);
     lastSummarizedMsgIdRef.current = null;
+
+    const freshWelcomeId = `welcome-${Date.now()}`;
+    initialMessageIdsRef.current.add(freshWelcomeId);
 
     if (typeof window !== 'undefined') {
       try {
@@ -827,7 +968,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     }
     setMessages([
       {
-        id: `welcome-${Date.now()}`,
+        id: freshWelcomeId,
         role: 'assistant',
         text: getWelcomeMessage(serviceContext, nextAgent, userProfile?.name),
         time: formatTimestamp(),
@@ -890,13 +1031,13 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
             } bg-white border border-[#D5CFBF] shadow-[0_25px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden overscroll-contain pointer-events-auto`}
           >
             {/* Header (White / Light Theme) */}
-            <div className="bg-white text-[#1E2519] px-4 py-3 flex items-center justify-between border-b border-[#E8E4D9] flex-shrink-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="relative w-10 h-10 flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#EBF7EE] to-[#D6EFE0] border border-[#BDE0C8] flex items-center justify-center shadow-xs overflow-hidden">
+            <div className="bg-white text-[#1E2519] px-3 py-2.5 flex items-center justify-between gap-2 border-b border-[#E8E4D9] flex-shrink-0">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="relative w-9 h-9 flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#EBF7EE] to-[#D6EFE0] border border-[#BDE0C8] flex items-center justify-center shadow-xs overflow-hidden">
                     <svg
                       viewBox="0 0 40 40"
-                      className="w-9 h-9 agent-avatar-bob"
+                      className="w-8 h-8 agent-avatar-bob"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                       aria-hidden="true"
@@ -958,50 +1099,62 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#1FA855] border-2 border-white" />
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 id="support-chat-title" className="font-semibold text-sm tracking-wide text-[#1E2519] truncate">
+                  <div className="flex items-center gap-1.5">
+                    <h3 id="support-chat-title" className="font-semibold text-[13px] tracking-wide text-[#1E2519] truncate">
                       {assignedAgent}
                     </h3>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#1FA855] text-white shrink-0">
+                    <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-[#1FA855] text-white shrink-0">
                       অনলাইন
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#636F5A] truncate">
+                  <p className="text-[10.5px] text-[#636F5A] truncate">
                     is chatting with you
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                {/* Sound toggle button */}
-                <button
-                  type="button"
-                  id="chat-sound-toggle-btn"
-                  onClick={() => {
-                    const muted = soundEffects.toggleMute();
-                    setIsMuted(muted);
-                  }}
-                  className={`p-1.5 rounded-full transition-all cursor-pointer ${
-                    isMuted 
-                      ? 'text-[#8C9884] bg-[#F3F0E8] hover:bg-[#EAE5DA]' 
-                      : 'text-[#1FA855] bg-[#EBF7EE] hover:bg-[#DDF2E2]'
-                  }`}
-                  title={isMuted ? 'সাউন্ড চালু করুন (আনমিউট)' : 'সাউন্ড বন্ধ করুন (মিউট)'}
-                  aria-label={isMuted ? 'Unmute typing and notification sound' : 'Mute typing and notification sound'}
-                >
-                  {isMuted ? (
-                    <VolumeX className="w-4 h-4" />
-                  ) : (
-                    <Volume2 className="w-4 h-4" />
-                  )}
-                </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {!showProfileGate && (
+                  <>
+                    <a
+                      href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
+                        serviceContext?.title
+                          ? `Hello ${assignedAgent} (Processing Hub), I need direct assistance regarding ${serviceContext.title}.`
+                          : `Hello ${assignedAgent} (Processing Hub), I am contacting you for Indian Visa Assistance.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={onOpenWhatsAppDirect}
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer shrink-0 shadow-xs"
+                      title="WhatsApp"
+                      aria-label="Chat on WhatsApp"
+                    >
+                      <svg viewBox="0 0 32 32" className="w-8 h-8" aria-hidden="true">
+                        <circle cx="16" cy="16" r="16" fill="#25D366" />
+                        <path
+                          fill="#FFFFFF"
+                          d="M23.62 8.34A10.67 10.67 0 0 0 6.8 21.18L5.28 26.7l5.65-1.48a10.66 10.66 0 0 0 5.1 1.3h.01c5.88 0 10.67-4.79 10.67-10.67 0-2.85-1.11-5.53-3.09-7.51zm-7.58 16.38h-.01a8.86 8.86 0 0 1-4.52-1.24l-.32-.19-3.36.88.9-3.27-.21-.34a8.87 8.87 0 0 1-1.36-4.72c0-4.9 3.99-8.88 8.89-8.88 2.37 0 4.6.93 6.28 2.61a8.84 8.84 0 0 1 2.6 6.28c0 4.9-3.99 8.87-8.89 8.87zm4.87-6.65c-.27-.13-1.58-.78-1.82-.87-.24-.09-.42-.13-.6.13-.18.27-.69.87-.84 1.05-.16.18-.31.2-.58.07-.27-.13-1.13-.42-2.15-1.33-.79-.71-1.33-1.58-1.48-1.85-.16-.27-.02-.41.12-.54.12-.12.27-.31.4-.47.13-.16.18-.27.27-.44.09-.18.04-.33-.02-.47-.07-.13-.6-1.44-.82-1.97-.22-.52-.44-.45-.6-.46h-.51c-.18 0-.47.07-.71.33-.24.27-.93.91-.93 2.22s.96 2.58 1.09 2.75c.13.18 1.88 2.88 4.56 4.03.64.27 1.13.44 1.52.56.64.2 1.22.17 1.68.1.51-.08 1.58-.64 1.8-1.27.22-.62.22-1.15.16-1.27-.07-.11-.24-.18-.51-.31z"
+                        />
+                      </svg>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={handleEndChatManual}
+                      className="btn-3d-matte-red inline-flex items-center justify-center gap-1 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap cursor-pointer w-auto"
+                      title="End Chat"
+                    >
+                      <LogOut className="w-3 h-3 flex-shrink-0" />
+                      <span>End</span>
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="w-8 h-8 rounded-full border border-[#D5CFBF] bg-[#FAF8F5] hover:bg-[#F0ECE1] text-[#1E2519] flex items-center justify-center transition-all cursor-pointer ml-0.5"
+                  className="w-7 h-7 rounded-full border border-[#D5CFBF] bg-[#FAF8F5] hover:bg-[#F0ECE1] text-[#1E2519] flex items-center justify-center transition-all cursor-pointer shrink-0"
                   aria-label="Close support chat"
                 >
-                  <X className="w-4 h-4 stroke-[2.2]" />
+                  <X className="w-3.5 h-3.5 stroke-[2.2]" />
                 </button>
               </div>
             </div>
@@ -1188,7 +1341,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                           </p>
                         ) : (
                           <div className="markdown-body text-[13.5px] leading-relaxed">
-                            <Markdown>{msg.text}</Markdown>
+                            <Markdown>{normalizeMarkdownBullets(msg.text)}</Markdown>
                           </div>
                         ))}
 
@@ -1399,34 +1552,6 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                   <Send className="w-4 h-4 ml-0.5" />
                 </button>
               </form>
-
-              <div className="mt-2.5 pb-1 flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleEndChatManual}
-                  className="btn-3d-matte-red inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer w-auto"
-                  title="End Chat"
-                >
-                  <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>End Chat</span>
-                </button>
-                <a
-                  href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
-                    serviceContext?.title
-                      ? `Hello ${assignedAgent} (Processing Hub), I need direct assistance regarding ${serviceContext.title}.`
-                      : `Hello ${assignedAgent} (Processing Hub), I am contacting you for Indian Visa Assistance.`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={onOpenWhatsAppDirect}
-                  className="btn-3d-matte-green inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold whitespace-nowrap cursor-pointer w-auto"
-                >
-                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current flex-shrink-0" aria-hidden="true">
-                    <path d="M17.6 6.32A7.85 7.85 0 0 0 12.02 4C7.66 4 4.13 7.53 4.13 11.89c0 1.4.37 2.76 1.06 3.96L4 20l4.27-1.12a7.9 7.9 0 0 0 3.75.95h.01c4.36 0 7.89-3.53 7.89-7.89 0-2.11-.82-4.09-2.32-5.62zm-5.58 12.1h-.01a6.55 6.55 0 0 1-3.34-.92l-.24-.14-2.49.65.67-2.43-.16-.25a6.56 6.56 0 0 1-1.01-3.5c0-3.63 2.96-6.58 6.6-6.58 1.76 0 3.42.69 4.66 1.94a6.55 6.55 0 0 1 1.93 4.65c0 3.63-2.96 6.58-6.61 6.58zm3.6-4.93c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.44.1-.13.2-.5.64-.62.77-.11.13-.23.14-.42.05-.2-.1-.83-.31-1.58-.98-.58-.52-.98-1.16-1.09-1.36-.11-.2-.01-.3.09-.4.09-.09.2-.23.3-.35.1-.11.13-.2.2-.33.07-.13.03-.25-.02-.35-.05-.1-.44-1.06-.6-1.45-.16-.38-.32-.33-.44-.33-.11-.01-.24-.01-.37-.01s-.35.05-.53.25c-.18.2-.7.68-.7 1.66s.72 1.93.82 2.06c.1.13 1.41 2.15 3.42 3.02.48.21.85.33 1.14.42.48.15.92.13 1.26.08.38-.06 1.17-.48 1.34-.94.16-.46.16-.86.11-.94-.05-.09-.18-.14-.38-.24z" />
-                  </svg>
-                  <span>WhatsApp</span>
-                </a>
-              </div>
             </div>
             </>
             )}

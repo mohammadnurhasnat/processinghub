@@ -18,17 +18,29 @@ import { updateMetaForService } from './utils/metaTags';
 function matchServiceFromSubject(subject?: string): VisaService | null {
   if (!subject) return null;
   const lower = subject.toLowerCase();
-  if (lower.includes('medical') || lower.includes('মেডিকেল')) {
+  if (lower.includes('medical') || lower.includes('মেডিকেল') || lower.includes('attendant') || lower.includes('অ্যাটেনডেন্ট')) {
     return VISA_SERVICES.find(s => s.id === 'medical-visa') || null;
   }
   if (lower.includes('tourist') || lower.includes('ট্যুরিস্ট')) {
     return VISA_SERVICES.find(s => s.id === 'tourist-visa') || null;
   }
-  if (lower.includes('double') || lower.includes('ডাবল') || lower.includes('ডবল')) {
+  if (lower.includes('double') || lower.includes('ডাবল') || lower.includes('ডবল') || lower.includes('x-3')) {
     return VISA_SERVICES.find(s => s.id === 'double-entry-visa') || null;
   }
   if (lower.includes('business') || lower.includes('বিজনেস')) {
     return VISA_SERVICES.find(s => s.id === 'business-visa') || null;
+  }
+  if (lower.includes('student') || lower.includes('স্টুডেন্ট')) {
+    return VISA_SERVICES.find(s => s.id === 'student-visa') || null;
+  }
+  if (lower.includes('transit') || lower.includes('ট্রানজিট')) {
+    return VISA_SERVICES.find(s => s.id === 'transit-visa') || null;
+  }
+  if (lower.includes('spouse') || lower.includes('স্পাউস') || lower.includes('family') || lower.includes('x-1')) {
+    return VISA_SERVICES.find(s => s.id === 'spouse-visa') || null;
+  }
+  if (lower.includes('entry') || lower.includes('এন্ট্রি') || lower.includes('x-misc')) {
+    return VISA_SERVICES.find(s => s.id === 'entry-visa') || null;
   }
   if (lower.includes('slot') || lower.includes('স্লট')) {
     return VISA_SERVICES.find(s => s.id === 'visa-slot-booking' || s.isSlotBooking) || null;

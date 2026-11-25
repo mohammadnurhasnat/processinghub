@@ -1,8 +1,8 @@
 import { VisaService } from '../types';
 
 const DEFAULT_META = {
-  title: 'Processing Hub — বিশ্বস্ত ইন্ডিয়ান ভিসা প্রসেসিং ও আইভ্যাক (IVAC) স্লট সার্ভিস',
-  description: 'বাংলাদেশ থেকে দ্রুত ও বিশ্বস্ত ইন্ডিয়ান ভিসা প্রসেসিং সার্ভিস। আইভ্যাক (IVAC) স্লট বুকিং, ট্যুরিস্ট, মেডিকেল, ডাবল এন্ট্রি ও বিজনেস ভিসা ফাইল প্রস্তুত। হটলাইন: 01577464706',
+  title: 'Processing Hub — ইন্ডিয়ান ভিসা প্রসেসিং ও ১৬টি আইভ্যাক (IVAC) স্লট সার্ভিস | processinghub.fun',
+  description: 'বাংলাদেশ থেকে দ্রুত ইন্ডিয়ান ভিসা প্রসেসিং ও ১৬টি আইভ্যাক (IVAC) স্লট বুকিং। মেডিকেল ও অ্যাটেনডেন্ট, ট্যুরিস্ট, ডাবল এন্ট্রি (X-3), বিজনেস, স্টুডেন্ট, ট্রানজিট, এন্ট্রি (X-Misc), স্পাউস (X-1) ভিসা ও টিকেট বুকিং। হটলাইন: 01577464706',
   image: 'https://images.moondeveloper.com/attractions/2024/11/25/67446493a8fde.jpg',
   url: 'https://processinghub.fun/',
 };
@@ -24,8 +24,13 @@ export function updateMetaForService(service: VisaService | null) {
   if (typeof document === 'undefined') return;
 
   if (service) {
-    const title = `${service.title} প্রসেসিং — Processing Hub`;
-    const description = `${service.description} সার্ভিস ফি: ${service.price}। আইভ্যাক (IVAC) ফাইল প্রসেসিং ও জরুরি স্লট কনফার্মেশন সহায়তা। হটলাইন: 01577464706`;
+    const title = `${service.title} প্রসেসিং ও স্লট — Processing Hub`;
+    const priceLabel = service.id === 'ticket-booking'
+      ? `সার্ভিস চার্জ: ${service.price} (মূল টিকেট মূল্যের সাথে আলোচনা সাপেক্ষে)`
+      : service.isSlotBooking
+        ? `স্লট ফি: ${service.price} (৪,৫০০৳ থেকে শুরু, আইভ্যাক ফিসহ)`
+        : `প্যাকেজ ফি: ${service.price} (${service.per.replace('/ ', '')})`;
+    const description = `${service.description} ${priceLabel}। বাংলাদেশের সব ১৬টি আইভ্যাক সেন্টারে স্লট ও ফাইল প্রসেসিং সহায়তা। হটলাইন: 01577464706`;
     const image = service.image || DEFAULT_META.image;
     const url = `https://processinghub.fun/#${service.id}`;
 

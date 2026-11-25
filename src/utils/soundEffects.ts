@@ -5,16 +5,7 @@ class SoundManager {
   private lastTypingTime: number = 0;
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('processinghub_chat_sound_muted');
-        if (saved !== null) {
-          this.isMuted = saved === 'true';
-        }
-      } catch {
-        // ignore localStorage error
-      }
-    }
+    this.isMuted = false;
   }
 
   private getContext(): AudioContext | null {

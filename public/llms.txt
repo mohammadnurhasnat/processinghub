@@ -1,43 +1,57 @@
-# Processing Hub — Indian Visa Processing & IVAC Appointment Consultancy
+# Processing Hub — Indian Visa Processing & IVAC Appointment Support in Bangladesh
 
 > Official website: https://processinghub.fun
 > Domain: processinghub.fun
-> Location: Near Jamuna Future Park IVAC Center, Kuril, Baridhara, Dhaka-1229, Bangladesh
+> Support Desk Location: Near Jamuna Future Park IVAC Center, Kuril, Baridhara, Dhaka-1229, Bangladesh
 > Hotline / WhatsApp: +8801577464706 (01577464706)
 > Facebook Page: https://facebook.com/processinghubbd
 > Support Email: support@processinghub.fun
 > Google Maps Location: https://www.google.com/maps/search/?api=1&query=Jamuna+Future+Park+Kuril+Dhaka
 
 ## Overview
-Processing Hub is Bangladesh's premier, trusted Indian visa application consultancy. We specialize in fast IVAC (Indian Visa Application Center) slot booking, complete online application paperwork, doctor invitation letters from top Indian hospitals, double-entry transit visas, and tourist visa documentation.
+Processing Hub is Bangladesh's dedicated Indian Visa Processing and IVAC Appointment Slot service supporting applicants across all 64 districts and all 16 official IVAC Centers in Bangladesh. We handle Tourist Visa, Medical & Attendant Visa (M-1/M-2), Double Entry Miscellaneous Visa (X-3), Business Visa (B-1/B-2), Student Visa (S-1), Transit Visa (TR), Entry Visa (X-Misc), Spouse & Family Visa (X-1), IVAC Appointment Slot Booking, and Domestic/International Ticket Booking.
 
-## Core Services & Official Rates
-- **Tourist Visa (ট্যুরিস্ট ভিসা)**: Online application form fill-up, document audit, utility bill alignment, IVAC appointment slot booking. Service charge: ৳1,500.
-- **Medical Visa & Medical Attendant (মেডিকেল ভিসা)**: Official invitation letter from top Indian super-specialty hospitals (Apollo, Fortis, Medanta, Narayana, Max), fast emergency slots. Service charge: ৳4,000.
-- **Double Entry Visa (ডাবল এন্ট্রি ভিসা)**: Double entry transit visa for applicants traveling through India to 3rd countries or attending European/US/UK embassy interviews in New Delhi. Service charge: ৳3,000.
-- **Business Visa (বিজনেস ভিসা)**: Indian corporate invitation letter verification, trade license translation, chamber recommendation, full submission paperwork. Service charge: ৳5,000.
-- **IVAC Visa Slot Booking (আইভ্যাক স্লট বুকিং)**: Priority appointment slots for Dhaka (Jamuna Future Park), Chittagong, Sylhet, Khulna, and Rajshahi centers. Service charge: ৳4,000.
-- **Confirmed Ticket Booking (টিকেট বুকিং)**: Air and transit tickets conforming to embassy requirements. Service charge: ৳1,000.
+## Official Visa & Slot Rates (Includes ৳1,500 Fixed IVAC Government Fee)
+- **Tourist Visa (ট্যুরিস্ট ভিসা)**: Full Processing + Slot **৳6,000** | Slot Only **৳5,500** (৳1,500 IVAC + ৳4,000 Slot).
+- **Medical & Attendant Visa M-1 / M-2 (মেডিকেল ও অ্যাটেনডেন্ট ভিসা)**: Full Processing + Hospital Invitation/AYUSH + Slot **৳6,000** | Slot Only **৳4,500** (৳1,500 IVAC + ৳3,000 Slot).
+- **Double Entry Visa X-3 Miscellaneous (ডাবল এন্ট্রি ভিসা)**: Full Processing + Slot **৳6,500** | Slot Only **৳4,500** (৳1,500 IVAC + ৳3,000 Slot).
+- **Business Visa B-1/B-2 (বিজনেস ভিসা)**: Full Processing + Slot **৳6,000** | Slot Only **৳4,500** (৳1,500 IVAC + ৳3,000 Slot).
+- **Student Visa S-1 (স্টুডেন্ট ভিসা)**: Full Processing + Slot **৳5,500** (৳4,500 Slot + ৳1,000 Processing) | Slot Only **৳4,500**.
+- **Transit Visa TR (ট্রানজিট ভিসা)**: Full Processing + Slot **৳5,500** (৳4,500 Slot + ৳1,000 Processing) | Slot Only **৳4,500**.
+- **Entry Visa X-Misc Miscellaneous (এন্ট্রি ভিসা)**: Full Processing + Slot **৳6,000** (৳4,500 Slot + ৳1,500 Processing) | Slot Only **৳4,500**.
+- **Spouse & Family Visa X-1 Miscellaneous (স্পাউস ও ফ্যামিলি ভিসা)**: Full Processing + Slot **৳6,000** (৳4,500 Slot + ৳1,500 Document Processing) | Slot Only **৳4,500**.
+- **IVAC Visa Slot Booking (শুধু স্লট বুকিং)**: Starts from **৳4,500+** (৳4,500 for Medical/Double Entry X-3/Business/Student/Transit/Entry X-Misc/Spouse X-1; ৳5,500 for Tourist; includes ৳1,500 IVAC government fee).
+- **Ticket Booking (এয়ার ও ট্রানজিট টিকেট বুকিং)**: Service charge starts from **৳599+** on top of the base ticket price (negotiable by route and ticket type).
 
-## Supported IVAC Centers in Bangladesh
-1. Dhaka (Jamuna Future Park)
-2. Chittagong
-3. Sylhet
-4. Khulna
-5. Rajshahi
+## Official 16 IVAC Centers Across Bangladesh
+1. Dhaka — Jamuna Future Park (JFP), Progoti Sharani, Baridhara, Dhaka-1229 (Only IVAC center in Dhaka)
+2. Chittagong (Zakir Hossain Road, Habib Lane)
+3. Khulna (KDA Avenue, Banking Zone)
+4. Sylhet (Rahim Tower, Subhanighat Biswa Road)
+5. Rajshahi (Morium Ali Tower, Barnali More)
+6. Rangpur (J. B. Sen Road, Mahigonj)
+7. Mymensingh (Shahjahan Center, Patgudam)
+8. Barisal (Mir Tower, Kasipur)
+9. Cumilla (Gangchil, Kandirpar, Nazrul Avenue)
+10. Noakhali (Morshed Alam Complex, Chowmohoni)
+11. Brahmanbaria (West Paik Para)
+12. Thakurgaon (Shantinagar, Ward-01)
+13. Bogura (Momo Inn, Nowda Para, Rangpur Road)
+14. Kushtia
+15. Jessore (Narail Road)
+16. Satkhira (Sangram Market, Bangaler More)
 
-## Required Documents Checklist
-1. Original Passport with minimum 6 months validity and 2 blank pages.
-2. 2x2 inch recent photograph with white background.
-3. Utility bill (Electricity/Gas/Water/Internet) of current residential address.
-4. National ID Card (NID) or Birth Certificate.
-5. Proof of Profession (NOC, Student ID, Trade License, Govt. GO).
-6. Financial proof: Bank statement (minimum ৳20,000 balance) or minimum $150 USD endorsement in passport.
-7. For Medical Visa: Previous medical prescriptions and official hospital invitation letter from India.
+## Common Core Documents Required for All Indian Visas
+1. Online Visa Application Form printed & signed.
+2. Original Passport (minimum 6 months validity, 2 blank pages) + ALL old passports (GD copy if lost).
+3. Recent 2"x2" (50mm x 50mm) color lab-print photograph with plain white background (no border).
+4. National ID Card (NID) or online digital Birth Certificate.
+5. Recent Utility Bill copy (Electricity, Gas, Water, or Landline) for residential address proof.
+6. Proof of Profession (NOC & Office ID for employees, Govt GO, Trade License for business, Student ID for students).
+7. Financial Proof: **$200 USD passport endorsement** OR **last 6 months bank statement maintaining equivalent BDT balance** OR **State Bank of India (SBI) Travel Card / International Travel Card**.
 
-## Contact & Booking
-- Website: https://processinghub.fun
-- Hotline: 01577464706 (+8801577464706)
-- WhatsApp: https://wa.me/8801577464706
-- Facebook: https://facebook.com/processinghubbd
-- Office Location: Jamuna Future Park Area, Kuril, Baridhara, Dhaka, Bangladesh
+## Specialized Medical, Embassy & Business Coverage
+- **Medical & Attendant (M-1 / M-2)**: Patient needs Indian Hospital Appointment/Invitation Letter (MVRN), AYUSH letter, and recent Bangladeshi prescriptions & diagnostic reports for Urology, Cardiology, Oncology/Cancer, Kidney/Liver Transplant, Orthopedics, and Neurology treatments in Delhi, Kolkata, Chennai, Bengaluru, Gurugram, Hyderabad, and Vellore (Apollo, Medanta, Fortis, Narayana, Yashoda, MIOT, MGM, Desun, Peerless). Medical Attendant (M-2) needs ONLY basic common documents + relationship proof (no medical test reports needed for attendant).
+- **Double Entry (X-3 Miscellaneous)**: Requires third-country/European Embassy Appointment Letter in New Delhi (Portugal, Poland, Italy, Romania, Croatia, Hungary, Malta, Lithuania, Schengen/VFS) + Work Permit and European contracted company documents.
+- **Business Visa**: Requires Indian company original Invitation Letter, Bangladeshi company Forwarding Letter, updated Trade License, Chamber of Commerce certificate, TIN, BIN, IRC/ERC, LC copies, VAT Return, and 6-month personal & company bank statements.
+- **IVAC Slot Release Dates**: IVAC and High Commission of India do not publish slot release dates in advance; slots open dynamically in batches and Processing Hub monitors continuously to secure appointments as soon as slots release.

@@ -54,7 +54,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
         price: service.isSlotBooking 
           ? `৳${selectedSlot.totalFee.toLocaleString('bn-BD')} (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ${selectedSlot.serviceCharge.toLocaleString('bn-BD')}৳)` 
           : service.id === 'ticket-booking'
-            ? `${service.price} (সার্ভিস চার্জ)`
+            ? `${service.price} (মূল টিকেট মূল্যের সাথে অতিরিক্ত, আলোচনা সাপেক্ষে)`
             : `${service.price} (আইভ্যাক ফি ১,৫০০৳ ও স্লটসহ)`,
         isSlotBooking: service.isSlotBooking,
         slotName: service.isSlotBooking ? selectedSlot.name : undefined,
@@ -105,7 +105,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                 </span>
               ) : service.id === 'ticket-booking' ? (
                 <span>
-                  সার্ভিস ফি: <strong className="text-[#1E2519] font-bold">{service.price}</strong> (টিকেট বুকিং সার্ভিস চার্জ)
+                  সার্ভিস ফি: <strong className="text-[#1E2519] font-bold">{service.price}</strong> (মূল টিকেট মূল্যের সাথে অতিরিক্ত ৳৫৯৯ থেকে শুরু, আলোচনা সাপেক্ষে)
                 </span>
               ) : (
                 <span>
@@ -300,7 +300,7 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                 service.isSlotBooking
                   ? `Hello Processing Hub, I want to book Indian Visa Slot (Only Slot) for ${selectedSlot.name}. Selected IVAC Center: ${selectedIvacCenter}. IVAC Fee: ৳${selectedSlot.ivacFee} + Slot Charge: ৳${selectedSlot.serviceCharge} (Total: ৳${selectedSlot.totalFee}). Ready Info: (${completedCount}/${totalCount}). Please confirm slot availability.`
                   : service.id === 'ticket-booking'
-                    ? `Hello Processing Hub, I want to book ${service.title} (Service Charge: ${service.price}). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for booking.`
+                    ? `Hello Processing Hub, I want to book ${service.title} (Service Charge starts from ৳599 on top of base ticket fare, negotiable). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for booking.`
                     : `Hello Processing Hub, I want to book ${service.title} with slot (Total: ${service.price}, including ৳1,500 IVAC fee). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for file submission.`
               )}`}
               data-service-name={service.isSlotBooking ? `ভিসা স্লট বুকিং (${selectedSlot.name}) - ${selectedIvacCenter}` : `${service.title} প্রসেসিং`}

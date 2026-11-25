@@ -6,6 +6,10 @@ import {
   Stethoscope, 
   Briefcase, 
   Layers, 
+  GraduationCap,
+  Bus,
+  FileCheck2,
+  Users,
   Ticket, 
   CalendarClock, 
   Check, 
@@ -193,10 +197,10 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
               </a>
 
-              {/* 4. Double Entry Visa */}
+              {/* 4. Double Entry Visa (X-3) */}
               <a
                 id="quick-double-entry-visa"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Double Entry Visa processing with slot (Total: ৳6,500, including ৳1,500 IVAC fee).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Double Entry Visa (X-3 Miscellaneous) processing with slot (Total: ৳6,500, including ৳1,500 IVAC fee).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -207,8 +211,8 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                     <Layers className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#161D28]">Double Entry Visa (ডাবল এন্ট্রি ভিসা)</h4>
-                    <p className="text-xs text-[#5A6474]">ট্রানজিট ফাইল প্রসেসিং, আইভ্যাক ফি ও স্লটসহ</p>
+                    <h4 className="text-sm font-bold text-[#161D28]">Double Entry Visa — X-3 (ডাবল এন্ট্রি ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">এম্বাসি অ্যাপয়েন্টমেন্ট, ওয়ার্ক পারমিট, আইভ্যাক ফি ও স্লটসহ</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -217,10 +221,106 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                 </div>
               </a>
 
-              {/* 5. Ticket Booking */}
+              {/* 5. Student Visa (S-1) */}
+              <a
+                id="quick-student-visa"
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Student Visa (S-1) processing with slot (Total: ৳5,500, including ৳1,500 IVAC fee & ৳3,000 slot + ৳1,000 processing).')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="book-service-option"
+                onClick={onClose}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--mint-light)] flex items-center justify-center text-[var(--mint-dark)] border border-[var(--mint-border)] flex-shrink-0">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#161D28]">Student Visa (স্টুডেন্ট ভিসা S-1)</h4>
+                    <p className="text-xs text-[#5A6474]">অ্যাডমিশন/বোনাফাইড, প্রসেসিং, আইভ্যাক ফি ও স্লটসহ</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৫,৫০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
+                </div>
+              </a>
+
+              {/* 6. Transit Visa (TR) */}
+              <a
+                id="quick-transit-visa"
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Transit Visa (TR) processing with slot (Total: ৳5,500, including ৳1,500 IVAC fee & ৳3,000 slot + ৳1,000 processing).')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="book-service-option"
+                onClick={onClose}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--periwinkle-light)] flex items-center justify-center text-[var(--periwinkle-dark)] border border-[var(--periwinkle-border)] flex-shrink-0">
+                    <Bus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#161D28]">Transit Visa (ট্রানজিট ভিসা TR)</h4>
+                    <p className="text-xs text-[#5A6474]">নেপাল/ভুটান ট্রানজিট ফাইল, আইভ্যাক ফি ও স্লটসহ</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৫,৫০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
+                </div>
+              </a>
+
+              {/* 7. Entry Visa (X-Misc) */}
+              <a
+                id="quick-entry-visa"
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Entry Visa (X-Misc) processing with slot (Total: ৳6,000 = ৳4,500 slot + ৳1,500 processing).')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="book-service-option"
+                onClick={onClose}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--mint-light)] flex items-center justify-center text-[var(--mint-dark)] border border-[var(--mint-border)] flex-shrink-0">
+                    <FileCheck2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#161D28]">Entry Visa — X-Misc (এন্ট্রি ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">স্লট ৪,৫০০৳ + প্রসেসিং সার্ভিস চার্জ ১,৫০০৳</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
+                </div>
+              </a>
+
+              {/* 8. Spouse & Family Visa (X-1) */}
+              <a
+                id="quick-spouse-visa"
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Spouse / Family Visa (X-1) processing with slot (Total: ৳6,000 = ৳4,500 slot + ৳1,500 processing).')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="book-service-option"
+                onClick={onClose}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--periwinkle-light)] flex items-center justify-center text-[var(--periwinkle-dark)] border border-[var(--periwinkle-border)] flex-shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#161D28]">Spouse & Family Visa — X-1 (স্পাউস ভিসা)</h4>
+                    <p className="text-xs text-[#5A6474]">স্লট ৪,৫০০৳ + ডকুমেন্ট প্রসেসিং চার্জ ১,৫০০৳</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৬,০০০</span>
+                  <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
+                </div>
+              </a>
+
+              {/* 9. Ticket Booking */}
               <a
                 id="quick-ticket-booking"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Ticket Booking service (Service Charge: ৳1,500).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Air / Travel Ticket Booking service (Service Charge starts from ৳599 on top of base ticket fare, negotiable).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -232,19 +332,19 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#161D28]">Ticket Booking (টিকেট বুকিং)</h4>
-                    <p className="text-xs text-[#5A6474]">এয়ার টিকেট ও ভিসা ট্রানজিট কনফার্মড টিকেট</p>
+                    <p className="text-xs text-[#5A6474]">মূল টিকেট মূল্যের সাথে ৫৯৯৳ থেকে শুরু (আলোচনা সাপেক্ষে)</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳১,৫০০</span>
+                  <span className="text-xs font-bold text-[var(--mint-dark)] bg-[var(--mint-light)] border border-[var(--mint-border)] px-2 py-0.5 rounded-full block">৳৫৯৯+</span>
                   <span className="text-[10px] text-[var(--periwinkle-dark)] inline-flex items-center gap-0.5 mt-0.5">WhatsApp / Agent <ChevronRight className="w-3 h-3" /></span>
                 </div>
               </a>
 
-              {/* 6. Visa Slot Booking */}
+              {/* 10. Visa Slot Booking */}
               <a
                 id="quick-slot-booking"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Visa Appointment Slot (Only Slot: IVAC Fee ৳1,500 + Medical/Business/Double Entry ৳3,000 or Tourist ৳4,000).')}`}
+                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book Indian Visa Appointment Slot (Starting from ৳4,500 including ৳1,500 IVAC fee).')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="book-service-option"
@@ -256,7 +356,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#161D28]">Slot Booking (শুধু স্লট বুকিং)</h4>
-                    <p className="text-xs text-[#5A6474]">আইভ্যাক ফি ১,৫০০৳ + স্লট ৩,০০০৳ / ৪,০০০৳</p>
+                    <p className="text-xs text-[#5A6474]">৪,৫০০৳ থেকে শুরু (আইভ্যাক ফি ১,৫০০৳ ফিক্সডসহ)</p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -275,7 +375,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
                   </div>
                   <h4 className="text-base font-bold text-[#1E2519]">অনুরোধ গ্রহণ করা হয়েছে!</h4>
                   <p className="text-xs text-[#55604C] leading-relaxed">
-                    ধন্যবাদ {callbackName || 'সম্মানিত সেবাগ্রহীতা'}! আমাদের ভিসা কনসালটেন্ট দল দ্রুত আপনার নম্বরে (<strong>{callbackPhone}</strong>) কল করে প্রয়োজনীয় দিকনির্দেশনা প্রদান করবে।
+                    ধন্যবাদ {callbackName || 'সম্মানিত সেবাগ্রহীতা'}! আমাদের ভিসা সাপোর্ট টিম দ্রুত আপনার নম্বরে (<strong>{callbackPhone}</strong>) কল করে প্রয়োজনীয় দিকনির্দেশনা প্রদান করবে।
                   </p>
                   <div className="pt-2">
                     <a
@@ -290,7 +390,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
               ) : (
                 <form onSubmit={handleCallbackSubmit} className="space-y-3.5">
                   <p className="text-xs text-[#65715D] leading-relaxed">
-                    WhatsApp ছাড়াও আপনি চাইলে সরাসরি আমাদের কনসালটেন্টের কল পেতে পারেন। নিচে আপনার তথ্য দিন:
+                    WhatsApp ছাড়াও আপনি চাইলে সরাসরি আমাদের টিমের কল পেতে পারেন। নিচে আপনার তথ্য দিন:
                   </p>
                   <div>
                     <label className="block text-xs font-semibold text-[#26301F] mb-1">
