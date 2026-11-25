@@ -25,6 +25,7 @@ import { VisaService } from '../types';
 import { soundEffects } from '../utils/soundEffects';
 import { compressChatAttachment } from '../utils/fileCompressor';
 import { useWhatsApp } from '../context/WhatsAppContext';
+import { useLanguage, Language } from '../context/LanguageContext';
 
 export interface UserProfile {
   name: string;
@@ -89,7 +90,7 @@ interface AiChatbotModalProps {
   onClearServiceContext?: () => void;
 }
 
-const DEFAULT_QUICK_PROMPTS = [
+const DEFAULT_QUICK_PROMPTS_BN = [
   'ট্যুরিস্ট ভিসার প্রয়োজনীয় ডকুমেন্টস কি কি?',
   'মেডিকেল ভিসার ইনভাইটেশন লেটার কিভাবে পাব?',
   'পরবর্তী ইন্ডিয়ান ভিসা স্লট কবে ছাড়বে?',
@@ -97,10 +98,73 @@ const DEFAULT_QUICK_PROMPTS = [
   'ব্যাংক স্টেটমেন্ট ও ছবির সঠিক নিয়ম কি?'
 ];
 
-const getContextualQuickPrompts = (service: VisaService | null | undefined): string[] => {
-  if (!service) return DEFAULT_QUICK_PROMPTS;
-  
+const DEFAULT_QUICK_PROMPTS_EN = [
+  'What documents are required for a Tourist Visa?',
+  'How do I get a Medical Visa invitation letter?',
+  'When will the next Indian visa slots open?',
+  'What is the IVAC slot booking fee and timeline?',
+  'What are the rules for bank statements and photos?'
+];
+
+const getContextualQuickPrompts = (
+  service: VisaService | null | undefined,
+  language: Language = 'bn'
+): string[] => {
+  if (!service) {
+    return language === 'en' ? DEFAULT_QUICK_PROMPTS_EN : DEFAULT_QUICK_PROMPTS_BN;
+  }
+
   const title = service.title.toLowerCase();
+  if (language === 'en') {
+    if (title.includes('medical') || title.includes('মেডিকেল')) {
+      return [
+        'How do I collect the medical invitation letter?',
+        'What documents are needed for patient & attendant?',
+        'What are the medical visa processing & IVAC slot fees?',
+        'How quickly can a slot be arranged for urgent treatment?'
+      ];
+    }
+    if (title.includes('tourist') || title.includes('ট্যুরিস্ট')) {
+      return [
+        'How much bank balance is needed for a Tourist Visa?',
+        'What documents do job holders & business owners need?',
+        'What is the Tourist Visa processing & IVAC fee?',
+        'How many days does passport delivery take after submission?'
+      ];
+    }
+    if (title.includes('double') || title.includes('ডাবল') || title.includes('transit')) {
+      return [
+        'How should I submit the transit ticket for Double Entry Visa?',
+        'How do I submit the embassy appointment letter?',
+        'What is the Double Entry Visa processing charge?',
+        'Who is eligible for a Double Entry Visa?'
+      ];
+    }
+    if (title.includes('business') || title.includes('বিজনেস')) {
+      return [
+        'How should the Indian company invitation letter be formatted?',
+        'What are the rules for trade license & tax certificates?',
+        'What is the Business Visa processing fee?',
+        'How long does an IVAC Business Visa slot take?'
+      ];
+    }
+    if (service.isSlotBooking || title.includes('slot') || title.includes('স্লট')) {
+      return [
+        'How can I book a fast slot at Dhaka IVAC?',
+        'What are the total fees for Tourist & Medical slots?',
+        'What passport details are needed for slot booking?',
+        'Are slots available for Sylhet or Chattogram centers?'
+      ];
+    }
+
+    return [
+      `What documents are required for ${service.title}?`,
+      `What is the total cost & processing time for ${service.title}?`,
+      'What are the rules for IVAC slot booking?',
+      'What are the steps to start processing directly?'
+    ];
+  }
+
   if (title.includes('medical') || title.includes('মেডিকেল')) {
     return [
       'মেডিকেল ইনভাইটেশন লেটার কিভাবে সংগ্রহ করব?',
@@ -167,9 +231,16 @@ const formatDisplayTime = (timeStr?: string): string => {
 const getWelcomeMessage = (
   service: VisaService | null | undefined,
   agentName: AgentName,
+  language: Language = 'bn',
   userName?: string
 ): string => {
   const greetingName = userName ? ` **${userName}**` : '';
+  if (language === 'en') {
+    if (service?.title) {
+      return `Assalamu Alaikum${greetingName}! I am **${agentName}** from Processing Hub. How can I assist you with **"${service.title}"** today?`;
+    }
+    return `Assalamu Alaikum${greetingName}! I am **${agentName}** from Processing Hub. How can I help you with your visa or travel processing today?`;
+  }
   if (service?.title) {
     return `আসসালামু আলাইকুম${greetingName}! আমি **${agentName}**। **"${service.title}"** সম্পর্কে আপনার কী জানার আছে বলুন, সাহায্য করছি।`;
   }
@@ -208,7 +279,8 @@ const loadUserPastSessions = (phone?: string): ArchivedSession[] => {
 const archiveUserSessionLocally = (
   phone: string | undefined,
   msgs: ChatMessage[],
-  serviceTitle?: string
+  serviceTitle?: string,
+  language: Language = 'bn'
 ): ArchivedSession | null => {
   const userMsgs = msgs.filter((m) => m.role === 'user');
   if (userMsgs.length === 0) return null;
@@ -219,7 +291,7 @@ const archiveUserSessionLocally = (
     .map((m) => {
       const attSummary =
         m.attachments && m.attachments.length > 0
-          ? ` [ফাইল: ${m.attachments.map((a) => a.name).join(', ')}]`
+          ? ` [${language === 'en' ? 'File' : 'ফাইল'}: ${m.attachments.map((a) => a.name).join(', ')}]`
           : '';
       return {
         role: m.role,
@@ -288,6 +360,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   serviceContext,
   onClearServiceContext
 }) => {
+  const { language, t, num } = useLanguage();
   const { pendingAgentHandoff, clearAgentHandoff } = useWhatsApp();
 
   const [assignedAgent, setAssignedAgent] = useState<AgentName>(() => getOrAssignSessionAgent());
@@ -325,6 +398,8 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
         const parsedProfile = savedProfile ? JSON.parse(savedProfile) : null;
         const initialName = parsedProfile?.name;
         const currentAgent = getOrAssignSessionAgent();
+        const savedLangRaw = localStorage.getItem('processinghub_lang');
+        const initialLang: Language = savedLangRaw === 'en' ? 'en' : 'bn';
 
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -337,7 +412,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           {
             id: 'welcome-1',
             role: 'assistant',
-            text: getWelcomeMessage(serviceContext, currentAgent, initialName),
+            text: getWelcomeMessage(serviceContext, currentAgent, initialLang, initialName),
             time: formatTimestamp(),
             isRead: true,
           }
@@ -350,7 +425,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       {
         id: 'welcome-1',
         role: 'assistant',
-        text: getWelcomeMessage(serviceContext, AGENT_NAMES[0]),
+        text: getWelcomeMessage(serviceContext, AGENT_NAMES[0], language),
         time: formatTimestamp(),
         isRead: true,
       }
@@ -435,20 +510,37 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     }
   }, [isOpen, messages]);
 
-  // When active service context changes and no custom chat ongoing, update welcome message
+  // When active service context changes, update welcome message
   useEffect(() => {
     if (serviceContext?.id && serviceContext?.id !== prevServiceRef.current) {
       prevServiceRef.current = serviceContext?.id;
       const contextMsg: ChatMessage = {
         id: `context-${Date.now()}`,
         role: 'assistant',
-        text: getWelcomeMessage(serviceContext, assignedAgent),
+        text: getWelcomeMessage(serviceContext, assignedAgent, language, userProfile?.name),
         time: formatTimestamp(),
         isRead: false,
       };
       setMessages(prev => [...prev.slice(-9), contextMsg]);
     }
-  }, [serviceContext, assignedAgent]);
+  }, [serviceContext, assignedAgent, language, userProfile?.name]);
+
+  // Sync single welcome greeting if site language toggles before chat conversation starts
+  useEffect(() => {
+    setMessages((prev) => {
+      if (
+        prev.length === 1 &&
+        prev[0].role === 'assistant' &&
+        (prev[0].id.startsWith('welcome-') || prev[0].id.startsWith('context-'))
+      ) {
+        const refreshedText = getWelcomeMessage(serviceContext, assignedAgent, language, userProfile?.name);
+        if (prev[0].text !== refreshedText) {
+          return [{ ...prev[0], text: refreshedText }];
+        }
+      }
+      return prev;
+    });
+  }, [language, serviceContext, assignedAgent, userProfile?.name]);
 
   // Smooth scroll management: align cleanly on open without fighting entrance animation, smooth scroll on new messages
   useEffect(() => {
@@ -485,9 +577,9 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   }, [isOpen, messages.length, showTypingBubble]);
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) return `${num(bytes)} B`;
+    if (bytes < 1024 * 1024) return `${num((bytes / 1024).toFixed(1))} KB`;
+    return `${num((bytes / (1024 * 1024)).toFixed(1))} MB`;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -506,11 +598,21 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     try {
       for (const file of fileArray) {
         if (nextList.length >= maxCount) {
-          setAttachmentError('একসাথে সর্বোচ্চ ৩টি ফাইল বা ছবি যুক্ত করা যাবে।');
+          setAttachmentError(
+            t(
+              'একসাথে সর্বোচ্চ ৩টি ফাইল বা ছবি যুক্ত করা যাবে।',
+              'You can attach up to 3 files or photos at once.'
+            )
+          );
           break;
         }
         if (file.size > maxInputBytes) {
-          setAttachmentError(`"${file.name}" ফাইলটি ২৫ MB-এর বেশি। দয়া করে ছোট ফাইল দিন।`);
+          setAttachmentError(
+            t(
+              `"${file.name}" ফাইলটি ২৫ MB-এর বেশি। দয়া করে ছোট ফাইল দিন।`,
+              `"${file.name}" exceeds 25 MB. Please upload a smaller file.`
+            )
+          );
           continue;
         }
 
@@ -524,7 +626,12 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           mimeType === 'text/csv';
 
         if (!isSupported) {
-          setAttachmentError(`"${file.name}" ফরম্যাট সাপোর্টেড নয়। ছবি, PDF বা টেক্সট ফাইল দিন।`);
+          setAttachmentError(
+            t(
+              `"${file.name}" ফরম্যাট সাপোর্টেড নয়। ছবি, PDF বা টেক্সট ফাইল দিন।`,
+              `"${file.name}" format is not supported. Please attach an image, PDF, or text file.`
+            )
+          );
           continue;
         }
 
@@ -532,7 +639,12 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
         if (!compressed.base64Data) continue;
 
         if (compressed.size > maxCompressedBytes) {
-          setAttachmentError(`"${file.name}" কম্প্রেস করার পরও অনেক বড়। অনুগ্রহ করে ফাইলটি ছোট করে দিন।`);
+          setAttachmentError(
+            t(
+              `"${file.name}" কম্প্রেস করার পরও অনেক বড়। অনুগ্রহ করে ফাইলটি ছোট করে দিন।`,
+              `"${file.name}" is still too large after compression. Please use a smaller file.`
+            )
+          );
           continue;
         }
 
@@ -552,7 +664,12 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     } catch (err) {
       console.error('Attachment compression error:', err);
       if (isMountedRef.current) {
-        setAttachmentError('ফাইলটি প্রসেস করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+        setAttachmentError(
+          t(
+            'ফাইলটি প্রসেস করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+            'Failed to process the file. Please try again.'
+          )
+        );
       }
     } finally {
       if (isMountedRef.current) {
@@ -630,6 +747,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           userName: activeProfile?.name,
           userPhone: activeProfile?.phone,
           agentName: activeAgent,
+          language,
           pastConversations: loadUserPastSessions(activeProfile?.phone),
           serviceContext: serviceContext ? {
             id: serviceContext.id,
@@ -645,7 +763,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error('সার্ভারে রেসপন্স পাওয়া যায়নি');
+        throw new Error(t('সার্ভারে রেসপন্স পাওয়া যায়নি', 'No response from server'));
       }
 
       const data = await response.json();
@@ -661,7 +779,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        text: data.reply || 'দুঃখিত, কোনো উত্তর পাওয়া যায়নি।',
+        text: data.reply || t('দুঃখিত, কোনো উত্তর পাওয়া যায়নি।', 'Sorry, no response was received.'),
         time: formatTimestamp(),
         isRead: false,
         sources: data.sources || [],
@@ -684,7 +802,10 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       const errorMessage: ChatMessage = {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        text: 'আন্তরিকভাবে দুঃখিত, সংযোগে সামান্য সমস্যা হয়েছে। আপনার প্রয়োজনীয় তথ্যের জন্য অনুগ্রহ করে আমাদের সাথে সরাসরি হোয়াটসঅ্যাপে (+8801577464706) যোগাযোগ করুন বা আবার প্রশ্ন করুন।',
+        text: t(
+          'আন্তরিকভাবে দুঃখিত, সংযোগে সামান্য সমস্যা হয়েছে। আপনার প্রয়োজনীয় তথ্যের জন্য অনুগ্রহ করে আমাদের সাথে সরাসরি হোয়াটসঅ্যাপে (+৮৮০১৫৭৭৪৬৪৭০৬) যোগাযোগ করুন বা আবার প্রশ্ন করুন।',
+          'Sorry, there was a brief connection issue. Please try asking again or message us directly on WhatsApp (+8801577464706) for immediate assistance.'
+        ),
         time: formatTimestamp(),
         isRead: false,
       };
@@ -860,7 +981,8 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     const archivedSession = archiveUserSessionLocally(
       currentProfile?.phone,
       currentMessages,
-      currentService?.title
+      currentService?.title,
+      language
     );
 
     if (archivedSession) {
@@ -891,13 +1013,18 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     const trimmedPhone = phoneInput.trim();
 
     if (!trimmedName || trimmedName.length < 2) {
-      setFormError('অনুগ্রহ করে আপনার সঠিক পূর্ণ নাম লিখুন');
+      setFormError(t('অনুগ্রহ করে আপনার সঠিক পূর্ণ নাম লিখুন', 'Please enter your valid full name'));
       return;
     }
 
     const cleanedPhone = trimmedPhone.replace(/[\s-]/g, '');
     if (!cleanedPhone || cleanedPhone.length < 10) {
-      setFormError('সঠিক মোবাইল বা WhatsApp নম্বর দিন (যেমন: 017XXXXXXXX)');
+      setFormError(
+        t(
+          'সঠিক মোবাইল বা হোয়াটসঅ্যাপ নম্বর দিন (যেমন: ০১৭XXXXXXXX)',
+          'Please enter a valid mobile or WhatsApp number (e.g. 017XXXXXXXX)'
+        )
+      );
       return;
     }
 
@@ -923,7 +1050,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
           {
             id: `welcome-${Date.now()}`,
             role: 'assistant',
-            text: getWelcomeMessage(serviceContext, assignedAgent, trimmedName),
+            text: getWelcomeMessage(serviceContext, assignedAgent, language, trimmedName),
             time: formatTimestamp(),
             isRead: true,
           }
@@ -970,7 +1097,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
       {
         id: freshWelcomeId,
         role: 'assistant',
-        text: getWelcomeMessage(serviceContext, nextAgent, userProfile?.name),
+        text: getWelcomeMessage(serviceContext, nextAgent, language, userProfile?.name),
         time: formatTimestamp(),
         isRead: true,
       }
@@ -1104,11 +1231,11 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                       {assignedAgent}
                     </h3>
                     <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-[#1FA855] text-white shrink-0">
-                      অনলাইন
+                      {t('অনলাইন', 'Online')}
                     </span>
                   </div>
                   <p className="text-[10.5px] text-[#636F5A] truncate">
-                    is chatting with you
+                    {t('আপনার সাথে চ্যাট করছেন', 'is chatting with you')}
                   </p>
                 </div>
               </div>
@@ -1118,16 +1245,20 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                   <>
                     <a
                       href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(
-                        serviceContext?.title
-                          ? `Hello ${assignedAgent} (Processing Hub), I need direct assistance regarding ${serviceContext.title}.`
-                          : `Hello ${assignedAgent} (Processing Hub), I am contacting you for Indian Visa Assistance.`
+                        language === 'en'
+                          ? serviceContext?.title
+                            ? `Hello ${assignedAgent} (Processing Hub), I need direct assistance regarding ${serviceContext.title}.`
+                            : `Hello ${assignedAgent} (Processing Hub), I am contacting you for Indian Visa Assistance.`
+                          : serviceContext?.title
+                            ? `আসসালামু আলাইকুম ${assignedAgent} (প্রসেসিং হাব), আমার ${serviceContext.title} সম্পর্কে সরাসরি সহায়তা প্রয়োজন।`
+                            : `আসসালামু আলাইকুম ${assignedAgent} (প্রসেসিং হাব), ইন্ডিয়ান ভিসা সহায়তার জন্য যোগাযোগ করছি।`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={onOpenWhatsAppDirect}
                       className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer shrink-0 shadow-xs"
-                      title="WhatsApp"
-                      aria-label="Chat on WhatsApp"
+                      title={t('হোয়াটসঅ্যাপ', 'WhatsApp')}
+                      aria-label={t('হোয়াটসঅ্যাপে চ্যাট করুন', 'Chat on WhatsApp')}
                     >
                       <svg viewBox="0 0 32 32" className="w-8 h-8" aria-hidden="true">
                         <circle cx="16" cy="16" r="16" fill="#25D366" />
@@ -1141,10 +1272,10 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                       type="button"
                       onClick={handleEndChatManual}
                       className="btn-3d-matte-red inline-flex items-center justify-center gap-1 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap cursor-pointer w-auto"
-                      title="End Chat"
+                      title={t('চ্যাট শেষ করুন', 'End Chat')}
                     >
                       <LogOut className="w-3 h-3 flex-shrink-0" />
-                      <span>End</span>
+                      <span>{t('শেষ করুন', 'End')}</span>
                     </button>
                   </>
                 )}
@@ -1152,7 +1283,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                   type="button"
                   onClick={handleClose}
                   className="w-7 h-7 rounded-full border border-[#D5CFBF] bg-[#FAF8F5] hover:bg-[#F0ECE1] text-[#1E2519] flex items-center justify-center transition-all cursor-pointer shrink-0"
-                  aria-label="Close support chat"
+                  aria-label={t('সাপোর্ট চ্যাট বন্ধ করুন', 'Close support chat')}
                 >
                   <X className="w-3.5 h-3.5 stroke-[2.2]" />
                 </button>
@@ -1164,7 +1295,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
               <div className="bg-[#F4F9F2] border-b border-[#D2EAD0] px-3.5 py-1.5 flex items-center justify-between text-[11px] text-[#1E522C] flex-shrink-0">
                 <div className="flex items-center gap-1.5 truncate">
                   <Tag className="w-3.5 h-3.5 text-[#1FA855] shrink-0" />
-                  <span className="font-medium text-[#4B6B4E]">ফোকাস:</span>
+                  <span className="font-medium text-[#4B6B4E]">{t('ফোকাস:', 'Focus:')}</span>
                   <span className="font-bold text-[#14351C] truncate max-w-[180px] sm:max-w-[220px]">{serviceContext.title}</span>
                   <span className="text-[#1FA855] font-semibold">({serviceContext.price})</span>
                 </div>
@@ -1173,9 +1304,9 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                     type="button"
                     onClick={onClearServiceContext}
                     className="text-[10px] text-[#2E7D32] hover:text-[#14351C] underline cursor-pointer shrink-0 ml-2 font-medium"
-                    title="সাধারণ পরামর্শে ফিরুন"
+                    title={t('সাধারণ পরামর্শে ফিরুন', 'Return to general assistance')}
                   >
-                    সাধারণ মোড
+                    {t('সাধারণ মোড', 'General Mode')}
                   </button>
                 )}
               </div>
@@ -1190,10 +1321,13 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                       <MessagesSquare className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h4 className="text-[15px] font-bold text-[#16202E]">
-                      সরাসরি লাইভ এজেন্টের সাথে কথা বলুন
+                      {t('সরাসরি লাইভ এজেন্টের সাথে কথা বলুন', 'Chat Directly with a Live Agent')}
                     </h4>
                     <p className="text-[11.5px] text-[#5A687C] mt-1 leading-relaxed">
-                      ভিসা প্রসেসিং ও ডকুমেন্টস সংক্রান্ত তাৎক্ষণিক সহযোগিতা পেতে অনুগ্রহ করে আপনার নাম ও যোগাযোগ নম্বর দিন।
+                      {t(
+                        'ভিসা প্রসেসিং ও ডকুমেন্টস সংক্রান্ত তাৎক্ষণিক সহযোগিতা পেতে অনুগ্রহ করে আপনার নাম ও যোগাযোগ নম্বর দিন।',
+                        'Please enter your name and contact number for instant assistance with visa processing and documents.'
+                      )}
                     </p>
                   </div>
 
@@ -1201,7 +1335,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                     <div>
                       <label className="block text-xs font-semibold text-[#1E293B] mb-1 flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-[#2A4365]" />
-                        <span>আপনার পূর্ণ নাম <span className="text-rose-500">*</span></span>
+                        <span>{t('আপনার পূর্ণ নাম', 'Your Full Name')} <span className="text-rose-500">*</span></span>
                       </label>
                       <input
                         type="text"
@@ -1210,7 +1344,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                           setNameInput(e.target.value);
                           if (formError) setFormError('');
                         }}
-                        placeholder="যেমন: মোহাম্মদ রহিম"
+                        placeholder={t('যেমন: মোহাম্মদ রহিম', 'e.g. Mohammad Rahim')}
                         required
                         className="w-full bg-white border border-[#D5D0C5] focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/15 rounded-xl px-3.5 py-2.5 text-sm text-[#16202E] placeholder-[#8A95A5] focus:outline-none transition-all shadow-xs"
                       />
@@ -1219,7 +1353,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                     <div>
                       <label className="block text-xs font-semibold text-[#1E293B] mb-1 flex items-center gap-1.5">
                         <Phone className="w-3.5 h-3.5 text-[#2A4365]" />
-                        <span>মোবাইল / WhatsApp নম্বর <span className="text-rose-500">*</span></span>
+                        <span>{t('মোবাইল / হোয়াটসঅ্যাপ নম্বর', 'Mobile / WhatsApp Number')} <span className="text-rose-500">*</span></span>
                       </label>
                       <input
                         type="tel"
@@ -1228,7 +1362,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                           setPhoneInput(e.target.value);
                           if (formError) setFormError('');
                         }}
-                        placeholder="01XXXXXXXXX"
+                        placeholder={t('০১৭XXXXXXXX', '017XXXXXXXX')}
                         required
                         className="w-full bg-white border border-[#D5D0C5] focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/15 rounded-xl px-3.5 py-2.5 text-sm text-[#16202E] placeholder-[#8A95A5] focus:outline-none transition-all font-mono shadow-xs"
                       />
@@ -1245,7 +1379,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                         type="submit"
                         className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#1E2E48] to-[#142033] hover:from-[#243755] hover:to-[#1A2840] active:scale-[0.99] text-white font-bold text-sm shadow-[0_3px_0_#0D1624,0_6px_18px_rgba(20,32,51,0.22)] transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
-                        <span>পরামর্শ শুরু করুন</span>
+                        <span>{t('পরামর্শ শুরু করুন', 'Start Chatting')}</span>
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     </div>
@@ -1256,13 +1390,18 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                         onClick={() => setIsEditingProfile(false)}
                         className="w-full text-xs text-[#5A687C] hover:text-[#16202E] underline py-1 text-center cursor-pointer font-medium"
                       >
-                        বাতিল করুন (চ্যাটে ফিরুন)
+                        {t('বাতিল করুন (চ্যাটে ফিরুন)', 'Cancel (Back to Chat)')}
                       </button>
                     )}
 
                     <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#5A687C]">
                       <ShieldCheck className="w-3.5 h-3.5 text-[#2A4365]" />
-                      <span>আপনার তথ্য শতভাগ নিরাপদ ও সংরক্ষিত থাকবে</span>
+                      <span>
+                        {t(
+                          'আপনার তথ্য শতভাগ নিরাপদ ও সংরক্ষিত থাকবে',
+                          'Your information remains 100% private and secure'
+                        )}
+                      </span>
                     </div>
                   </form>
                 </div>
@@ -1324,7 +1463,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                                     <div className="min-w-0 flex-1">
                                       <p className="font-medium truncate max-w-[165px]">{att.name}</p>
                                       <p className={`text-[10px] ${isUser ? 'text-white/80' : 'text-[#636F5A]'}`}>
-                                        {att.mimeType === 'application/pdf' ? 'PDF' : 'File'} • {formatFileSize(att.size)}
+                                        {att.mimeType === 'application/pdf' ? 'PDF' : t('ফাইল', 'File')} • {formatFileSize(att.size)}
                                       </p>
                                     </div>
                                   </div>
@@ -1350,7 +1489,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                           <div className="mt-2.5 pt-2 border-t border-[#EAE5D9] text-[11px] text-[#636F5A]">
                             <div className="flex items-center gap-1 font-medium mb-1 text-[#2E7D32]">
                               <Search className="w-3 h-3" />
-                              <span>তথ্যসূত্র:</span>
+                              <span>{t('তথ্যসূত্র:', 'Sources:')}</span>
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                               {msg.sources.map((src, idx) => (
@@ -1372,7 +1511,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
                       {/* Small, light-grey timestamp and read indicator below the bubble */}
                       <div className={`flex items-center gap-2 mt-1 px-1 text-[10.5px] text-[#8C9884] select-none ${isUser ? 'justify-end' : 'justify-start'}`}>
-                        <span className="font-mono tracking-tight leading-none">{formatDisplayTime(msg.time)}</span>
+                        <span className="font-mono tracking-tight leading-none">{num(formatDisplayTime(msg.time))}</span>
                         
                         {/* Small 'read' status indicator with subtle pop & color transition for assistant messages */}
                         {!isUser && (
@@ -1382,7 +1521,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                                 ? 'text-[#1FA855] read-indicator-anim' 
                                 : 'text-[#8C9884]'
                             }`}
-                            title={msg.isRead ? 'মেসেজটি পড়া হয়েছে (Read)' : 'পাঠানো হয়েছে (Delivered)'}
+                            title={msg.isRead ? t('মেসেজটি পড়া হয়েছে', 'Read') : t('পাঠানো হয়েছে', 'Delivered')}
                           >
                             {msg.isRead ? (
                               <CheckCheck className="w-3.5 h-3.5 stroke-[2.2] text-[#1FA855]" />
@@ -1397,8 +1536,8 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                             type="button"
                             onClick={() => handleCopyText(msg.id, msg.text)}
                             className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-[#1E2519] text-[#8C9884] cursor-pointer ml-0.5"
-                            title="টেক্সট কপি করুন"
-                            aria-label="Copy message text"
+                            title={t('টেক্সট কপি করুন', 'Copy message text')}
+                            aria-label={t('মেসেজ টেক্সট কপি করুন', 'Copy message text')}
                           >
                             {copiedId === msg.id ? (
                               <Check className="w-3 h-3 text-[#1FA855]" />
@@ -1418,10 +1557,14 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                 <div className="pt-2 pb-1">
                   <div className="text-[11.5px] font-semibold text-[#5A6750] mb-2.5 flex items-center gap-1.5 px-1">
                     <HelpCircle className="w-3.5 h-3.5 text-[#1FA855]" />
-                    <span>{serviceContext?.title ? `"${serviceContext.title}" সম্পর্কিত প্রয়োজনীয় প্রশ্ন:` : 'সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ:'}</span>
+                    <span>
+                      {serviceContext?.title
+                        ? t(`"${serviceContext.title}" সম্পর্কিত প্রয়োজনীয় প্রশ্ন:`, `Common Questions for "${serviceContext.title}":`)
+                        : t('সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ:', 'Frequently Asked Questions:')}
+                    </span>
                   </div>
                   <div className="grid grid-cols-1 gap-1.5">
-                    {getContextualQuickPrompts(serviceContext).map((prompt, i) => (
+                    {getContextualQuickPrompts(serviceContext, language).map((prompt, i) => (
                       <button
                         key={i}
                         type="button"
@@ -1449,7 +1592,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#1FA855] typing-dot-3" />
                     </div>
                     <span className="text-[11px] text-[#5A6750] font-medium">
-                      {assignedAgent} লিখছেন...
+                      {t(`${assignedAgent} লিখছেন...`, `${assignedAgent} is typing...`)}
                     </span>
                   </div>
                 </div>
@@ -1468,7 +1611,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
               {isCompressingFiles && (
                 <p className="text-[11px] text-[#1E522C] bg-[#EBF7EE] border border-[#C6E2CD] rounded-lg px-2.5 py-1 mb-2">
-                  ফাইল অটো-কম্প্রেস ও প্রস্তুত করা হচ্ছে...
+                  {t('ফাইল অটো-কম্প্রেস ও প্রস্তুত করা হচ্ছে...', 'Compressing and preparing your file...')}
                 </p>
               )}
 
@@ -1496,7 +1639,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                         type="button"
                         onClick={() => handleRemovePendingAttachment(att.id)}
                         className="text-[#8C9884] hover:text-red-600 p-0.5 cursor-pointer shrink-0"
-                        aria-label={`Remove ${att.name}`}
+                        aria-label={t(`${att.name} সরান`, `Remove ${att.name}`)}
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -1526,8 +1669,8 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading || isCompressingFiles}
                   className="w-10 h-10 rounded-lg bg-white hover:bg-[#F3F0E8] border border-[#D5CFBF] text-[#4E5C46] hover:text-[#1FA855] disabled:opacity-40 flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
-                  title="ছবি বা PDF ফাইল যুক্ত করুন"
-                  aria-label="Attach photo or PDF file"
+                  title={t('ছবি বা PDF ফাইল যুক্ত করুন', 'Attach image or PDF file')}
+                  aria-label={t('ছবি বা PDF ফাইল যুক্ত করুন', 'Attach photo or PDF file')}
                 >
                   <Paperclip className="w-4 h-4" />
                 </button>
@@ -1539,7 +1682,11 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                     setInputText(e.target.value);
                     soundEffects.playTypingTick();
                   }}
-                  placeholder={serviceContext?.title ? `${serviceContext.title} সংক্রান্ত প্রশ্ন লিখুন...` : 'আপনার প্রশ্ন লিখুন (বাংলা বা ইংরেজি)...'}
+                  placeholder={
+                    serviceContext?.title
+                      ? t(`${serviceContext.title} সংক্রান্ত প্রশ্ন লিখুন...`, `Ask about ${serviceContext.title}...`)
+                      : t('আপনার প্রশ্ন লিখুন...', 'Type your question...')
+                  }
                   disabled={isLoading}
                   className="flex-1 min-w-0 bg-white border border-[#D5CFBF] focus:border-[#1FA855] rounded-lg px-3.5 py-2.5 text-sm text-[#1E2519] placeholder-[#8A9582] focus:outline-none transition-all shadow-xs"
                 />
@@ -1547,7 +1694,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                   type="submit"
                   disabled={(!inputText.trim() && pendingAttachments.length === 0) || isLoading || isCompressingFiles}
                   className="w-10 h-10 rounded-lg bg-[#1FA855] hover:bg-[#188A45] disabled:opacity-40 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:translate-y-0.5 shrink-0"
-                  aria-label="Send message"
+                  aria-label={t('মেসেজ পাঠান', 'Send message')}
                 >
                   <Send className="w-4 h-4 ml-0.5" />
                 </button>

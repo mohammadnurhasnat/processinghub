@@ -11,59 +11,91 @@ import {
   CalendarCheck2, 
   Stethoscope
 } from 'lucide-react';
-import { DESTINATIONS, HOSPITALS } from '../data/visaData';
+import { getDestinations, getHospitals, HOSPITALS } from '../data/visaData';
+import { HOSPITALS_EN } from '../data/visaDataEn';
 import { CONFIG } from '../config';
 import { Destination, Hospital } from '../types';
 import { HospitalDetailModal } from './HospitalDetailModal';
 import { DestinationDetailModal } from './DestinationDetailModal';
+import { useLanguage } from '../context/LanguageContext';
 
 const DEPARTMENT_FILTERS = [
-  { id: 'all', label: 'সকল বিভাগ', emoji: '🏥' },
-  { id: 'Cardiology', label: 'কার্ডিওলজি / হার্ট', emoji: '❤️' },
-  { id: 'Oncology', label: 'ক্যান্সার / অনকোলজি', emoji: '🎗️' },
-  { id: 'Neurology', label: 'নিউরোলজি / ব্রেন', emoji: '🧠' },
-  { id: 'Organ Transplant', label: 'অর্গান ট্রান্সপ্লান্ট', emoji: '🫀' },
-  { id: 'Orthopedics', label: 'অর্থোপেডিক্স / জয়েন্ট', emoji: '🦴' },
-  { id: 'Gastroenterology', label: 'গ্যাস্ট্রোএন্টারোলজি', emoji: '🔬' },
-  { id: 'Nephrology', label: 'কিডনি ও নেফ্রোলজি', emoji: '🧪' },
-  { id: 'Pediatrics', label: 'শিশু বিভাগ', emoji: '👶' },
+  { id: 'all', bn: 'সকল বিভাগ', en: 'All Departments', emoji: '🏥' },
+  { id: 'Cardiology', bn: 'কার্ডিওলজি ও হার্ট', en: 'Cardiology & Heart', emoji: '❤️' },
+  { id: 'Oncology', bn: 'ক্যান্সার ও অনকোলজি', en: 'Cancer & Oncology', emoji: '🎗️' },
+  { id: 'Neurology', bn: 'নিউরোলজি ও ব্রেন', en: 'Neurology & Brain', emoji: '🧠' },
+  { id: 'Organ Transplant', bn: 'অর্গান ট্রান্সপ্লান্ট', en: 'Organ Transplant', emoji: '🫀' },
+  { id: 'Orthopedics', bn: 'অর্থোপেডিক্স ও জয়েন্ট', en: 'Orthopedics & Joint', emoji: '🦴' },
+  { id: 'Gastroenterology', bn: 'গ্যাস্ট্রোএন্টারোলজি', en: 'Gastroenterology', emoji: '🔬' },
+  { id: 'Nephrology', bn: 'কিডনি ও নেফ্রোলজি', en: 'Kidney & Nephrology', emoji: '🧪' },
+  { id: 'Pediatrics', bn: 'শিশু বিভাগ', en: 'Pediatrics', emoji: '👶' },
 ];
 
 export const DestinationsSection: React.FC = () => {
+  const { language, t, num } = useLanguage();
+  const isBn = language === 'bn';
+
+  const destinations = getDestinations(language);
+  const hospitals = getHospitals(language);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDept, setSelectedDept] = useState('all');
   
-  // Modals state
-  const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
+  // Modals state by ID so switching language updates open modals live
+  const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
+  const [selectedDestId, setSelectedDestId] = useState<string | null>(null);
+
+  const selectedHospital: Hospital | null = useMemo(
+    () => (selectedHospitalId ? hospitals.find((h) => h.id === selectedHospitalId) || null : null),
+    [hospitals, selectedHospitalId]
+  );
+
+  const selectedDestination: Destination | null = useMemo(
+    () => (selectedDestId ? destinations.find((d) => d.id === selectedDestId) || null : null),
+    [destinations, selectedDestId]
+  );
 
   const destScrollRef = useRef<HTMLDivElement>(null);
   const hospitalScrollRef = useRef<HTMLDivElement>(null);
 
-  // Filter hospitals based on search input and selected department
+  // Filter hospitals with bilingual cross-search (matches both BN & EN datasets)
   const filteredHospitals = useMemo(() => {
-    return HOSPITALS.filter((hospital) => {
-      // Department filter
-      const matchesDept = selectedDept === 'all' || hospital.departments.some(d => 
-        d.toLowerCase().includes(selectedDept.toLowerCase()) || 
-        selectedDept.toLowerCase().includes(d.toLowerCase())
+    const q = searchQuery.toLowerCase().trim();
+    const bnMap = new Map(HOSPITALS.map((h) => [h.id, h]));
+    const enMap = new Map(HOSPITALS_EN.map((h) => [h.id, h]));
+
+    return hospitals.filter((hospital) => {
+      const bnItem = bnMap.get(hospital.id);
+      const enItem = enMap.get(hospital.id);
+      const candidates = [hospital, bnItem, enItem].filter((item): item is Hospital => Boolean(item));
+
+      // Department filter (check against canonical English departments as well)
+      const matchesDept =
+        selectedDept === 'all' ||
+        candidates.some((item) =>
+          item.departments.some(
+            (d) =>
+              d.toLowerCase().includes(selectedDept.toLowerCase()) ||
+              selectedDept.toLowerCase().includes(d.toLowerCase())
+          )
+        );
+
+      if (!q) return matchesDept;
+
+      // Cross-language search match across BN and EN fields
+      const matchesQuery = candidates.some(
+        (item) =>
+          item.name.toLowerCase().includes(q) ||
+          item.city.toLowerCase().includes(q) ||
+          item.location.toLowerCase().includes(q) ||
+          item.description.toLowerCase().includes(q) ||
+          item.specialties.some((s) => s.toLowerCase().includes(q)) ||
+          item.departments.some((d) => d.toLowerCase().includes(q))
       );
-
-      // Search query filter
-      if (!searchQuery.trim()) return matchesDept;
-
-      const q = searchQuery.toLowerCase().trim();
-      const matchesQuery = 
-        hospital.name.toLowerCase().includes(q) ||
-        hospital.city.toLowerCase().includes(q) ||
-        hospital.location.toLowerCase().includes(q) ||
-        hospital.description.toLowerCase().includes(q) ||
-        hospital.specialties.some(s => s.toLowerCase().includes(q)) ||
-        hospital.departments.some(d => d.toLowerCase().includes(q));
 
       return matchesDept && matchesQuery;
     });
-  }, [searchQuery, selectedDept]);
+  }, [hospitals, searchQuery, selectedDept]);
 
   const scrollContainer = (ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
     if (ref.current) {
@@ -78,16 +110,18 @@ export const DestinationsSection: React.FC = () => {
     <section id="destinations" className="relative py-8 sm:py-12 bg-gradient-to-b from-transparent via-[#F7F6F0]/60 to-transparent">
       
       {/* ========================================================================= */}
-      {/* PART 1: POPULAR TOURIST DESTINATIONS (ভ্রমণ গন্তব্যসমূহ)                   */}
+      {/* PART 1: POPULAR TOURIST DESTINATIONS                                      */}
       {/* ========================================================================= */}
       <div className="w-full max-w-6xl mx-auto px-4 mb-10 sm:mb-12">
-        {/* Tourist Section Header (Badges completely removed as requested) */}
         <div className="text-center max-w-3xl mx-auto mb-5 sm:mb-7">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold font-['Space_Grotesk'] text-[#1E2519] tracking-tight leading-tight">
-            জনপ্রিয় ভ্রমণ গন্তব্যসমূহ
+            {t('জনপ্রিয় ভ্রমণ গন্তব্যসমূহ', 'Popular Indian Travel Destinations')}
           </h2>
           <p className="text-xs sm:text-sm md:text-base text-[#4E5C46] mt-2 leading-relaxed max-w-2xl mx-auto">
-            বাংলাদেশি ভ্রমণপিপাসুদের পছন্দের ভারতের সেরা দর্শনীয় স্থানসমূহ। যেকোনো কার্ডে ক্লিক করে দর্শনীয় স্থান ও ভ্রমণের সেরা সময় জেনে নিন।
+            {t(
+              'বাংলাদেশি ভ্রমণপিপাসুদের পছন্দের ভারতের সেরা দর্শনীয় স্থানসমূহ। যেকোনো কার্ডে ক্লিক করে দর্শনীয় স্থান ও ভ্রমণের সেরা সময় জেনে নিন।',
+              'Explore top Indian destinations favored by Bangladeshi travelers. Click any card to view key attractions and the best time to visit.'
+            )}
           </p>
         </div>
 
@@ -97,11 +131,11 @@ export const DestinationsSection: React.FC = () => {
           id="destinations-scroll-container"
           ref={destScrollRef}
         >
-          {DESTINATIONS.map((dest, index) => (
+          {destinations.map((dest, index) => (
             <div 
               key={dest.id || index} 
               id={`destination-polaroid-${dest.id || index}`}
-              onClick={() => setSelectedDestination(dest)}
+              onClick={() => setSelectedDestId(dest.id)}
               className="polaroid cursor-pointer group text-left" 
             >
               <div className="relative overflow-hidden rounded-lg bg-[#E8E4D8]">
@@ -117,7 +151,7 @@ export const DestinationsSection: React.FC = () => {
                 <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3 text-center">
                   <span className="bg-white/95 text-[#1E2519] text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
                     <Compass className="w-3.5 h-3.5 text-[#2A6A26]" />
-                    দর্শনীয় স্থান ও তথ্য
+                    {t('দর্শনীয় স্থান ও তথ্য', 'Attractions & Info')}
                   </span>
                 </div>
               </div>
@@ -127,17 +161,14 @@ export const DestinationsSection: React.FC = () => {
                   <h4 className="font-['Space_Grotesk'] text-[14px] font-bold text-[#1E2519] group-hover:text-[#2A6A26] transition-colors leading-tight text-left">
                     {dest.name}
                   </h4>
-                  <p className="text-[12px] font-semibold text-[#2E7D32] mt-0.5 leading-tight text-left">
-                    {dest.nameBn || dest.name}
-                  </p>
-                  <p className="text-[11px] text-[#65715D] flex items-center justify-start gap-1 mt-1 line-clamp-1 text-left">
+                  <p className="text-[11px] text-[#65715D] flex items-center justify-start gap-1 mt-1.5 line-clamp-1 text-left">
                     <MapPin className="w-3 h-3 text-[#8C9685] flex-shrink-0" />
                     <span className="text-left">{dest.location}</span>
                   </p>
                 </div>
 
                 <div className="w-full mt-2.5 pt-2 border-t border-[#EFEBE0] flex items-center justify-between text-[11px] font-bold text-[#2A6A26]">
-                  <span>ভ্রমণ নির্দেশিকা</span>
+                  <span>{t('ভ্রমণ নির্দেশিকা', 'Travel Guide')}</span>
                   <span className="text-[#2A6A26] group-hover:translate-x-0.5 transition-transform">→</span>
                 </div>
               </div>
@@ -152,8 +183,8 @@ export const DestinationsSection: React.FC = () => {
             id="dest-prev-btn"
             onClick={() => scrollContainer(destScrollRef, 'left')}
             className="dest-nav-btn"
-            aria-label="পূর্ববর্তী গন্তব্য"
-            title="পূর্ববর্তী"
+            aria-label={t('পূর্ববর্তী গন্তব্য', 'Previous destination')}
+            title={t('পূর্ববর্তী', 'Previous')}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -162,8 +193,8 @@ export const DestinationsSection: React.FC = () => {
             id="dest-next-btn"
             onClick={() => scrollContainer(destScrollRef, 'right')}
             className="dest-nav-btn"
-            aria-label="পরবর্তী গন্তব্য"
-            title="পরবর্তী"
+            aria-label={t('পরবর্তী গন্তব্য', 'Next destination')}
+            title={t('পরবর্তী', 'Next')}
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -176,16 +207,18 @@ export const DestinationsSection: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* PART 2: TOP INDIAN HOSPITALS & SPECIALISTS (শীর্ষ হাসপাতালসমূহ)            */}
+      {/* PART 2: TOP INDIAN HOSPITALS & SPECIALISTS                                */}
       {/* ========================================================================= */}
       <div className="w-full max-w-6xl mx-auto px-4">
-        {/* Hospital Section Header (Badges completely removed as requested) */}
         <div className="text-center max-w-3xl mx-auto mb-5 sm:mb-7">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold font-['Space_Grotesk'] text-[#1E2519] tracking-tight leading-tight">
-            ভারতের শীর্ষ হাসপাতাল ও চিকিৎসাকেন্দ্রসমূহ
+            {t('ভারতের শীর্ষ হাসপাতাল ও চিকিৎসাকেন্দ্রসমূহ', 'Top Indian Hospitals & Medical Centers')}
           </h2>
           <p className="text-xs sm:text-sm md:text-base text-[#4E5C46] mt-2 leading-relaxed max-w-2xl mx-auto">
-            বাংলাদেশি রোগীদের উন্নত চিকিৎসার জন্য ভারতের স্বনামধন্য সুপার-স্পেশালিটি হাসপাতালসমূহ। প্রতিটি হাসপাতাল থেকে ডক্টরস ইনভাইটেশন ও অ্যাপয়েন্টমেন্ট সাপোর্ট প্রদান করা হয়।
+            {t(
+              'বাংলাদেশি রোগীদের উন্নত চিকিৎসার জন্য ভারতের স্বনামধন্য সুপার-স্পেশালিটি হাসপাতালসমূহ। প্রতিটি হাসপাতাল থেকে ডাক্তারের ইনভাইটেশন ও অ্যাপয়েন্টমেন্ট সাপোর্ট প্রদান করা হয়।',
+              'Leading Indian super-specialty hospitals trusted by Bangladeshi patients. We arrange official doctor invitation letters and appointment confirmations for medical visas.'
+            )}
           </p>
         </div>
 
@@ -198,10 +231,18 @@ export const DestinationsSection: React.FC = () => {
             <div className="text-left">
               <h4 className="text-xs sm:text-sm font-bold text-[#1E5624] flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
-                অফিশিয়াল ডক্টরস ইনভাইটেশন ও অ্যাপয়েন্টমেন্ট নিশ্চয়তা
+                {t('অফিশিয়াল ডাক্তারের ইনভাইটেশন ও অ্যাপয়েন্টমেন্ট নিশ্চয়তা', 'Official Doctor Invitation & Appointment Assurance')}
               </h4>
               <p className="text-[11.5px] sm:text-xs text-[#425C47] leading-relaxed mt-0.5">
-                আমরা প্রতিটি শীর্ষ হাসপাতাল থেকে রোগীর জন্য সরাসরি <strong>অফিশিয়াল ডক্টরস ইনভাইটেশন লেটার</strong> ও <strong>বিশেষজ্ঞ ডক্টর অ্যাপয়েন্টমেন্ট</strong> কনফার্মেশন সংগ্রহ করি।
+                {isBn ? (
+                  <>
+                    আমরা প্রতিটি শীর্ষ হাসপাতাল থেকে রোগীর জন্য সরাসরি <strong>অফিশিয়াল ডাক্তারের ইনভাইটেশন লেটার</strong> ও <strong>বিশেষজ্ঞ ডাক্তার অ্যাপয়েন্টমেন্ট</strong> কনফার্মেশন সংগ্রহ করি।
+                  </>
+                ) : (
+                  <>
+                    We directly arrange verified <strong>Official Doctor Invitation Letters</strong> and <strong>Specialist Appointment Confirmations</strong> from every partner hospital.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -213,7 +254,7 @@ export const DestinationsSection: React.FC = () => {
             rel="noopener noreferrer"
             className="btn-3d-matte-green px-3.5 py-1.5 text-xs font-bold whitespace-nowrap self-stretch sm:self-auto text-center"
           >
-            ইনভাইটেশন লেটার নিন
+            {t('ইনভাইটেশন লেটার নিন', 'Get Invitation Letter')}
           </a>
         </div>
 
@@ -227,7 +268,10 @@ export const DestinationsSection: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="রোগের নাম, ডিপার্টমেন্ট বা হাসপাতাল খুঁজুন (যেমন: Heart, Cancer, Neuro, Ortho, Liver, Kolkata, Delhi)..."
+              placeholder={t(
+                'রোগের নাম, বিভাগ বা হাসপাতাল খুঁজুন (যেমন: হৃদরোগ, ক্যান্সার, নিউরো, কলকাতা, দিল্লি)...',
+                'Search condition, department, or hospital (e.g. Heart, Cancer, Neuro, Kolkata, Delhi)...'
+              )}
               className="w-full pl-10 pr-10 py-2 text-xs sm:text-sm bg-[#FAF9F5] border border-[#D5CFBF] rounded-xl text-[#1E2519] placeholder:text-[#8C9685] focus:outline-none focus:border-[#2E7D32] focus:bg-white transition-all"
             />
             {searchQuery && (
@@ -236,7 +280,7 @@ export const DestinationsSection: React.FC = () => {
                 id="clear-hospital-search"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8C9685] hover:text-[#1E2519] cursor-pointer"
-                title="ক্লিয়ার করুন"
+                title={t('মুছে ফেলুন', 'Clear search')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -260,7 +304,7 @@ export const DestinationsSection: React.FC = () => {
                   }`}
                 >
                   <span>{dept.emoji}</span>
-                  <span>{dept.label}</span>
+                  <span>{isBn ? dept.bn : dept.en}</span>
                 </button>
               );
             })}
@@ -269,7 +313,15 @@ export const DestinationsSection: React.FC = () => {
           {/* Match Counter & Reset */}
           <div className="flex items-center justify-between text-xs text-[#6B7563] pt-1.5 border-t border-[#EFEBE0]">
             <span>
-              মোট <strong>{filteredHospitals.length}</strong>টি হাসপাতাল প্রদর্শিত হচ্ছে
+              {isBn ? (
+                <>
+                  মোট <strong>{num(filteredHospitals.length)}</strong>টি হাসপাতাল প্রদর্শিত হচ্ছে
+                </>
+              ) : (
+                <>
+                  Showing <strong>{filteredHospitals.length}</strong> partner hospitals
+                </>
+              )}
             </span>
             {(searchQuery || selectedDept !== 'all') && (
               <button
@@ -281,7 +333,7 @@ export const DestinationsSection: React.FC = () => {
                 }}
                 className="text-[#2E7D32] font-semibold hover:underline cursor-pointer"
               >
-                সব ফিল্টার মুছুন
+                {t('সব ফিল্টার মুছুন', 'Reset Filters')}
               </button>
             )}
           </div>
@@ -291,8 +343,12 @@ export const DestinationsSection: React.FC = () => {
         {filteredHospitals.length === 0 ? (
           <div className="text-center py-10 bg-white/70 rounded-2xl border border-dashed border-[#D5CFBF] p-6">
             <Building2 className="w-10 h-10 text-[#A0AA98] mx-auto mb-2" />
-            <p className="text-sm font-bold text-[#1E2519]">কোনো হাসপাতাল পাওয়া যায়নি</p>
-            <p className="text-xs text-[#6B7563] mt-1">অন্য কোনো রোগের নাম বা কিওয়ার্ড দিয়ে আবার চেষ্টা করুন।</p>
+            <p className="text-sm font-bold text-[#1E2519]">
+              {t('কোনো হাসপাতাল পাওয়া যায়নি', 'No matching hospitals found')}
+            </p>
+            <p className="text-xs text-[#6B7563] mt-1">
+              {t('অন্য কোনো রোগের নাম বা শব্দ দিয়ে আবার চেষ্টা করুন।', 'Try searching with a different condition, city, or hospital name.')}
+            </p>
             <button
               type="button"
               onClick={() => {
@@ -301,7 +357,7 @@ export const DestinationsSection: React.FC = () => {
               }}
               className="btn-3d-matte-secondary mt-3 px-3.5 py-1.5 text-xs font-semibold rounded-full"
             >
-              সকল হাসপাতাল দেখুন
+              {t('সকল হাসপাতাল দেখুন', 'Show All Hospitals')}
             </button>
           </div>
         ) : (
@@ -314,10 +370,10 @@ export const DestinationsSection: React.FC = () => {
               <div 
                 key={hospital.id} 
                 id={`hospital-polaroid-${hospital.id}`}
-                onClick={() => setSelectedHospital(hospital)}
+                onClick={() => setSelectedHospitalId(hospital.id)}
                 className="polaroid cursor-pointer group text-left"
               >
-                {/* Building Facade Photo with City & Logo Overlay */}
+                {/* Building Facade Photo with City Tag */}
                 <div className="relative overflow-hidden rounded-lg bg-[#E8E4D8]">
                   <img 
                     src={hospital.image} 
@@ -339,7 +395,7 @@ export const DestinationsSection: React.FC = () => {
                   <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3 text-center">
                     <span className="bg-white/95 text-[#1E2519] text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
                       <Stethoscope className="w-3.5 h-3.5 text-[#2E7D32]" />
-                      বিস্তারিত ও ডিপার্টমেন্ট
+                      {t('বিস্তারিত ও বিভাগসমূহ', 'Details & Departments')}
                     </span>
                   </div>
                 </div>
@@ -369,9 +425,9 @@ export const DestinationsSection: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Clean Bottom Action Tag (Zero dead space) */}
+                  {/* Clean Bottom Action Tag */}
                   <div className="w-full mt-2.5 pt-2 border-t border-[#EFEBE0] flex items-center justify-between text-[11px] font-bold text-[#2E7D32]">
-                    <span>অ্যাপয়েন্টমেন্ট ও তথ্য</span>
+                    <span>{t('অ্যাপয়েন্টমেন্ট ও তথ্য', 'Appointment & Details')}</span>
                     <span className="text-[#2E7D32] group-hover:translate-x-0.5 transition-transform">→</span>
                   </div>
                 </div>
@@ -388,8 +444,8 @@ export const DestinationsSection: React.FC = () => {
               id="hospital-prev-btn"
               onClick={() => scrollContainer(hospitalScrollRef, 'left')}
               className="dest-nav-btn"
-              aria-label="পূর্ববর্তী হাসপাতাল"
-              title="পূর্ববর্তী"
+              aria-label={t('পূর্ববর্তী হাসপাতাল', 'Previous hospital')}
+              title={t('পূর্ববর্তী', 'Previous')}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -398,8 +454,8 @@ export const DestinationsSection: React.FC = () => {
               id="hospital-next-btn"
               onClick={() => scrollContainer(hospitalScrollRef, 'right')}
               className="dest-nav-btn"
-              aria-label="পরবর্তী হাসপাতাল"
-              title="পরবর্তী"
+              aria-label={t('পরবর্তী হাসপাতাল', 'Next hospital')}
+              title={t('পরবর্তী', 'Next')}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -410,13 +466,13 @@ export const DestinationsSection: React.FC = () => {
       {/* Hospital Detail Pop-up Modal */}
       <HospitalDetailModal
         hospital={selectedHospital}
-        onClose={() => setSelectedHospital(null)}
+        onClose={() => setSelectedHospitalId(null)}
       />
 
       {/* Destination Detail Pop-up Modal */}
       <DestinationDetailModal
         destination={selectedDestination}
-        onClose={() => setSelectedDestination(null)}
+        onClose={() => setSelectedDestId(null)}
       />
     </section>
   );

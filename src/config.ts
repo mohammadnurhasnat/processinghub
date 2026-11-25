@@ -21,16 +21,20 @@ export const IVAC_CENTERS = [
   'চট্টগ্রাম',
   'খুলনা',
   'সিলেট',
-  'রাজশাহী',
-  'রংপুর',
-  'ময়মনসিংহ',
-  'বরিশাল',
-  'কুমিল্লা',
-  'নোয়াখালী',
-  'ব্রাহ্মণবাড়িয়া',
-  'ঠাকুরগাঁও',
-  'বগুড়া',
-  'কুষ্টিয়া',
-  'যশোর',
-  'সাতক্ষীরা'
+  'রাজশাহী'
 ];
+
+export const IVAC_CENTERS_EN = [
+  'Dhaka (Jamuna Future Park)',
+  'Chittagong',
+  'Khulna',
+  'Sylhet',
+  'Rajshahi'
+];
+
+export const getIvacCenters = (language: 'bn' | 'en'): string[] =>
+  language === 'bn' ? IVAC_CENTERS : IVAC_CENTERS_EN;
+
+export const getPhoneDisplay = (language: 'bn' | 'en'): string =>
+  language === 'bn' ? '০১৫৭৭৪৬৪৭০৬' : CONFIG.phoneDisplay;
+

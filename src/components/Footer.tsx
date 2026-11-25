@@ -1,33 +1,49 @@
 import React from 'react';
-import { CONFIG } from '../config';
+import { CONFIG, getPhoneDisplay } from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 export const Footer: React.FC = () => {
+  const { language, t } = useLanguage();
+  const phoneDisplay = getPhoneDisplay(language);
+
   return (
     <footer id="contact" className="site-footer">
       <div className="footer-inner-minimal">
-        {/* লার্জ এমবসড ব্র্যান্ড ওয়াটারমার্ক (স্ক্রিনশটের "formal" স্টাইল) */}
+        {/* Brand Watermark */}
         <div className="footer-watermark-brand" aria-label={CONFIG.brandName}>
           processing hub
         </div>
 
-        {/* ওয়াইড লেটারস্পেসড অল-ক্যাপস সাবটাইটেল (Aptos ফন্ট) */}
+        {/* Subtitle */}
         <div className="footer-subtitle-spaced">
-          VISA PROCESSING &amp; CONSULTANCY SERVICES
+          {t(
+            'ভিসা প্রসেসিং ও ফাইল সহায়তা সেবা',
+            'VISA PROCESSING & FILE ASSISTANCE SERVICES'
+          )}
         </div>
 
-        {/* বাংলা স্লোগান */}
+        {/* Tagline */}
         <p className="footer-tagline-bengali">
-          নির্ভুল ও বিশ্বস্ত ভিসা প্রসেসিং
+          {t(
+            'নির্ভুল ও বিশ্বস্ত ভিসা প্রসেসিং',
+            'Accurate & Trusted Visa Processing'
+          )}
         </p>
 
-        {/* স্পেসিফিকেশন ও হটলাইন ইনফো (স্ক্রিনশটের "Premium Bifold - V1" স্টাইল) */}
+        {/* Specification & Hotline */}
         <p className="footer-service-spec">
-          IVAC Slot Booking &amp; Document Consultation &middot; Hotline: {CONFIG.phoneDisplay}
+          {t(
+            `আইভ্যাক স্লট বুকিং ও ডকুমেন্ট সহায়তা · হটলাইন: ${phoneDisplay}`,
+            `IVAC Slot Booking & Document Assistance · Hotline: ${phoneDisplay}`
+          )}
         </p>
 
-        {/* কপিরাইট লাইন (স্ক্রিনশটের বটম স্টাইল) */}
+        {/* Copyright */}
         <div className="footer-copyright">
-          &copy; 2026 {CONFIG.brandName} &middot; সর্বস্বত্ব সংরক্ষিত
+          {t(
+            `© ২০২৬ ${CONFIG.brandName} · সর্বস্বত্ব সংরক্ষিত`,
+            `© 2026 ${CONFIG.brandName} · All Rights Reserved`
+          )}
         </div>
       </div>
     </footer>

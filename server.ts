@@ -46,45 +46,54 @@ function sanitizeAgentName(raw?: unknown): string {
   return 'Mohammad';
 }
 
-function buildSystemInstruction(agentName: string): string {
+function buildSystemInstruction(agentName: string, language: 'bn' | 'en' = 'bn'): string {
+  const languageDirective =
+    language === 'en'
+      ? `### 0. STRICT RESPONSE LANGUAGE RULE (HIGHEST PRIORITY):
+- The user has selected **ENGLISH** on the website interface.
+- You MUST reply **100% in clear, warm, natural, polite English**.
+- NEVER reply in Bengali or mix Bengali script/words into your English response (even though your knowledge base below contains Bengali reference notes — translate all rules, fees, centers, and document checklists smoothly into clean English).
+- Format currency cleanly in English as \`৳6,000\`, \`৳1,500\`, \`৳4,500\`, etc., and dates/numbers in English numerals (0–9).`
+      : `### 0. STRICT RESPONSE LANGUAGE RULE (HIGHEST PRIORITY):
+- The user has selected **BENGALI (বাংলা)** on the website interface.
+- You MUST reply **100% in natural, warm, polite Dhaka Bengali (আপনি tone)**.
+- Avoid mixing random English sentences when natural Bengali exists (only keep official field names like \`Web File No\`, \`AYUSH\`, \`MVRN\`, \`NOC\`, \`SBI\`, \`NID\` where standard).`;
+
   return `
 You are ${agentName}, a real live customer support team member at "Processing Hub" in Dhaka. You chat with clients just like a genuine, experienced human colleague on WhatsApp/Live Chat — warm, natural, polite, and practical.
+
+${languageDirective}
 
 ### 1. 100%–150% AUTHENTIC HUMAN VOICE (একজন স্বাভাবিক মানুষের মতো কথা বলার নিয়ম):
 - Your name is ${agentName}, and you work at Processing Hub's support desk.
 - **STRICTLY BANNED TITLES & AI CLUES**: NEVER use "Visa Consultant", "Consultant", "Senior Consultant", "ভিসা কনসালটেন্ট", "সিনিয়র কনসালটেন্ট", or "কনসালটেন্ট". NEVER hint or reveal in any way that you are an AI, bot, virtual assistant, or model.
 - **WRITE LIKE A REAL PERSON, NOT A TEMPLATE**:
-  * **NEVER start replies with robotic boilerplate** like "আপনার জিজ্ঞাসার জন্য ধন্যবাদ", "অবশ্যই! নিচে বিস্তারিত দেওয়া হলো:", "আমি আপনাকে সাহায্য করতে পেরে আনন্দিত", or "এখানে আপনার প্রশ্নের উত্তর দেওয়া হলো:"!
-  * Speak naturally in Dhaka polite conversational Bangla: e.g., "জি, ...", "হ্যাঁ, অবশ্যই...", "দেখুন, এখানে নিয়মটা হলো...", "আপনার সুবিধার জন্য বলি...", "একটা বিষয় খেয়াল রাখবেন—...".
-  * Avoid stiff machine-translated phrasing (say "নিচের কাগজগুলো লাগবে" instead of "নিম্নলিখিত নথিপত্রসমূহ সংযুক্ত করুন").
+  * **NEVER start replies with robotic boilerplate** like "আপনার জিজ্ঞাসার জন্য ধন্যবাদ", "অবশ্যই! নিচে বিস্তারিত দেওয়া হলো:", "আমি আপনাকে সাহায্য করতে পেরে আনন্দিত", "Thank you for your inquiry", or "Certainly! Here are the details:"!
+  * In Bengali, speak naturally in Dhaka polite conversational Bangla: e.g., "জি, ...", "হ্যাঁ, অবশ্যই...", "দেখুন, এখানে নিয়মটা হলো...", "আপনার সুবিধার জন্য বলি...", "একটা বিষয় খেয়াল রাখবেন—...".
+  * In English, speak naturally like a helpful Dhaka visa desk coordinator: e.g., "Yes, of course...", "Here is how it works...", "Just keep one thing in mind—...", "Sure thing, you will need...".
+  * Avoid stiff machine-translated phrasing.
   * Vary your sentence rhythm naturally. Don't wrap every second word in **bold**; bold only key amounts, headings, or crucial points so the text feels human and clean.
-  * If the customer speaks casually or briefly, match their pace politely while always keeping respectful "আপনি" tone.
+  * Match the client's pace politely while keeping respectful courtesy.
 
 ### 2. NATURAL ADDRESSING & GREETING RULES (সম্বোধন ও সালামের স্বাভাবিক নিয়ম):
-- **NEVER repeat the customer's name** (NEVER say "রহিম সাহেব", "রহিম ভাই").
-- **First Reply Only**: On your VERY FIRST reply to a new client, politely address them ONCE based on their name as **"স্যার"** (male) or **"ম্যাডাম"/"ম্যাম"** (female), or politely neutral if unclear.
-- **Follow-up Replies**: In ALL subsequent replies in the session, DO NOT repeat "স্যার", "ম্যাডাম", "ম্যাম", or their name. Talk directly and naturally face-to-face.
-- **Saalam Rules**: Give "আসসালামু আলাইকুম" / "ওয়ালাইকুম আসসালাম" ONLY on the very first greeting or if the user greets you with Saalam. NEVER repeat Saalam on follow-up answers. NEVER use "নমস্কার" or "আদাব".
+- **NEVER repeat the customer's name** (NEVER say "রহিম সাহেব", "রহিম ভাই", or repeat "Mr. Rahim").
+- **First Reply Only**: On your VERY FIRST reply to a new client, politely address them ONCE based on their name as **"স্যার"** / **"Sir"** (male) or **"ম্যাডাম"** / **"Ma'am"** (female), or politely neutral if unclear.
+- **Follow-up Replies**: In ALL subsequent replies in the session, DO NOT repeat "স্যার", "ম্যাডাম", "Sir", "Ma'am", or their name. Talk directly and naturally face-to-face.
+- **Saalam Rules**: Give "আসসালামু আলাইকুম" / "Assalamu Alaikum" ONLY on the very first greeting or if the user greets you with Saalam. NEVER repeat Saalam on follow-up answers. NEVER use "নমস্কার" or "আদাব".
 - **Handoff & Closings**:
-  * On initial form handoff (name/phone/subject), greet briefly, answer the chosen service concisely, and ask how you can help today (NEVER say "সার্ভিসটি নেওয়ার জন্য ধন্যবাদ").
-  * Only when the user says goodbye or thanks to close ("ধন্যবাদ", "আল্লাহ হাফেজ", "কাজ শেষ", "বাই"), give a warm natural closing ("প্রসেসিং হাবের সাথে যোগাযোগ করার জন্য ধন্যবাদ! যেকোনো প্রয়োজনে জানাবেন, আল্লাহ হাফেজ।").
+  * On initial form handoff (name/phone/subject), greet briefly, answer the chosen service concisely, and ask how you can help today.
+  * Only when the user says goodbye or thanks to close ("ধন্যবাদ", "আল্লাহ হাফেজ", "Thank you", "Bye"), give a warm natural closing in the active site language.
 
 ### 3. CLEAN, STRUCTURED & ORGANIZED FORMATTING (গোছানো ও পরিচ্ছন্ন বুলেট-পয়েন্ট উত্তর):
-- Every response must be **crystal clear, specific, and visually neat** — NEVER messy, cramped, or "হিজিবিজি".
+- Every response must be **crystal clear, specific, and visually neat** — NEVER messy or cramped.
 - **STRICT MARKDOWN BULLET LIST RULE (অবশ্যপালনীয়)**:
   * Whenever explaining multiple documents, steps, fees, hospitals, destinations, or comparisons, ALWAYS use standard Markdown hyphen bullets ("- ") — NEVER use the "•" character, and NEVER merge multiple bullet items into one paragraph!
-  * Put ONE item per line, with a blank line before the list starts and a blank line after the list ends. Example:
-
-    জি, নিচের কাগজপত্রগুলো লাগবে:
-
-    - **পাসপোর্ট:** বর্তমান মূল পাসপোর্ট ও সকল পুরনো পাসপোর্ট।
-    - **ছবি:** সাদা ব্যাকগ্রাউন্ডের ২×২ ইঞ্চি ল্যাব প্রিন্ট ছবি।
-
+  * Put ONE item per line, with a blank line before the list starts and a blank line after the list ends.
 - **When NOT to bloat**:
   * If the user asks a simple single question (e.g., yes/no, one fee, one specific rule), reply directly in 1–3 clear sentences without dumping an unsolicited long checklist.
 
 ### 4. FULL WEBSITE CONTEXT & ADAPTIVE VERIFICATION BRAIN:
-- You have the COMPLETE context of Processing Hub's website in your memory (all Visa Services, IVAC Slot Fees, 14 Indian Travel Destinations, and 16 Partner Indian Hospitals + AYUSH invitation details, plus any newly verified online facts).
+- You have the COMPLETE context of Processing Hub's website in your memory (all Visa Services, IVAC Slot Fees, 5 Open IVAC Centers + 11 temporarily closed regional centers, 14 Indian Travel Destinations, and 16 Partner Indian Hospitals + AYUSH invitation details, plus any newly verified online facts).
 - Always answer accurately about ANY hospital, destination, visa service, checklist, or fee shown on the website.
 - **Handling New Info / Unlisted Questions from Customers**:
   * If a customer shares new information (e.g., new rule/fee/circular/border update) or asks about something not in our static website data, cross-check it via real-time Google Search.
@@ -218,7 +227,12 @@ function isCandidateNewFactOrExternalTopic(message: string): boolean {
   const text = (message || '').trim();
   if (text.length < 18) return false;
   // Skip structured form handoff messages or personal PII lines
-  if (text.includes('নাম:') && text.includes('সেবা/বিষয়:')) return false;
+  if (
+    (text.includes('নাম:') && text.includes('সেবা/বিষয়:')) ||
+    (text.includes('Name:') && text.includes('Service/Topic:'))
+  ) {
+    return false;
+  }
 
   const lower = text.toLowerCase();
   const trivialGreetings = /^(hi|hello|hey|ok|okay|thanks|thank you|bye|হ্যালো|হাই|ধন্যবাদ|ঠিক আছে|বুঝেছি|আল্লাহ হাফেজ|আসসালামু আলাইকুম)\b/i;
@@ -358,8 +372,9 @@ I. **ভিসা প্রত্যাখ্যাত / রিজেক্ট �
    - পুরনো ছবি বা ২"×২" সাদা ব্যাকগ্রাউন্ড ছাড়া ছবি ব্যবহার করা বা নকল NOC / ভুয়া এন্ডোর্সমেন্ট দেওয়া।
    *(অফিসিয়াল সহায়তা ই-মেইল: visahelp@hcidhaka.gov.in)*
 
-J. **বাংলাদেশের অফিশিয়াল ১৬টি আইভ্যাক (IVAC) সেন্টারসমূহ**:
-   - ঢাকা (শুধুমাত্র যমুনা ফিউচার পার্ক — JFP), চট্টগ্রাম, খুলনা, সিলেট, রাজশাহী, রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা।
+J. **বাংলাদেশের বর্তমানে সচল ৫টি আইভ্যাক (IVAC) সেন্টার ও সাময়িকভাবে বন্ধ কেন্দ্রের তথ্য**:
+   - **বর্তমানে খোলা ও সচল ৫টি সেন্টার**: ঢাকা (শুধুমাত্র যমুনা ফিউচার পার্ক — JFP), চট্টগ্রাম, খুলনা, সিলেট ও রাজশাহী।
+   - **সাময়িকভাবে বন্ধ ১১টি সেন্টার**: রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা — এই ১১টি আঞ্চলিক আইভ্যাক সেন্টার **আপাতত সাময়িকভাবে বন্ধ রয়েছে**। তাই গ্রাহকদের অনুরোধ করবে বর্তমানে সচল থাকা উপরের ৫টি সেন্টারের যেকোনো একটি নির্বাচন করে আবেদন ও স্লট বুকিং করতে।
 
 K. **SCHEDULE OF CHARGES & Processing Hub Official Rates (সর্বশেষ আপডেটেড ফি তালিকা)**:
    - সরকারি আইভ্যাক (IVAC) ফি: ১,৫০০ টাকা (অতিরিক্ত পোর্ট এন্ডোর্সমেন্ট / ফর্ম সংশোধন / VAFC চার্জ: ৩০০ টাকা)।
@@ -391,8 +406,10 @@ I. **REAL-TIME GOOGLE SEARCH & IVAC APPOINTMENT SLOT RELEASE POLICY (রিয়�
      - Clearly state: "আইভ্যাকের অফিসিয়াল নিয়ম অনুযায়ী অ্যাপয়েন্টমেন্ট স্লট ছাড়ার সুনির্দিষ্ট দিনক্ষণ আগে থেকে ঘোষণা করা হয় না; সিস্টেমের মাধ্যমে এটি সার্বক্ষণিক মনিটর করতে হয়। নতুন ব্যাচের স্লট ওপেন হওয়া মাত্র দ্রুত বুকিং সম্পন্ন করতে আপনি আমাদের সাথে যোগাযোগ করে ফাইল প্রস্তুত রাখতে পারেন।"
 `;
 
-function detectCourtesyHonorific(userName?: string): string {
-  if (!userName) return 'স্যার';
+function detectCourtesyHonorific(userName?: string, language: 'bn' | 'en' = 'bn'): string {
+  const defaultMale = language === 'en' ? 'Sir' : 'স্যার';
+  const defaultFemale = language === 'en' ? "Ma'am" : 'ম্যাডাম';
+  if (!userName) return defaultMale;
   const lower = userName.toLowerCase();
   const femaleHints = [
     'aysha', 'aisha', 'fatema', 'fatima', 'nusrat', 'jannat', 'tasnim', 'sadia',
@@ -403,7 +420,7 @@ function detectCourtesyHonorific(userName?: string): string {
     'সুমাইয়া', 'শাবিনা', 'ইয়াসমিন', 'শারমিন', 'নাদিয়া', 'তানিয়া', 'ইতি', 'আক্তার', 'বেগম', 'সুলতানা'
   ];
   const isFemale = femaleHints.some((hint) => lower.includes(hint));
-  return isFemale ? 'ম্যাডাম' : 'স্যার';
+  return isFemale ? defaultFemale : defaultMale;
 }
 
 // Helper: Expert Knowledge Engine Fallback (no "consultant" labels, natural human tone)
@@ -420,69 +437,112 @@ function generateAgentFallbackReply(
   agentName = 'Mohammad',
   isFirstReply = true,
   userName?: string,
-  attachments?: Array<{ name?: string; mimeType?: string }>
+  attachments?: Array<{ name?: string; mimeType?: string }>,
+  language: 'bn' | 'en' = 'bn'
 ): string {
   const query = (userMessage || '').toLowerCase().trim();
-  const firstReplyHonorific = isFirstReply ? `${detectCourtesyHonorific(userName)}, ` : '';
+  const honorific = detectCourtesyHonorific(userName, language);
+  const firstReplyHonorific = isFirstReply ? `${honorific}, ` : '';
+  const isEn = language === 'en';
 
   if (Array.isArray(attachments) && attachments.length > 0) {
-    const fileNames = attachments.map((a) => a.name || 'ফাইল').join(', ');
-    return `${firstReplyHonorific}আপনার পাঠানো **${fileNames}** ফাইলটি পেয়েছি। সাময়িকভাবে অটো-রিডিংয়ে সংযোগ সমস্যা থাকায় ফাইলটি সরাসরি যাচাই করে পরবর্তী পদক্ষেপ জানাতে আমাদের WhatsApp নম্বরে (+8801577464706) অথবা আপনার কী বিষয়ে সহায়তা প্রয়োজন তা সংক্ষেপে লিখে দিন।`;
+    const fileNames = attachments.map((a) => a.name || (isEn ? 'file' : 'ফাইল')).join(', ');
+    if (isEn) {
+      return `${firstReplyHonorific}I have received your file **${fileNames}**. Automated inspection is temporarily busy—please message us on WhatsApp (+8801577464706) or let me know briefly what help you need with this document.`;
+    }
+    return `${firstReplyHonorific}আপনার পাঠানো **${fileNames}** ফাইলটি পেয়েছি। সাময়িকভাবে অটো-রিডিংয়ে সংযোগ সমস্যা থাকায় ফাইলটি সরাসরি যাচাই করে পরবর্তী পদক্ষেপ জানাতে আমাদের WhatsApp নম্বরে (+৮৮০১৫৭৭৪৬৪৭০৬) অথবা আপনার কী বিষয়ে সহায়তা প্রয়োজন তা সংক্ষেপে লিখে দিন।`;
   }
 
-  // Structured Form Handoff Detection (from Talk to Agent button)
-  if (userMessage.includes('নাম:') && userMessage.includes('সেবা/বিষয়:')) {
+  // Structured Form Handoff Detection (from Talk to Agent button in BN or EN)
+  const isBnHandoff = userMessage.includes('নাম:') && userMessage.includes('সেবা/বিষয়:');
+  const isEnHandoff = userMessage.includes('Name:') && userMessage.includes('Service/Topic:');
+  if (isBnHandoff || isEnHandoff) {
+    const labelPrefix = isEnHandoff ? 'Service/Topic:' : 'সেবা/বিষয়:';
     const subjectLine = userMessage
       .split('\n')
-      .find((line) => line.startsWith('সেবা/বিষয়:'))
-      ?.replace('সেবা/বিষয়:', '')
-      .trim() || serviceContext?.title || 'ভিসা প্রসেসিং';
+      .find((line) => line.startsWith(labelPrefix))
+      ?.replace(labelPrefix, '')
+      .trim() || serviceContext?.title || (isEn ? 'Visa Processing' : 'ভিসা প্রসেসিং');
     const subjectLower = subjectLine.toLowerCase();
 
     let serviceDetail = '';
     if (subjectLower.includes('medical') || subjectLower.includes('মেডিকেল') || subjectLower.includes('attendant') || subjectLower.includes('অ্যাটেনডেন্ট')) {
-      serviceDetail = `**মেডিকেল ও অ্যাটেনডেন্ট ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ ও ইনভাইটেশনসহ) **৳৬,০০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+      serviceDetail = isEn
+        ? `For **Medical & Attendant Visa**, Full Processing + Slot (including ৳1,500 IVAC fee & invitation) is **৳6,000**, and Slot Only is **৳4,500** (৳1,500 + ৳3,000).`
+        : `**মেডিকেল ও অ্যাটেনডেন্ট ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ ও ইনভাইটেশনসহ) **৳৬,০০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
     } else if (subjectLower.includes('double') || subjectLower.includes('ডাবল') || subjectLower.includes('ডবল') || subjectLower.includes('x-3')) {
-      serviceDetail = `**ডাবল এন্ট্রি (X-3) ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,৫০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+      serviceDetail = isEn
+        ? `For **Double Entry Visa (X-3)**, Full Processing + Slot (including ৳1,500 IVAC fee) is **৳6,500**, and Slot Only is **৳4,500** (৳1,500 + ৳3,000).`
+        : `**ডাবল এন্ট্রি (X-3) ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,৫০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
     } else if (subjectLower.includes('business') || subjectLower.includes('বিজনেস')) {
-      serviceDetail = `**বিজনেস ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,০০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+      serviceDetail = isEn
+        ? `For **Business Visa**, Full Processing + Slot (including ৳1,500 IVAC fee) is **৳6,000**, and Slot Only is **৳4,500** (৳1,500 + ৳3,000).`
+        : `**বিজনেস ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,০০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
     } else if (subjectLower.includes('student') || subjectLower.includes('স্টুডেন্ট')) {
-      serviceDetail = `**স্টুডেন্ট (S-1) ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৫,৫০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+      serviceDetail = isEn
+        ? `For **Student Visa (S-1)**, Full Processing + Slot (including ৳1,500 IVAC fee) is **৳5,500**, and Slot Only is **৳4,500** (৳1,500 + ৳3,000).`
+        : `**স্টুডেন্ট (S-1) ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৫,৫০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
     } else if (subjectLower.includes('transit') || subjectLower.includes('ট্রানজিট')) {
-      serviceDetail = `**ট্রানজিট (TR) ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৫,৫০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
+      serviceDetail = isEn
+        ? `For **Transit Visa (TR)**, Full Processing + Slot (including ৳1,500 IVAC fee) is **৳5,500**, and Slot Only is **৳4,500** (৳1,500 + ৳3,000).`
+        : `**ট্রানজিট (TR) ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৫,৫০০** এবং শুধু স্লট **৳৪,৫০০** (১,৫০০ + ৩,০০০)।`;
     } else if (subjectLower.includes('spouse') || subjectLower.includes('স্পাউস') || subjectLower.includes('family') || subjectLower.includes('x-1')) {
-      serviceDetail = `**স্পাউস ও ফ্যামিলি (X-1) ভিসার** জন্য প্রসেসিং + স্লট **৳৬,০০০** (স্লট ৪,৫০০ + ডকুমেন্ট প্রসেসিং ১,৫০০) এবং শুধু স্লট **৳৪,৫০০**।`;
+      serviceDetail = isEn
+        ? `For **Spouse & Family Visa (X-1)**, Full Processing + Slot is **৳6,000** (Slot ৳4,500 + Document Processing ৳1,500), and Slot Only is **৳4,500**.`
+        : `**স্পাউস ও ফ্যামিলি (X-1) ভিসার** জন্য প্রসেসিং + স্লট **৳৬,০০০** (স্লট ৪,৫০০ + ডকুমেন্ট প্রসেসিং ১,৫০০) এবং শুধু স্লট **৳৪,৫০০**।`;
     } else if (subjectLower.includes('entry') || subjectLower.includes('এন্ট্রি') || subjectLower.includes('x-misc')) {
-      serviceDetail = `**এন্ট্রি (X-Misc) ভিসার** জন্য প্রসেসিং + স্লট **৳৬,০০০** (স্লট ৪,৫০০ + প্রসেসিং ১,৫০০) এবং শুধু স্লট **৳৪,৫০০**।`;
+      serviceDetail = isEn
+        ? `For **Entry Visa (X-Misc)**, Full Processing + Slot is **৳6,000** (Slot ৳4,500 + Processing ৳1,500), and Slot Only is **৳4,500**.`
+        : `**এন্ট্রি (X-Misc) ভিসার** জন্য প্রসেসিং + স্লট **৳৬,০০০** (স্লট ৪,৫০০ + প্রসেসিং ১,৫০০) এবং শুধু স্লট **৳৪,৫০০**।`;
     } else if (subjectLower.includes('tourist') || subjectLower.includes('ট্যুরিস্ট')) {
-      serviceDetail = `**ট্যুরিস্ট ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,০০০** এবং শুধু স্লট **৳৫,৫০০** (১,৫০০ + ৪,০০০)।`;
+      serviceDetail = isEn
+        ? `For **Tourist Visa**, Full Processing + Slot (including ৳1,500 IVAC fee) is **৳6,000**, and Slot Only is **৳5,500** (৳1,500 + ৳4,000).`
+        : `**ট্যুরিস্ট ভিসার** জন্য প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ) **৳৬,০০০** এবং শুধু স্লট **৳৫,৫০০** (১,৫০০ + ৪,০০০)।`;
     } else if (subjectLower.includes('ticket') || subjectLower.includes('টিকেট') || subjectLower.includes('টিকিট')) {
-      serviceDetail = `**টিকেট বুকিংয়ের** ক্ষেত্রে মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে) সার্ভিস চার্জ প্রযোজ্য।`;
+      serviceDetail = isEn
+        ? `For **Ticket Booking**, a service charge starting from **৳599** (negotiable depending on route) applies on top of the base ticket fare.`
+        : `**টিকেট বুকিংয়ের** ক্ষেত্রে মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে) সার্ভিস চার্জ প্রযোজ্য।`;
     } else if (subjectLower.includes('slot') || subjectLower.includes('স্লট')) {
-      serviceDetail = `**শুধু স্লট বুকিং** **৳৪,৫০০ থেকে শুরু** (আইভ্যাক ফি ১,৫০০৳ ফিক্সডসহ): মেডিকেল/বিজনেস/ডাবল এন্ট্রি X-3/স্টুডেন্ট/ট্রানজিট/এন্ট্রি X-Misc/স্পাউস X-1 **৳৪,৫০০** এবং ট্যুরিস্ট **৳৫,৫০০**।`;
+      serviceDetail = isEn
+        ? `**Slot Only Booking** starts from **৳4,500** (including fixed ৳1,500 IVAC fee): Medical / Business / Double Entry X-3 / Student / Transit / Entry X-Misc / Spouse X-1 is **৳4,500**, and Tourist is **৳5,500**.`
+        : `**শুধু স্লট বুকিং** **৳৪,৫০০ থেকে শুরু** (আইভ্যাক ফি ১,৫০০৳ ফিক্সডসহ): মেডিকেল/বিজনেস/ডাবল এন্ট্রি X-3/স্টুডেন্ট/ট্রানজিট/এন্ট্রি X-Misc/স্পাউস X-1 **৳৪,৫০০** এবং ট্যুরিস্ট **৳৫,৫০০**।`;
     } else if (serviceContext?.price) {
-      serviceDetail = `**${subjectLine}**-এর ফি **${serviceContext.price}**।`;
+      serviceDetail = isEn
+        ? `The official fee for **${subjectLine}** is **${serviceContext.price}**.`
+        : `**${subjectLine}**-এর ফি **${serviceContext.price}**।`;
     }
 
-    return `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! আপনার তথ্যগুলো পেয়েছি। আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি।\n\n${serviceDetail ? `${serviceDetail}\n\n` : ''}**${subjectLine}** বিষয়ে আপনাকে কীভাবে সহযোগিতা করতে পারি?`;
+    if (isEn) {
+      return `Assalamu Alaikum ${honorific}! I have received your details. I am **${agentName}** from Processing Hub.\n\n${serviceDetail ? `${serviceDetail}\n\n` : ''}How can I assist you with **${subjectLine}** today?`;
+    }
+    return `আসসালামু আলাইকুম ${honorific}! আপনার তথ্যগুলো পেয়েছি। আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি।\n\n${serviceDetail ? `${serviceDetail}\n\n` : ''}**${subjectLine}** বিষয়ে আপনাকে কীভাবে সহযোগিতা করতে পারি?`;
   }
 
   // Greetings & Identity
-  if (query.includes('কে আপনি') || query.includes('আপনার নাম') || query.includes('name') || query.includes('ai') || query.includes('bot') || query.includes('রোবট')) {
-    return `${isFirstReply ? `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! ` : ''}আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি। আপনার যে কোনো ভিসা প্রসেসিং ও তথ্য দিয়ে সাহায্য করতে প্রস্তুত।`;
-  }
-
-  if (query === 'hi' || query === 'hello' || query === 'hey' || query === 'হ্যালো' || query === 'হাই' || query.includes('আসসালামু') || query.includes('কেমন আছেন')) {
-    if (serviceContext?.title) {
-      return `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! প্রসেসিং হাবে স্বাগতম। আমি **${agentName}**। **${serviceContext.title}** সম্পর্কে আপনার কী জানার আছে বলুন, সাহায্য করছি।`;
+  if (query.includes('কে আপনি') || query.includes('আপনার নাম') || query.includes('who are you') || query.includes('your name') || query === 'name' || query.includes('ai') || query.includes('bot') || query.includes('রোবট')) {
+    if (isEn) {
+      return `${isFirstReply ? `Assalamu Alaikum ${honorific}! ` : ''}I am **${agentName}** from Processing Hub. I am ready to help you with any Indian visa processing or document guidance.`;
     }
-    return `আসসালামু আলাইকুম ${detectCourtesyHonorific(userName)}! প্রসেসিং হাবে স্বাগতম। আমি **${agentName}**। আপনাকে কীভাবে সহযোগিতা করতে পারি?`;
+    return `${isFirstReply ? `আসসালামু আলাইকুম ${honorific}! ` : ''}আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি। আপনার যে কোনো ভিসা প্রসেসিং ও তথ্য দিয়ে সাহায্য করতে প্রস্তুত।`;
   }
 
-  // If specific serviceContext is active and user asks general question (e.g. documents, cost, processing, how to start)
-  const isGeneralDocQuery = query.includes('ডকুমেন্ট') || query.includes('কাগজ') || query.includes('কি কি লাগে') || query.includes('চেকলিস্ট') || query.includes('requirement');
-  const isGeneralCostQuery = query.includes('খরচ') || query.includes('ফি') || query.includes('টাকা') || query.includes('price') || query.includes('charge') || query.includes('cost');
-  const isHowToQuery = query.includes('কিভাবে') || query.includes('আবেদন') || query.includes('প্রসেস') || query.includes('বুক') || query.includes('শুরু') || query.includes('নিতে চাই') || query.includes('করতে চাই');
+  if (query === 'hi' || query === 'hello' || query === 'hey' || query === 'হ্যালো' || query === 'হাই' || query.includes('আসসালামু') || query.includes('assalamu') || query.includes('কেমন আছেন') || query.includes('how are you')) {
+    if (isEn) {
+      if (serviceContext?.title) {
+        return `Assalamu Alaikum ${honorific}! Welcome to Processing Hub. I am **${agentName}**. What would you like to know about **${serviceContext.title}**?`;
+      }
+      return `Assalamu Alaikum ${honorific}! Welcome to Processing Hub. I am **${agentName}**. How can I assist you today?`;
+    }
+    if (serviceContext?.title) {
+      return `আসসালামু আলাইকুম ${honorific}! প্রসেসিং হাবে স্বাগতম। আমি **${agentName}**। **${serviceContext.title}** সম্পর্কে আপনার কী জানার আছে বলুন, সাহায্য করছি।`;
+    }
+    return `আসসালামু আলাইকুম ${honorific}! প্রসেসিং হাবে স্বাগতম। আমি **${agentName}**। আপনাকে কীভাবে সহযোগিতা করতে পারি?`;
+  }
+
+  // If specific serviceContext is active and user asks general question
+  const isGeneralDocQuery = query.includes('ডকুমেন্ট') || query.includes('কাগজ') || query.includes('কি কি লাগে') || query.includes('চেকলিস্ট') || query.includes('document') || query.includes('requirement') || query.includes('checklist') || query.includes('paper');
+  const isGeneralCostQuery = query.includes('খরচ') || query.includes('ফি') || query.includes('টাকা') || query.includes('price') || query.includes('charge') || query.includes('cost') || query.includes('fee');
+  const isHowToQuery = query.includes('কিভাবে') || query.includes('আবেদন') || query.includes('প্রসেস') || query.includes('বুক') || query.includes('শুরু') || query.includes('নিতে চাই') || query.includes('করতে চাই') || query.includes('how to') || query.includes('apply') || query.includes('process') || query.includes('start') || query.includes('steps');
 
   if (serviceContext?.title) {
     const titleLower = serviceContext.title.toLowerCase();
@@ -497,283 +557,493 @@ function generateAgentFallbackReply(
 
     if (isGeneralCostQuery) {
       if (isServiceSlot) {
-        return `শুধুমাত্র আইভ্যাক স্লট বুকিং ফি ৳৪,৫০০ থেকে শুরু (প্রতিটি ভিসায় আইভ্যাক ফি ১,৫০০৳ ফিক্সড):\n\n` +
-          `- **মেডিকেল / ডাবল এন্ট্রি X-3 / বিজনেস / স্টুডেন্ট / ট্রানজিট / এন্ট্রি X-Misc / স্পাউস X-1 স্লট:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
-          `- **ট্যুরিস্ট স্লট:** মোট ৳৫,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)`;
+        return isEn
+          ? `IVAC Slot-only booking starts from **৳4,500** (including fixed ৳1,500 IVAC fee):\n\n` +
+            `- **Medical / Double Entry X-3 / Business / Student / Transit / Entry X-Misc / Spouse X-1 Slot:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n` +
+            `- **Tourist Slot:** Total **৳5,500** (৳1,500 IVAC + ৳4,000 Slot)`
+          : `শুধুমাত্র আইভ্যাক স্লট বুকিং ফি ৳৪,৫০০ থেকে শুরু (প্রতিটি ভিসায় আইভ্যাক ফি ১,৫০০৳ ফিক্সড):\n\n` +
+            `- **মেডিকেল / ডাবল এন্ট্রি X-3 / বিজনেস / স্টুডেন্ট / ট্রানজিট / এন্ট্রি X-Misc / স্পাউস X-1 স্লট:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
+            `- **ট্যুরিস্ট স্লট:** মোট ৳৫,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)`;
       }
       if (isServiceMedical) {
-        return `**মেডিকেল ও অ্যাটেনডেন্ট ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,০০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
+        return isEn
+          ? `**Medical & Attendant Visa Fee Breakdown:**\n\n- **Processing + Slot (with ৳1,500 IVAC fee):** ৳6,000\n- **Slot Booking Only:** Total ৳4,500 (৳1,500 IVAC + ৳3,000 Slot)`
+          : `**মেডিকেল ও অ্যাটেনডেন্ট ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,০০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
       }
       if (isServiceDouble) {
-        return `**ডাবল এন্ট্রি (X-3) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,৫০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
+        return isEn
+          ? `**Double Entry (X-3) Visa Fee Breakdown:**\n\n- **Processing + Slot (with ৳1,500 IVAC fee):** ৳6,500\n- **Slot Booking Only:** Total ৳4,500 (৳1,500 IVAC + ৳3,000 Slot)`
+          : `**ডাবল এন্ট্রি (X-3) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,৫০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
       }
       if (isServiceBusiness) {
-        return `**বিজনেস ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,০০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
+        return isEn
+          ? `**Business Visa Fee Breakdown:**\n\n- **Processing + Slot (with ৳1,500 IVAC fee):** ৳6,000\n- **Slot Booking Only:** Total ৳4,500 (৳1,500 IVAC + ৳3,000 Slot)`
+          : `**বিজনেস ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,০০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
       }
       if (isServiceStudent) {
-        return `**স্টুডেন্ট (S-1) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৫,৫০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
+        return isEn
+          ? `**Student Visa (S-1) Fee Breakdown:**\n\n- **Processing + Slot (with ৳1,500 IVAC fee):** ৳5,500\n- **Slot Booking Only:** Total ৳4,500 (৳1,500 IVAC + ৳3,000 Slot)`
+          : `**স্টুডেন্ট (S-1) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৫,৫০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
       }
       if (isServiceTransit) {
-        return `**ট্রানজিট (TR) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৫,৫০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
+        return isEn
+          ? `**Transit Visa (TR) Fee Breakdown:**\n\n- **Processing + Slot (with ৳1,500 IVAC fee):** ৳5,500\n- **Slot Booking Only:** Total ৳4,500 (৳1,500 IVAC + ৳3,000 Slot)`
+          : `**ট্রানজিট (TR) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৫,৫০০\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
       }
       if (isServiceSpouse) {
-        return `**স্পাউস ও ফ্যামিলি (X-1) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট:** ৳৬,০০০ (স্লট ৪,৫০০৳ + ডকুমেন্ট প্রসেসিং ১,৫০০৳)\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
+        return isEn
+          ? `**Spouse & Family (X-1) Visa Fee Breakdown:**\n\n- **Processing + Slot:** ৳6,000 (৳4,500 Slot + ৳1,500 Document Processing)\n- **Slot Booking Only:** Total ৳4,500 (৳1,500 IVAC + ৳3,000 Slot)`
+          : `**স্পাউস ও ফ্যামিলি (X-1) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট:** ৳৬,০০০ (স্লট ৪,৫০০৳ + ডকুমেন্ট প্রসেসিং ১,৫০০৳)\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
       }
       if (isServiceEntry) {
-        return `**এন্ট্রি (X-Misc) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট:** ৳৬,০০০ (স্লট ৪,৫০০৳ + সার্ভিস চার্জ ১,৫০০৳)\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
+        return isEn
+          ? `**Entry Visa (X-Misc) Fee Breakdown:**\n\n- **Processing + Slot:** ৳6,000 (৳4,500 Slot + ৳1,500 Service Charge)\n- **Slot Booking Only:** Total ৳4,500 (৳1,500 IVAC + ৳3,000 Slot)`
+          : `**এন্ট্রি (X-Misc) ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট:** ৳৬,০০০ (স্লট ৪,৫০০৳ + সার্ভিস চার্জ ১,৫০০৳)\n- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)`;
       }
       if (titleLower.includes('tourist') || serviceContext.title.includes('ট্যুরিস্ট')) {
-        return `**ট্যুরিস্ট ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,০০০\n- **শুধু স্লট বুকিং:** মোট ৳৫,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)`;
+        return isEn
+          ? `**Tourist Visa Fee Breakdown:**\n\n- **Processing + Slot (with ৳1,500 IVAC fee):** ৳6,000\n- **Slot Booking Only:** Total ৳5,500 (৳1,500 IVAC + ৳4,000 Slot)`
+          : `**ট্যুরিস্ট ভিসার ফি বিবরণ:**\n\n- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,০০০\n- **শুধু স্লট বুকিং:** মোট ৳৫,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)`;
       }
       if (titleLower.includes('ticket') || serviceContext.title.includes('টিকেট')) {
-        return `**টিকেট বুকিং সার্ভিস চার্জ:** মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে)।`;
+        return isEn
+          ? `**Ticket Booking Service Charge:** Starting from **৳599** (negotiable depending on route) in addition to the base ticket fare.`
+          : `**টিকেট বুকিং সার্ভিস চার্জ:** মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে)।`;
       }
-      return `${firstReplyHonorific}**${serviceContext.title}**-এর অফিশিয়াল ফি **${serviceContext.price || '৳৬,০০০'}**।`;
+      return isEn
+        ? `${firstReplyHonorific}The official fee for **${serviceContext.title}** is **${serviceContext.price || '৳6,000'}**.`
+        : `${firstReplyHonorific}**${serviceContext.title}**-এর অফিশিয়াল ফি **${serviceContext.price || '৳৬,০০০'}**।`;
     }
 
     if (isGeneralDocQuery || isHowToQuery) {
       if (isServiceMedical) {
-        return `${firstReplyHonorific}মেডিকেল ও অ্যাটেনডেন্ট ভিসার কাগজপত্রগুলো নিচে দিলাম:\n\n` +
-          `- **সাধারণ ডকুমেন্টস:** মূল ও সকল পুরনো পাসপোর্ট, ২×২ সাদা ব্যাকগ্রাউন্ড ছবি, NID/জন্মনিবন্ধন, ইউটিলিটি বিল, পেশাগত সনদ এবং $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ টাকার ৬ মাসের ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।\n` +
-          `- **রোগীর (M-1) অতিরিক্ত কাগজ:** ভারতীয় হাসপাতালের মূল অ্যাপয়েন্টমেন্ট ও AYUSH লেটার এবং বাংলাদেশের ডাক্তারের প্রেসক্রিপশন ও টেস্ট রিপোর্ট।\n` +
-          `- **অ্যাটেনডেন্টের (M-2) কাগজ:** কেবল বেসিক ডকুমেন্টস ও রোগীর সাথে সম্পর্কের প্রমাণপত্র (আলাদা মেডিকেল টেস্ট রিপোর্ট লাগবে না)।`;
+        return isEn
+          ? `${firstReplyHonorific}Here are the required documents for Medical & Attendant Visa:\n\n` +
+            `- **Common Documents:** Original & all old passports, 2×2 white background photo, NID/Birth Certificate, utility bill, occupation certificate, and $200 endorsement / 6-month bank statement / SBI Travel Card.\n` +
+            `- **Patient (M-1) Documents:** Original Indian hospital appointment & AYUSH letter, plus recent Bangladeshi doctor's prescription and medical test reports.\n` +
+            `- **Attendant (M-2) Documents:** Basic common documents and proof of relationship with the patient (separate medical test reports are not required).`
+          : `${firstReplyHonorific}মেডিকেল ও অ্যাটেনডেন্ট ভিসার কাগজপত্রগুলো নিচে দিলাম:\n\n` +
+            `- **সাধারণ ডকুমেন্টস:** মূল ও সকল পুরনো পাসপোর্ট, ২×২ সাদা ব্যাকগ্রাউন্ড ছবি, NID/জন্মনিবন্ধন, ইউটিলিটি বিল, পেশাগত সনদ এবং $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ টাকার ৬ মাসের ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।\n` +
+            `- **রোগীর (M-1) অতিরিক্ত কাগজ:** ভারতীয় হাসপাতালের মূল অ্যাপয়েন্টমেন্ট ও AYUSH লেটার এবং বাংলাদেশের ডাক্তারের প্রেসক্রিপশন ও টেস্ট রিপোর্ট।\n` +
+            `- **অ্যাটেনডেন্টের (M-2) কাগজ:** কেবল বেসিক ডকুমেন্টস ও রোগীর সাথে সম্পর্কের প্রমাণপত্র (আলাদা মেডিকেল টেস্ট রিপোর্ট লাগবে না)।`;
       }
       if (isServiceDouble) {
-        return `${firstReplyHonorific}ডাবল এন্ট্রি (X-3) ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
-          `- অনলাইন Miscellaneous (X-3) আবেদন পত্র, মূল ও সকল পুরনো পাসপোর্ট এবং ২×২ সাদা ব্যাকগ্রাউন্ড ছবি\n` +
-          `- সংশ্লিষ্ট ৩য়/ইউরোপীয় দেশের **এম্বাসির অফিশিয়াল অ্যাপয়েন্টমেন্ট লেটার**\n` +
-          `- **ওয়ার্ক পারমিট (Work Permit)** সহ ইউরোপগামী চুক্তিকৃত কোম্পানির প্রয়োজনীয় কাগজপত্র\n` +
-          `- কনফার্মড ফ্লাইট/ট্রানজিট রুট, কভারিং লেটার, NID ও ইউটিলিটি বিল\n` +
-          `- পেশাগত প্রমাণপত্র এবং $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ টাকার ৬ মাসের ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
+        return isEn
+          ? `${firstReplyHonorific}For Double Entry Visa (X-3), you will need:\n\n` +
+            `- Online Miscellaneous (X-3) application form, original & all old passports, and 2×2 white background photo\n` +
+            `- **Official Embassy Appointment Letter** of the destination/European country\n` +
+            `- **Work Permit** and supporting European/3rd-country contract documents\n` +
+            `- Confirmed flight/transit itinerary, cover letter, NID, and recent utility bill\n` +
+            `- Occupation certificate and $200 endorsement / 6-month bank statement / SBI Travel Card.`
+          : `${firstReplyHonorific}ডাবল এন্ট্রি (X-3) ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
+            `- অনলাইন Miscellaneous (X-3) আবেদন পত্র, মূল ও সকল পুরনো পাসপোর্ট এবং ২×২ সাদা ব্যাকগ্রাউন্ড ছবি\n` +
+            `- সংশ্লিষ্ট ৩য়/ইউরোপীয় দেশের **এম্বাসির অফিশিয়াল অ্যাপয়েন্টমেন্ট লেটার**\n` +
+            `- **ওয়ার্ক পারমিট (Work Permit)** সহ ইউরোপগামী চুক্তিকৃত কোম্পানির প্রয়োজনীয় কাগজপত্র\n` +
+            `- কনফার্মড ফ্লাইট/ট্রানজিট রুট, কভারিং লেটার, NID ও ইউটিলিটি বিল\n` +
+            `- পেশাগত প্রমাণপত্র এবং $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ টাকার ৬ মাসের ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
       }
       if (isServiceBusiness) {
-        return `${firstReplyHonorific}বিজনেস ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
-          `- আবেদন পত্র, মূল ও সকল পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
-          `- ভারতীয় কোম্পানির মূল ইনভাইটেশন লেটার ও বাংলাদেশি প্রতিষ্ঠানের ফরওয়ার্ডিং লেটার\n` +
-          `- হালনাগাদ ট্রেড লাইসেন্স, চেম্বার অফ কমার্স সনদ, TIN, BIN, IRC, LC ও VAT রিটার্ন\n` +
-          `- ব্যক্তিগত ও কোম্পানির বিগত ৬ মাসের ব্যাংক স্টেটমেন্ট ($২০০ বা সমপরিমাণ / SBI কার্ড)।`;
+        return isEn
+          ? `${firstReplyHonorific}For a Business Visa, you will need:\n\n` +
+            `- Online application form, original & old passports, 2×2 photo, NID, and utility bill\n` +
+            `- Original invitation letter from the Indian company and forwarding letter on Bangladeshi company letterhead\n` +
+            `- Updated Trade License, Chamber of Commerce certificate, TIN, BIN, IRC, LC, and VAT Return\n` +
+            `- Personal & company 6-month bank statements ($200+ equivalent / SBI Travel Card).`
+          : `${firstReplyHonorific}বিজনেস ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
+            `- আবেদন পত্র, মূল ও সকল পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
+            `- ভারতীয় কোম্পানির মূল ইনভাইটেশন লেটার ও বাংলাদেশি প্রতিষ্ঠানের ফরওয়ার্ডিং লেটার\n` +
+            `- হালনাগাদ ট্রেড লাইসেন্স, চেম্বার অফ কমার্স সনদ, TIN, BIN, IRC, LC ও VAT রিটার্ন\n` +
+            `- ব্যক্তিগত ও কোম্পানির বিগত ৬ মাসের ব্যাংক স্টেটমেন্ট ($২০০ বা সমপরিমাণ / SBI কার্ড)।`;
       }
       if (isServiceStudent) {
-        return `${firstReplyHonorific}স্টুডেন্ট ভিসার (S-1) জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
-          `- অনলাইন আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID/জন্মনিবন্ধন ও ইউটিলিটি বিল\n` +
-          `- ভারতের স্বীকৃত বিশ্ববিদ্যালয়/কলেজের মূল অ্যাডমিশন ও বোনাফাইড সার্টিফিকেট (মেডিকেলের ক্ষেত্রে স্বাস্থ্য মন্ত্রণালয়ের NOC)\n` +
-          `- অভিভাবক/স্পনসরের ব্যাংক সলভেন্সি ও ৬ মাসের স্টেটমেন্ট ($২০০+ / SBI কার্ড)\n` +
-          `- পূর্বের একাডেমিক সার্টিফিকেট ও বর্তমান স্টুডেন্ট আইডি কার্ড।`;
+        return isEn
+          ? `${firstReplyHonorific}For a Student Visa (S-1), you will need:\n\n` +
+            `- Online application form, original & old passports, 2×2 photo, NID/Birth Certificate, and utility bill\n` +
+            `- Original Admission & Bonafide certificate from the Indian university/college (plus Health Ministry NOC for medical colleges)\n` +
+            `- Guardian/sponsor bank solvency & 6-month bank statement ($200+ / SBI card)\n` +
+            `- Previous academic certificates and current Student ID card.`
+          : `${firstReplyHonorific}স্টুডেন্ট ভিসার (S-1) জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
+            `- অনলাইন আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID/জন্মনিবন্ধন ও ইউটিলিটি বিল\n` +
+            `- ভারতের স্বীকৃত বিশ্ববিদ্যালয়/কলেজের মূল অ্যাডমিশন ও বোনাফাইড সার্টিফিকেট (মেডিকেলের ক্ষেত্রে স্বাস্থ্য মন্ত্রণালয়ের NOC)\n` +
+            `- অভিভাবক/স্পনসরের ব্যাংক সলভেন্সি ও ৬ মাসের স্টেটমেন্ট ($২০০+ / SBI কার্ড)\n` +
+            `- পূর্বের একাডেমিক সার্টিফিকেট ও বর্তমান স্টুডেন্ট আইডি কার্ড।`;
       }
       if (isServiceTransit) {
-        return `${firstReplyHonorific}ট্রানজিট ভিসার (TR) জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
-          `- অনলাইন আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
-          `- গন্তব্য ৩য় দেশের বৈধ ভিসা, কনফার্মড বাস/এয়ার টিকেট এবং হোটেল বুকিং\n` +
-          `- পেশাগত প্রমাণপত্র ও $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
+        return isEn
+          ? `${firstReplyHonorific}For a Transit Visa (TR), you will need:\n\n` +
+            `- Online application form, original & old passports, 2×2 photo, NID, and utility bill\n` +
+            `- Valid visa for the 3rd destination country, confirmed onward/return bus or air ticket, and hotel booking\n` +
+            `- Occupation proof and $200 endorsement / 6-month bank statement / SBI Travel Card.`
+          : `${firstReplyHonorific}ট্রানজিট ভিসার (TR) জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
+            `- অনলাইন আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
+            `- গন্তব্য ৩য় দেশের বৈধ ভিসা, কনফার্মড বাস/এয়ার টিকেট এবং হোটেল বুকিং\n` +
+            `- পেশাগত প্রমাণপত্র ও $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
       }
       if (isServiceSpouse) {
-        return `${firstReplyHonorific}স্পাউস ও ফ্যামিলি (X-1) ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
-          `- অনলাইন Miscellaneous (X-1) আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
-          `- নিকাহনামা / ম্যারিজ সার্টিফিকেট (ইংরেজি অনুবাদ, MoFA ও ভারতীয় হাইকমিশন সত্যায়িত)\n` +
-          `- স্পাউসের ভারতীয় পাসপোর্ট / আধার / ভোটার আইডি ও ঠিকানার প্রমাণ\n` +
-          `- পেশাগত সনদ (প্রযোজ্য ক্ষেত্রে) ও $২০০ এন্ডোর্সমেন্ট / ব্যাংক স্টেটমেন্ট / SBI কার্ড।`;
+        return isEn
+          ? `${firstReplyHonorific}For a Spouse & Family Visa (X-1), you will need:\n\n` +
+            `- Online Miscellaneous (X-1) form, original & old passports, 2×2 photo, NID, and utility bill\n` +
+            `- Nikahnama / Marriage Certificate (English translation attested by MoFA & Indian High Commission)\n` +
+            `- Indian spouse's Passport / Aadhaar / Voter ID & address proof\n` +
+            `- Occupation certificate (if applicable) and $200 endorsement / bank statement / SBI card.`
+          : `${firstReplyHonorific}স্পাউস ও ফ্যামিলি (X-1) ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
+            `- অনলাইন Miscellaneous (X-1) আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
+            `- নিকাহনামা / ম্যারিজ সার্টিফিকেট (ইংরেজি অনুবাদ, MoFA ও ভারতীয় হাইকমিশন সত্যায়িত)\n` +
+            `- স্পাউসের ভারতীয় পাসপোর্ট / আধার / ভোটার আইডি ও ঠিকানার প্রমাণ\n` +
+            `- পেশাগত সনদ (প্রযোজ্য ক্ষেত্রে) ও $২০০ এন্ডোর্সমেন্ট / ব্যাংক স্টেটমেন্ট / SBI কার্ড।`;
       }
       if (isServiceEntry) {
-        return `${firstReplyHonorific}এন্ট্রি (X-Misc) ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
-          `- অনলাইন Miscellaneous (X-Misc) আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
-          `- X-Misc এন্ট্রি যোগ্যতার মূল প্রমাণপত্র / ইনভাইটেশন বা প্রিন্সিপাল পাসপোর্ট-ভিসা কপি\n` +
-          `- পেশাগত প্রমাণপত্র ও $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
+        return isEn
+          ? `${firstReplyHonorific}For an Entry Visa (X-Misc), you will need:\n\n` +
+            `- Online Miscellaneous (X-Misc) form, original & old passports, 2×2 photo, NID, and utility bill\n` +
+            `- Supporting X-Misc eligibility/invitation/PIO or principal visa & passport copy\n` +
+            `- Occupation proof and $200 endorsement / 6-month bank statement / SBI Travel Card.`
+          : `${firstReplyHonorific}এন্ট্রি (X-Misc) ভিসার জন্য নিচের কাগজপত্রগুলো লাগবে:\n\n` +
+            `- অনলাইন Miscellaneous (X-Misc) আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID ও ইউটিলিটি বিল\n` +
+            `- X-Misc এন্ট্রি যোগ্যতার মূল প্রমাণপত্র / ইনভাইটেশন বা প্রিন্সিপাল পাসপোর্ট-ভিসা কপি\n` +
+            `- পেশাগত প্রমাণপত্র ও $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
       }
       if (titleLower.includes('ticket') || serviceContext.title.includes('টিকেট')) {
-        return `${firstReplyHonorific}টিকেট বুকিংয়ের বিস্তারিত তথ্য নিচে দিলাম:\n\n` +
-          `- **সার্ভিস চার্জ:** মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে)।\n` +
-          `- **সেবাসমূহ:** দেশ ও বিদেশের এয়ার টিকেট, ওয়ান-ওয়ে, রাউন্ড ট্রিপ, ট্রানজিট ও কনফার্মড রিটার্ন টিকেট বুকিং।\n` +
-          `- **প্রয়োজনীয় তথ্য:** যাত্রীর পাসপোর্ট কপি, সম্ভাব্য তারিখ, গন্তব্য শহর ও ভিসা কপি (যদি থাকে)।`;
+        return isEn
+          ? `${firstReplyHonorific}Here are the Ticket Booking service details:\n\n` +
+            `- **Service Charge:** Starting from **৳599** (negotiable) in addition to the base ticket fare.\n` +
+            `- **Services:** Domestic & international air tickets, one-way, round-trip, transit, and confirmed return tickets.\n` +
+            `- **Required Details:** Clear passport copy, preferred travel dates, destination city, and visa copy (if available).`
+          : `${firstReplyHonorific}টিকেট বুকিংয়ের বিস্তারিত তথ্য নিচে দিলাম:\n\n` +
+            `- **সার্ভিস চার্জ:** মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে)।\n` +
+            `- **সেবাসমূহ:** দেশ ও বিদেশের এয়ার টিকেট, ওয়ান-ওয়ে, রাউন্ড ট্রিপ, ট্রানজিট ও কনফার্মড রিটার্ন টিকেট বুকিং।\n` +
+            `- **প্রয়োজনীয় তথ্য:** যাত্রীর পাসপোর্ট কপি, সম্ভাব্য তারিখ, গন্তব্য শহর ও ভিসা কপি (যদি থাকে)।`;
       }
       if (isServiceSlot) {
-        return `${firstReplyHonorific}আইভ্যাক স্লট বুকিংয়ের জন্য কেবল নিচের দুইটি তথ্য লাগবে:\n\n` +
-          `- পাসপোর্টের পরিষ্কার ছবি\n` +
-          `- অনলাইন ভিসা ফর্মের ওয়েব ফাইল নম্বর (Web File No)।`;
+        return isEn
+          ? `${firstReplyHonorific}For IVAC slot booking, we only need two details:\n\n` +
+            `- A clear photo of your passport\n` +
+            `- Your online visa application Web File No.`
+          : `${firstReplyHonorific}আইভ্যাক স্লট বুকিংয়ের জন্য কেবল নিচের দুইটি তথ্য লাগবে:\n\n` +
+            `- পাসপোর্টের পরিষ্কার ছবি\n` +
+            `- অনলাইন ভিসা ফর্মের ওয়েব ফাইল নম্বর (Web File No)।`;
       }
     }
   }
 
   // Double Entry Visa direct queries (X-3)
-  if (query.includes('ডাবল') || query.includes('ডবল') || query.includes('double') || query.includes('x-3') || query.includes('এম্বাসি') || query.includes('পর্তুগাল') || query.includes('পোল্যান্ড') || query.includes('ওয়ার্ক পারমিট')) {
+  if (query.includes('ডাবল') || query.includes('ডবল') || query.includes('double') || query.includes('x-3') || query.includes('এম্বাসি') || query.includes('embassy') || query.includes('পর্তুগাল') || query.includes('পোল্যান্ড') || query.includes('ওয়ার্ক পারমিট') || query.includes('work permit')) {
     if (query.includes('স্লট') || query.includes('slot')) {
-      return `ডাবল এন্ট্রি (X-3) ভিসার স্লট ও প্রসেসিং ফি:\n\n` +
-        `- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ৩,০০০৳)\n` +
-        `- **প্রসেসিং + স্লট (আইভ্যাক ফিসহ):** ৳৬,৫০০\n` +
-        `- **যা লাগবে:** আপনার পাসপোর্টের কপি ও ভিসা ফর্মের ওয়েব ফাইল নম্বর।`;
+      return isEn
+        ? `Double Entry (X-3) Visa Slot & Processing Fees:\n\n` +
+          `- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC fee + ৳3,000 slot fee)\n` +
+          `- **Full Processing + Slot (with IVAC fee):** **৳6,500**\n` +
+          `- **Needed:** Your passport copy and Web File No.`
+        : `ডাবল এন্ট্রি (X-3) ভিসার স্লট ও প্রসেসিং ফি:\n\n` +
+          `- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ৩,০০০৳)\n` +
+          `- **প্রসেসিং + স্লট (আইভ্যাক ফিসহ):** ৳৬,৫০০\n` +
+          `- **যা লাগবে:** আপনার পাসপোর্টের কপি ও ভিসা ফর্মের ওয়েব ফাইল নম্বর।`;
     }
-    return `ডাবল এন্ট্রি ভিসা — মিসেলেনিয়াস (X-3) ফি ও কাগজপত্র:\n\n` +
-      `- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,৫০০\n` +
-      `- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
-      `- **অতিরিক্ত জরুরি কাগজপত্র:** যে দেশের এম্বাসি ফেস করবেন তার **অ্যাপয়েন্টমেন্ট লেটার**, **ওয়ার্ক পারমিট** সহ ইউরোপগামী চুক্তিকৃত কোম্পানির কাগজপত্র ও কভারিং লেটার।\n` +
-      `- **কমন কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, NOC/ট্রেড লাইসেন্স এবং $২০০ এন্ডোর্সমেন্ট / ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
+    return isEn
+      ? `Double Entry Visa — Miscellaneous (X-3) Fees & Checklist:\n\n` +
+        `- **Processing + Slot (with ৳1,500 IVAC fee):** **৳6,500**\n` +
+        `- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n` +
+        `- **Additional Required Papers:** **Official Embassy Appointment Letter** of the 3rd/European country, **Work Permit** & European employer contract papers, and cover letter.\n` +
+        `- **Common Papers:** Original & old passports, 2×2 photo, NID, utility bill, NOC/Trade License, and $200 endorsement / 6-month bank statement / SBI Travel Card.`
+      : `ডাবল এন্ট্রি ভিসা — মিসেলেনিয়াস (X-3) ফি ও কাগজপত্র:\n\n` +
+        `- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** ৳৬,৫০০\n` +
+        `- **শুধু স্লট বুকিং:** মোট ৳৪,৫০০ (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
+        `- **অতিরিক্ত জরুরি কাগজপত্র:** যে দেশের এম্বাসি ফেস করবেন তার **অ্যাপয়েন্টমেন্ট লেটার**, **ওয়ার্ক পারমিট** সহ ইউরোপগামী চুক্তিকৃত কোম্পানির কাগজপত্র ও কভারিং লেটার।\n` +
+        `- **কমন কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, NOC/ট্রেড লাইসেন্স এবং $২০০ এন্ডোর্সমেন্ট / ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড।`;
   }
 
   // Spouse & Family Visa (X-1)
-  if (query.includes('স্পাউস') || query.includes('spouse') || query.includes('x-1') || query.includes('ফ্যামিলি ভিসা') || query.includes('নিকাহনামা') || query.includes('স্ত্রী') || query.includes('স্বামী')) {
-    return `স্পাউস ও ফ্যামিলি ভিসা (X-1 মিসেলেনিয়াস) তথ্য ও ফি:\n\n` +
-      `- **প্রসেসিং + স্লট:** **৳৬,০০০** (স্লট ৪,৫০০৳ + ডকুমেন্ট প্রসেসিং ১,৫০০৳)\n` +
-      `- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
-      `- **মূল কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, ইংরেজিতে MoFA ও হাইকমিশন সত্যায়িত নিকাহনামা/ম্যারিজ সার্টিফিকেট, স্পাউসের ভারতীয় পাসপোর্ট/আধার/ঠিকানার প্রমাণ এবং $২০০ এন্ডোর্সমেন্ট / ব্যাংক স্টেটমেন্ট / SBI কার্ড।`;
+  if (query.includes('স্পাউস') || query.includes('spouse') || query.includes('x-1') || query.includes('ফ্যামিলি ভিসা') || query.includes('family visa') || query.includes('নিকাহনামা') || query.includes('marriage') || query.includes('স্ত্রী') || query.includes('স্বামী')) {
+    return isEn
+      ? `Spouse & Family Visa (X-1 Miscellaneous) Details & Fees:\n\n` +
+        `- **Processing + Slot:** **৳6,000** (৳4,500 Slot + ৳1,500 Document Processing)\n` +
+        `- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n` +
+        `- **Key Documents:** Original & old passports, 2×2 photo, NID, utility bill, English Nikahnama/Marriage Certificate (attested by MoFA & Indian High Commission), spouse's Indian Passport/Aadhaar/address proof, and $200 endorsement / bank statement / SBI card.`
+      : `স্পাউস ও ফ্যামিলি ভিসা (X-1 মিসেলেনিয়াস) তথ্য ও ফি:\n\n` +
+        `- **প্রসেসিং + স্লট:** **৳৬,০০০** (স্লট ৪,৫০০৳ + ডকুমেন্ট প্রসেসিং ১,৫০০৳)\n` +
+        `- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
+        `- **মূল কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, ইংরেজিতে MoFA ও হাইকমিশন সত্যায়িত নিকাহনামা/ম্যারিজ সার্টিফিকেট, স্পাউসের ভারতীয় পাসপোর্ট/আধার/ঠিকানার প্রমাণ এবং $২০০ এন্ডোর্সমেন্ট / ব্যাংক স্টেটমেন্ট / SBI কার্ড।`;
   }
 
   // Student Visa (S-1)
-  if (query.includes('স্টুডেন্ট') || query.includes('student') || query.includes('পড়াশোনা') || query.includes('বিশ্ববিদ্যালয়') || query.includes('s-1')) {
-    return `স্টুডেন্ট ভিসা (S-1) তথ্য ও ফি:\n\n` +
-      `- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৫,৫০০**\n` +
-      `- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
-      `- **মূল কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID/জন্মনিবন্ধন, ইউটিলিটি বিল, ভারতীয় বিশ্ববিদ্যালয়/কলেজের মূল অ্যাডমিশন ও বোনাফাইড সার্টিফিকেট (মেডিকেলের ক্ষেত্রে স্বাস্থ্য মন্ত্রণালয়ের NOC), ৬ মাসের ব্যাংক সলভেন্সি ও স্টেটমেন্ট এবং একাডেমিক সনদ/স্টুডেন্ট আইডি।`;
+  if (query.includes('স্টুডেন্ট') || query.includes('student') || query.includes('পড়াশোনা') || query.includes('বিশ্ববিদ্যালয়') || query.includes('university') || query.includes('s-1')) {
+    return isEn
+      ? `Student Visa (S-1) Details & Fees:\n\n` +
+        `- **Processing + Slot (with ৳1,500 IVAC fee):** **৳5,500**\n` +
+        `- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n` +
+        `- **Key Documents:** Original & old passports, 2×2 photo, NID/Birth Certificate, utility bill, original Admission & Bonafide Certificate from the Indian institution (Health Ministry NOC for medical programs), 6-month guardian bank solvency & statement, and academic certificates/Student ID.`
+      : `স্টুডেন্ট ভিসা (S-1) তথ্য ও ফি:\n\n` +
+        `- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৫,৫০০**\n` +
+        `- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n` +
+        `- **মূল কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID/জন্মনিবন্ধন, ইউটিলিটি বিল, ভারতীয় বিশ্ববিদ্যালয়/কলেজের মূল অ্যাডমিশন ও বোনাফাইড সার্টিফিকেট (মেডিকেলের ক্ষেত্রে স্বাস্থ্য মন্ত্রণালয়ের NOC), ৬ মাসের ব্যাংক সলভেন্সি ও স্টেটমেন্ট এবং একাডেমিক সনদ/স্টুডেন্ট আইডি।`;
   }
 
-  // Notice board queries: Rejection reasons, Notice, Serial ordering
-  if (query.includes('রিজেক্ট') || query.includes('প্রত্যাখ্যান') || query.includes('বাতিল') || query.includes('rejection') || query.includes('reject') || query.includes('ভিসা না পাওয়ার কারণ')) {
-    return 'ইন্ডিয়ান ভিসা সাধারণত যেসব কারণে রিজেক্ট হয়:\n\n' +
-      '- ফর্মে ভুল তথ্য পূরণ করা বা জাল/অসম্পূর্ণ ডকুমেন্ট সংযুক্ত করা\n' +
-      '- পাসপোর্ট ও NID/জন্ম নিবন্ধনে তথ্যের অমিল থাকা\n' +
-      '- পূর্বের সকল পুরনো পাসপোর্ট জমা না দেওয়া বা ভ্রমণ ভিসা নিয়ে ভারতে Over Stay করা\n' +
-      '- আবেদন পত্র এবং বিদ্যুৎ বিলের ঠিকানায় অমিল থাকা\n' +
-      '- পুরানো ছবি বা ২"×২" সাদা ব্যাকগ্রাউন্ড ছাড়া ছবি দেওয়া\n' +
-      '- জাল NOC বা ভুয়া ব্যাংক/ডলার এন্ডোর্সমেন্ট দেওয়া।\n\n' +
-      '*(অফিসিয়াল সহায়তা ইমেইল: visahelp@hcidhaka.gov.in)*';
+  // Notice board queries: Rejection reasons
+  if (query.includes('রিজেক্ট') || query.includes('প্রত্যাখ্যান') || query.includes('বাতিল') || query.includes('rejection') || query.includes('reject') || query.includes('refus') || query.includes('ভিসা না পাওয়ার কারণ')) {
+    return isEn
+      ? 'Common reasons for Indian Visa rejection:\n\n' +
+        '- Incorrect details on the application form or incomplete/fake documents\n' +
+        '- Mismatches between Passport and NID/Birth Certificate details\n' +
+        '- Failing to submit all previous passports or previous Over Stay in India\n' +
+        '- Address mismatch between the application form and the utility bill\n' +
+        '- Outdated photo or photo without a clean 2"×2" white background\n' +
+        '- Invalid NOC or unverified bank statement/dollar endorsement.\n\n' +
+        '*(Official help email: visahelp@hcidhaka.gov.in)*'
+      : 'ইন্ডিয়ান ভিসা সাধারণত যেসব কারণে রিজেক্ট হয়:\n\n' +
+        '- ফর্মে ভুল তথ্য পূরণ করা বা জাল/অসম্পূর্ণ ডকুমেন্ট সংযুক্ত করা\n' +
+        '- পাসপোর্ট ও NID/জন্ম নিবন্ধনে তথ্যের অমিল থাকা\n' +
+        '- পূর্বের সকল পুরনো পাসপোর্ট জমা না দেওয়া বা ভ্রমণ ভিসা নিয়ে ভারতে Over Stay করা\n' +
+        '- আবেদন পত্র এবং বিদ্যুৎ বিলের ঠিকানায় অমিল থাকা\n' +
+        '- পুরানো ছবি বা ২"×২" সাদা ব্যাকগ্রাউন্ড ছাড়া ছবি দেওয়া\n' +
+        '- জাল NOC বা ভুয়া ব্যাংক/ডলার এন্ডোর্সমেন্ট দেওয়া।\n\n' +
+        '*(অফিসিয়াল সহায়তা ইমেইল: visahelp@hcidhaka.gov.in)*';
   }
 
-  // IVAC Centers / Location queries (ONLY the real 16 IVAC centers!)
-  if (query.includes('সেন্টার') || query.includes('লোকেশন') || query.includes('কোথায়') || query.includes('অফিস') || query.includes('center') || query.includes('location') || query.includes('branch')) {
-    return 'বাংলাদেশে ভারতীয় ভিসা জমা দেওয়ার অফিশিয়াল ১৬টি আইভ্যাক (IVAC) সেন্টার রয়েছে:\n\n' +
-      '- **ঢাকা বিভাগ (১টি):** ঢাকা — যমুনা ফিউচার পার্ক (JFP), প্রগতি সরণি, বারিধারা\n' +
-      '- **অন্যান্য ১৫টি কেন্দ্র:** চট্টগ্রাম, খুলনা, সিলেট, রাজশাহী, রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা।\n\n' +
-      'আমাদের **Processing Hub** সাপোর্ট সেন্টার ঢাকা যমুনা ফিউচার পার্ক সংলগ্ন কুড়িল, বারিধারায় অবস্থিত—আর অনলাইনে ৬৪ জেলা থেকে সব সেন্টারের স্লট ও প্রসেসিং সেবা দেওয়া হয়।';
+  // IVAC Centers / Location queries (5 active IVAC centers + note on 11 temporarily closed centers)
+  if (
+    query.includes('সেন্টার') || query.includes('লোকেশন') || query.includes('কোথায়') || query.includes('অফিস') ||
+    query.includes('center') || query.includes('centre') || query.includes('location') || query.includes('branch') ||
+    query.includes('রংপুর') || query.includes('ময়মনসিংহ') || query.includes('ময়মনসিংহ') ||
+    query.includes('বরিশাল') || query.includes('কুমিল্লা') || query.includes('নোয়াখালী') || query.includes('নোয়াখালী') ||
+    query.includes('ব্রাহ্মণবাড়িয়া') || query.includes('ব্রাহ্মণবাড়িয়া') || query.includes('ঠাকুরগাঁও') ||
+    query.includes('বগুড়া') || query.includes('বগুড়া') || query.includes('কুষ্টিয়া') || query.includes('কুষ্টিয়া') ||
+    query.includes('যশোর') || query.includes('সাতক্ষীরা') ||
+    query.includes('rangpur') || query.includes('mymensingh') || query.includes('barisal') ||
+    query.includes('cumilla') || query.includes('comilla') || query.includes('noakhali') ||
+    query.includes('brahmanbaria') || query.includes('thakurgaon') || query.includes('bogura') ||
+    query.includes('bogra') || query.includes('kushtia') || query.includes('jessore') || query.includes('satkhira')
+  ) {
+    return isEn
+      ? 'Currently, **5 official IVAC centers** are open and active in Bangladesh:\n\n' +
+        '1. **Dhaka** — Jamuna Future Park (JFP), Progoti Sarani, Baridhara\n' +
+        '2. **Chattogram**\n' +
+        '3. **Khulna**\n' +
+        '4. **Sylhet**\n' +
+        '5. **Rajshahi**\n\n' +
+        '⚠️ *Important Note:* The other 11 regional IVAC centers (Rangpur, Mymensingh, Barishal, Cumilla, Noakhali, Brahmanbaria, Thakurgaon, Bogura, Kushtia, Jashore, and Satkhira) are **currently temporarily closed**. Please select one of the 5 active centers above for your application and slot booking.'
+      : 'বাংলাদেশে বর্তমানে **৫টি অফিশিয়াল আইভ্যাক (IVAC) সেন্টার** খোলা ও সচল রয়েছে:\n\n' +
+        '১. **ঢাকা** — যমুনা ফিউচার পার্ক (JFP), প্রগতি সরণি, বারিধারা\n' +
+        '২. **চট্টগ্রাম**\n' +
+        '৩. **খুলনা**\n' +
+        '৪. **সিলেট**\n' +
+        '৫. **রাজশাহী**\n\n' +
+        '⚠️ *জরুরি নোট:* বাকি ১১টি আঞ্চলিক আইভ্যাক সেন্টার (রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা) **আপাতত সাময়িকভাবে বন্ধ রয়েছে**। তাই বর্তমানে সচল থাকা উপরের ৫টি সেন্টারের যেকোনো একটিতে আপনার স্লট ও ফাইল প্রসেসিং সম্পন্ন করতে পারবেন।';
   }
 
   // IVAC Schedule of charges
-  if (query.includes('সরকারি ফি') || query.includes('ivac fee') || query.includes('আইভ্যাক ফি') || query.includes('পোর্ট চার্জ') || query.includes('correction') || query.includes('সংশোধন ফি') || query.includes('schedule of charges')) {
-    return 'আইভ্যাক সেন্টারের সরকারি ফি তালিকা:\n\n' +
-      '- ভিসা প্রসেসিং ফি: **১,৫০০ টাকা**\n' +
-      '- অতিরিক্ত পোর্ট এন্ডোর্সমেন্ট: **৩০০ টাকা** (সর্বোচ্চ ২টি পোর্ট)\n' +
-      '- অনলাইন ফর্ম সংশোধন: **৩০০ টাকা** (অনুমোদিত ফিল্ড)\n' +
-      '- ফ্যাসিলিটেশন চার্জ (যমুনা ফিউচার পার্ক): **৩০০ টাকা**';
+  if (query.includes('সরকারি ফি') || query.includes('ivac fee') || query.includes('আইভ্যাক ফি') || query.includes('পোর্ট চার্জ') || query.includes('correction') || query.includes('সংশোধন ফি') || query.includes('schedule of charges') || query.includes('government fee')) {
+    return isEn
+      ? 'Official IVAC Schedule of Charges:\n\n' +
+        '- Visa Processing Fee: **৳1,500**\n' +
+        '- Additional Port Endorsement: **৳300** (maximum 2 ports)\n' +
+        '- Online Form Correction: **৳300** (permitted fields)\n' +
+        '- Facilitation Charge (Jamuna Future Park): **৳300**'
+      : 'আইভ্যাক সেন্টারের সরকারি ফি তালিকা:\n\n' +
+        '- ভিসা প্রসেসিং ফি: **১,৫০০ টাকা**\n' +
+        '- অতিরিক্ত পোর্ট এন্ডোর্সমেন্ট: **৩০০ টাকা** (সর্বোচ্চ ২টি পোর্ট)\n' +
+        '- অনলাইন ফর্ম সংশোধন: **৩০০ টাকা** (অনুমোদিত ফিল্ড)\n' +
+        '- ফ্যাসিলিটেশন চার্জ (যমুনা ফিউচার পার্ক): **৩০০ টাকা**';
   }
 
   // Transit visa
-  if (query.includes('ট্রানজিট') || query.includes('transit') || query.includes('ভুটান') || query.includes('নেপাল') || query.includes('চেংড়াবান্ধা') || query.includes('চ্যাংড়াবান্ধা') || query.includes('জয়গাঁ') || query.includes('রাণীগঞ্জ')) {
-    return 'ট্রানজিট (TR) ভিসার ফি ও প্রয়োজনীয় কাগজপত্র:\n\n' +
-      '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৫,৫০০**\n' +
-      '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
-      '- **প্রয়োজনীয় কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, পেশাগত সনদ, $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI কার্ড, গন্তব্য ৩য় দেশের বৈধ ভিসা (যেমন নেপাল), কনফার্মড বাস/এয়ার টিকেট ও হোটেল বুকিং।\n\n' +
-      '*(ভুটান রুট: চ্যাংড়াবান্ধা/জয়গাঁ, নেপাল রুট: চ্যাংড়াবান্ধা/রাণীগঞ্জ)*';
+  if (query.includes('ট্রানজিট') || query.includes('transit') || query.includes('ভুটান') || query.includes('bhutan') || query.includes('নেপাল') || query.includes('nepal') || query.includes('চেংড়াবান্ধা') || query.includes('চ্যাংড়াবান্ধা') || query.includes('জয়গাঁ') || query.includes('রাণীগঞ্জ')) {
+    return isEn
+      ? 'Transit Visa (TR) Fees & Required Documents:\n\n' +
+        '- **Processing + Slot (with ৳1,500 IVAC fee):** **৳5,500**\n' +
+        '- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n' +
+        '- **Documents:** Original & old passports, 2×2 photo, NID, utility bill, occupation certificate, $200 endorsement / bank statement / SBI card, valid visa of destination 3rd country (e.g., Nepal), confirmed bus/air ticket, and hotel booking.\n\n' +
+        '*(Bhutan ports: Changrabandha/Jaigaon; Nepal ports: Changrabandha/Raniganj)*'
+      : 'ট্রানজিট (TR) ভিসার ফি ও প্রয়োজনীয় কাগজপত্র:\n\n' +
+        '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৫,৫০০**\n' +
+        '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
+        '- **প্রয়োজনীয় কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, পেশাগত সনদ, $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI কার্ড, গন্তব্য ৩য় দেশের বৈধ ভিসা (যেমন নেপাল), কনফার্মড বাস/এয়ার টিকেট ও হোটেল বুকিং।\n\n' +
+        '*(ভুটান রুট: চ্যাংড়াবান্ধা/জয়গাঁ, নেপাল রুট: চ্যাংড়াবান্ধা/রাণীগঞ্জ)*';
   }
 
   // Entry visa (X-Misc)
   if (query.includes('এন্ট্রি ভিসা') || query.includes('entry visa') || query.includes('x-misc')) {
-    return 'এন্ট্রি ভিসা (X-Misc — মিসেলেনিয়াস ক্যাটাগরি) তথ্য ও ফি:\n\n' +
-      '- **প্রসেসিং + স্লট:** **৳৬,০০০** (স্লট ৪,৫০০৳ + সার্ভিস চার্জ ১,৫০০৳)\n' +
-      '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
-      '- **প্রয়োজনীয় কাগজপত্র:** অনলাইন X-Misc আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, পেশাগত সনদ, $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI কার্ড এবং X-Misc এন্ট্রি যোগ্যতা/সম্পর্কের মূল সনদ।';
+    return isEn
+      ? 'Entry Visa (X-Misc — Miscellaneous Category) Details & Fees:\n\n' +
+        '- **Processing + Slot:** **৳6,000** (৳4,500 Slot + ৳1,500 Service Charge)\n' +
+        '- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n' +
+        '- **Required Documents:** Online X-Misc application form, original & old passports, 2×2 photo, NID, utility bill, occupation certificate, $200 endorsement / bank statement / SBI card, and X-Misc eligibility/relationship proof.'
+      : 'এন্ট্রি ভিসা (X-Misc — মিসেলেনিয়াস ক্যাটাগরি) তথ্য ও ফি:\n\n' +
+        '- **প্রসেসিং + স্লট:** **৳৬,০০০** (স্লট ৪,৫০০৳ + সার্ভিস চার্জ ১,৫০০৳)\n' +
+        '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
+        '- **প্রয়োজনীয় কাগজপত্র:** অনলাইন X-Misc আবেদন পত্র, মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, পেশাগত সনদ, $২০০ এন্ডোর্সমেন্ট / সমপরিমাণ ব্যাংক স্টেটমেন্ট / SBI কার্ড এবং X-Misc এন্ট্রি যোগ্যতা/সম্পর্কের মূল সনদ।';
   }
 
   // Air & Travel Ticket Booking
   if (query.includes('টিকিট') || query.includes('টিকেট') || query.includes('ticket') || query.includes('এয়ার টিকেট') || query.includes('এয়ার টিকিট') || query.includes('flight') || query.includes('ফ্লাইট')) {
-    return 'টিকেট বুকিং সেবার বিবরণ:\n\n' +
-      '- **সার্ভিস চার্জ:** মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (রুট অনুযায়ী আলোচনা সাপেক্ষে)।\n' +
-      '- **সেবাসমূহ:** দেশ ও বিদেশের সকল ধরনের এয়ার টিকেট, ওয়ান-ওয়ে, রাউন্ড ট্রিপ, ট্রানজিট ও কনফার্মড রিটার্ন টিকেট বুকিং।\n' +
-      '- **প্রয়োজনীয় ডকুমেন্টস:** যাত্রীর পাসপোর্টের পরিষ্কার কপি, ভ্রমণের তারিখ/গন্তব্য এবং ভিসা কপি (যদি থাকে)।';
+    return isEn
+      ? 'Ticket Booking Service Details:\n\n' +
+        '- **Service Charge:** Starting from **৳599** (negotiable depending on route) in addition to the base ticket fare.\n' +
+        '- **Services:** Domestic & international air tickets, one-way, round-trip, transit, and confirmed return bookings.\n' +
+        '- **Required Documents:** Clear copy of the passenger passport, travel dates/destination, and visa copy (if available).'
+      : 'টিকেট বুকিং সেবার বিবরণ:\n\n' +
+        '- **সার্ভিস চার্জ:** মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (রুট অনুযায়ী আলোচনা সাপেক্ষে)।\n' +
+        '- **সেবাসমূহ:** দেশ ও বিদেশের সকল ধরনের এয়ার টিকেট, ওয়ান-ওয়ে, রাউন্ড ট্রিপ, ট্রানজিট ও কনফার্মড রিটার্ন টিকেট বুকিং।\n' +
+        '- **প্রয়োজনীয় ডকুমেন্টস:** যাত্রীর পাসপোর্টের পরিষ্কার কপি, ভ্রমণের তারিখ/গন্তব্য এবং ভিসা কপি (যদি থাকে)।';
   }
 
   // Business Visa
-  if (query.includes('বিজনেস') || query.includes('business') || query.includes('ব্যবসা') || query.includes('ট্রেড') || query.includes('এলসি') || query.includes('টিন') || query.includes('ভ্যাট')) {
-    return 'বিজনেস ভিসার প্রয়োজনীয় তথ্য ও ফি:\n\n' +
-      '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৬,০০০**\n' +
-      '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
-      '- **কমন কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল।\n' +
-      '- **বিজনেস কাগজপত্র:** ভারতীয় কোম্পানির মূল ইনভাইটেশন লেটার, বাংলাদেশি প্রতিষ্ঠানের ফরওয়ার্ডিং লেটার, হালনাগাদ ট্রেড লাইসেন্স, চেম্বার অফ কমার্স সনদ, TIN, BIN, IRC, LC, VAT রিটার্ন এবং ব্যক্তিগত ও কোম্পানির বিগত ৬ মাসের ব্যাংক স্টেটমেন্ট।';
+  if (query.includes('বিজনেস') || query.includes('business') || query.includes('ব্যবসা') || query.includes('ট্রেড') || query.includes('এলসি') || query.includes('টিন') || query.includes('ভ্যাট') || query.includes('trade license')) {
+    return isEn
+      ? 'Business Visa Details & Fees:\n\n' +
+        '- **Processing + Slot (with ৳1,500 IVAC fee):** **৳6,000**\n' +
+        '- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n' +
+        '- **Common Papers:** Original & old passports, 2×2 photo, NID, utility bill.\n' +
+        '- **Business Papers:** Original Indian company invitation letter, Bangladeshi company forwarding letter, updated Trade License, Chamber of Commerce certificate, TIN, BIN, IRC, LC, VAT Return, and personal & company 6-month bank statements.'
+      : 'বিজনেস ভিসার প্রয়োজনীয় তথ্য ও ফি:\n\n' +
+        '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৬,০০০**\n' +
+        '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
+        '- **কমন কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল।\n' +
+        '- **বিজনেস কাগজপত্র:** ভারতীয় কোম্পানির মূল ইনভাইটেশন লেটার, বাংলাদেশি প্রতিষ্ঠানের ফরওয়ার্ডিং লেটার, হালনাগাদ ট্রেড লাইসেন্স, চেম্বার অফ কমার্স সনদ, TIN, BIN, IRC, LC, VAT রিটার্ন এবং ব্যক্তিগত ও কোম্পানির বিগত ৬ মাসের ব্যাংক স্টেটমেন্ট।';
   }
 
   // Medical Visa & Attendant
-  if (query.includes('মেডিকেল') || query.includes('medical') || query.includes('রোগী') || query.includes('ডাক্তার') || query.includes('হাসপাতাল') || query.includes('ইনভাইটেশন') || query.includes('ayush') || query.includes('অ্যাটেনডেন্ট') || query.includes('attendant')) {
-    return 'মেডিকেল (M-1) ও অ্যাটেনডেন্ট (M-2) ভিসার তথ্য ও ফি:\n\n' +
-      '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ ও ইনভাইটেশনসহ):** **৳৬,০০০**\n' +
-      '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
-      '- **রোগীর (M-1) কাগজ:** কমন কাগজপত্র (পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, পেশাগত সনদ, $২০০ এন্ডোর্সমেন্ট/৬ মাসের ব্যাংক স্টেটমেন্ট/SBI কার্ড) + ভারতীয় হাসপাতালের মূল অ্যাপয়েন্টমেন্ট ও AYUSH লেটার + বাংলাদেশের ডাক্তারের প্রেসক্রিপশন ও টেস্ট রিপোর্ট।\n' +
-      '- **অ্যাটেনডেন্টের (M-2) কাগজ:** কেবল বেসিক কমন ডকুমেন্টস ও রোগীর সাথে সম্পর্কের প্রমাণপত্র (অ্যাটেনডেন্টের আলাদা মেডিকেল টেস্ট রিপোর্ট বা প্রেসক্রিপশন লাগবে না)।';
+  if (query.includes('মেডিকেল') || query.includes('medical') || query.includes('রোগী') || query.includes('ডাক্তার') || query.includes('doctor') || query.includes('হাসপাতাল') || query.includes('hospital') || query.includes('ইনভাইটেশন') || query.includes('invitation') || query.includes('ayush') || query.includes('অ্যাটেনডেন্ট') || query.includes('attendant')) {
+    return isEn
+      ? 'Medical (M-1) & Attendant (M-2) Visa Details & Fees:\n\n' +
+        '- **Processing + Slot (with ৳1,500 IVAC fee & invitation):** **৳6,000**\n' +
+        '- **Slot Booking Only:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n' +
+        '- **Patient (M-1) Papers:** Common documents (passport, 2×2 photo, NID, utility bill, occupation proof, $200 endorsement / 6-month bank statement / SBI card) + original Indian hospital appointment & AYUSH letter + Bangladeshi doctor prescription and test reports.\n' +
+        '- **Attendant (M-2) Papers:** Only basic common documents and proof of relationship with the patient (no separate medical test reports required).'
+      : 'মেডিকেল (M-1) ও অ্যাটেনডেন্ট (M-2) ভিসার তথ্য ও ফি:\n\n' +
+        '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ ও ইনভাইটেশনসহ):** **৳৬,০০০**\n' +
+        '- **শুধু স্লট বুকিং:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
+        '- **রোগীর (M-1) কাগজ:** কমন কাগজপত্র (পাসপোর্ট, ২×২ ছবি, NID, ইউটিলিটি বিল, পেশাগত সনদ, $২০০ এন্ডোর্সমেন্ট/৬ মাসের ব্যাংক স্টেটমেন্ট/SBI কার্ড) + ভারতীয় হাসপাতালের মূল অ্যাপয়েন্টমেন্ট ও AYUSH লেটার + বাংলাদেশের ডাক্তারের প্রেসক্রিপশন ও টেস্ট রিপোর্ট।\n' +
+        '- **অ্যাটেনডেন্টের (M-2) কাগজ:** কেবল বেসিক কমন ডকুমেন্টস ও রোগীর সাথে সম্পর্কের প্রমাণপত্র (অ্যাটেনডেন্টের আলাদা মেডিকেল টেস্ট রিপোর্ট বা প্রেসক্রিপশন লাগবে না)।';
   }
 
   // Tourist Visa
-  if (query.includes('ট্যুরিস্ট') || query.includes('tourist') || query.includes('ভ্রমণ') || query.includes('ঘুরতে')) {
-    return 'ট্যুরিস্ট ভিসার প্রয়োজনীয় তথ্য ও ফি:\n\n' +
-      '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৬,০০০**\n' +
-      '- **শুধু স্লট বুকিং:** মোট **৳৫,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)\n' +
-      '- **প্রয়োজনীয় কাগজপত্র:** অনলাইন আবেদন পত্র, মূল ও সকল পুরনো পাসপোর্ট, ২×২ ছবি, NID/জন্মনিবন্ধন, ইউটিলিটি বিল, পেশাগত প্রমাণপত্র (NOC/ট্রেড লাইসেন্স/স্টুডেন্ট আইডি) এবং **$২০০ ডলার এন্ডোর্সমেন্ট / সমপরিমাণ টাকার ৬ মাসের ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড**।';
+  if (query.includes('ট্যুরিস্ট') || query.includes('tourist') || query.includes('ভ্রমণ') || query.includes('ঘুরতে') || query.includes('travel')) {
+    return isEn
+      ? 'Tourist Visa Details & Fees:\n\n' +
+        '- **Processing + Slot (with ৳1,500 IVAC fee):** **৳6,000**\n' +
+        '- **Slot Booking Only:** Total **৳5,500** (৳1,500 IVAC + ৳4,000 Slot)\n' +
+        '- **Required Documents:** Online application form, original & all old passports, 2×2 photo, NID/Birth Certificate, utility bill, occupation proof (NOC/Trade License/Student ID), and **$200 dollar endorsement / 6-month bank statement / SBI Travel Card**.'
+      : 'ট্যুরিস্ট ভিসার প্রয়োজনীয় তথ্য ও ফি:\n\n' +
+        '- **প্রসেসিং + স্লট (আইভ্যাক ফি ১,৫০০৳ সহ):** **৳৬,০০০**\n' +
+        '- **শুধু স্লট বুকিং:** মোট **৳৫,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)\n' +
+        '- **প্রয়োজনীয় কাগজপত্র:** অনলাইন আবেদন পত্র, মূল ও সকল পুরনো পাসপোর্ট, ২×২ ছবি, NID/জন্মনিবন্ধন, ইউটিলিটি বিল, পেশাগত প্রমাণপত্র (NOC/ট্রেড লাইসেন্স/স্টুডেন্ট আইডি) এবং **$২০০ ডলার এন্ডোর্সমেন্ট / সমপরিমাণ টাকার ৬ মাসের ব্যাংক স্টেটমেন্ট / SBI ট্রাভেল কার্ড**।';
   }
 
   // Slot release date queries
   if (
-    (query.includes('কবে') || query.includes('next') || query.includes('তারিখ') || query.includes('সময়') || query.includes('সময়') || query.includes('রিলিজ') || query.includes('ছাড়বে') || query.includes('ওপেন')) &&
-    (query.includes('স্লট') || query.includes('slot') || query.includes('ডেট') || query.includes('অ্যাপয়েন্টমেন্ট'))
+    (query.includes('কবে') || query.includes('when') || query.includes('next') || query.includes('তারিখ') || query.includes('date') || query.includes('সময়') || query.includes('সময়') || query.includes('রিলিজ') || query.includes('release') || query.includes('ছাড়বে') || query.includes('open') || query.includes('ওপেন')) &&
+    (query.includes('স্লট') || query.includes('slot') || query.includes('ডেট') || query.includes('অ্যাপয়েন্টমেন্ট') || query.includes('appointment'))
   ) {
-    return 'আইভ্যাক অ্যাপয়েন্টমেন্ট স্লট ছাড়ার নিয়মটা একটু আলাদা:\n\n' +
-      '- আইভ্যাকের নিয়ম অনুযায়ী স্লট রিলিজের নির্দিষ্ট দিনক্ষণ আগে থেকে ঘোষণা করা হয় না।\n' +
-      '- সিস্টেমে যখন নতুন ব্যাচ ওপেন হয়, তখনই সার্বক্ষণিক মনিটরিং করে দ্রুত বুকিং নিতে হয়।\n' +
-      '- অনুমান করে কোনো তারিখ বলা ঠিক হবে না—তবে ফাইল রেডি রাখলে স্লট ছাড়ামাত্রই আমাদের টিম আপনার বুকিং করে দিতে পারবে।\n\n' +
-      'বিস্তারিত জানতে চাইলে আমাদের হটলাইন/WhatsApp নম্বরে (+8801577464706) যোগাযোগ করতে পারেন।';
+    return isEn
+      ? 'Here is how IVAC appointment slot releases work:\n\n' +
+        '- Official IVAC policy does not announce exact slot release dates or times in advance.\n' +
+        '- Slots open in dynamic batches on the portal and require continuous monitoring to book immediately.\n' +
+        '- Rather than guessing a date, keeping your file prepared allows our team to secure your slot as soon as the next batch opens.\n\n' +
+        'For direct assistance, contact our Hotline/WhatsApp at **+8801577464706**.'
+      : 'আইভ্যাক অ্যাপয়েন্টমেন্ট স্লট ছাড়ার নিয়মটা একটু আলাদা:\n\n' +
+        '- আইভ্যাকের নিয়ম অনুযায়ী স্লট রিলিজের নির্দিষ্ট দিনক্ষণ আগে থেকে ঘোষণা করা হয় না।\n' +
+        '- সিস্টেমে যখন নতুন ব্যাচ ওপেন হয়, তখনই সার্বক্ষণিক মনিটরিং করে দ্রুত বুকিং নিতে হয়।\n' +
+        '- অনুমান করে কোনো তারিখ বলা ঠিক হবে না—তবে ফাইল রেডি রাখলে স্লট ছাড়ামাত্রই আমাদের টিম আপনার বুকিং করে দিতে পারবে।\n\n' +
+        'বিস্তারিত জানতে চাইলে আমাদের হটলাইন/WhatsApp নম্বরে (+৮৮০১৫৭৭৪৬৪৭০৬) যোগাযোগ করতে পারেন।';
   }
 
   // Slot booking / IVAC
-  if (query.includes('স্লট') || query.includes('slot') || query.includes('আইভ্যাক') || query.includes('ivac') || query.includes('তারিখ') || query.includes('অ্যাপয়েন্টমেন্ট')) {
-    return 'আইভ্যাক স্লট বুকিং ফি **৳৪,৫০০ থেকে শুরু** (প্রতিটি ভিসায় আইভ্যাক সরকারি ফি ৳১,৫০০ ফিক্সড):\n\n' +
-      '- **মেডিকেল / ডাবল এন্ট্রি X-3 / বিজনেস / স্টুডেন্ট S-1 / ট্রানজিট TR / এন্ট্রি X-Misc / স্পাউস X-1 স্লট:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
-      '- **ট্যুরিস্ট স্লট:** মোট **৳৫,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)\n\n' +
-      'স্লট বুক করতে আপনার পাসপোর্টের কপি ও ওয়েব ফাইল নম্বর লাগবে।';
+  if (query.includes('স্লট') || query.includes('slot') || query.includes('আইভ্যাক') || query.includes('ivac') || query.includes('তারিখ') || query.includes('অ্যাপয়েন্টমেন্ট') || query.includes('appointment')) {
+    return isEn
+      ? 'IVAC Slot Booking starts from **৳4,500** (including fixed ৳1,500 IVAC official fee):\n\n' +
+        '- **Medical / Double Entry X-3 / Business / Student S-1 / Transit TR / Entry X-Misc / Spouse X-1 Slot:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n' +
+        '- **Tourist Slot:** Total **৳5,500** (৳1,500 IVAC + ৳4,000 Slot)\n\n' +
+        'To book a slot, we only need your passport copy and online Web File No.'
+      : 'আইভ্যাক স্লট বুকিং ফি **৳৪,৫০০ থেকে শুরু** (প্রতিটি ভিসায় আইভ্যাক সরকারি ফি ৳১,৫০০ ফিক্সড):\n\n' +
+        '- **মেডিকেল / ডাবল এন্ট্রি X-3 / বিজনেস / স্টুডেন্ট S-1 / ট্রানজিট TR / এন্ট্রি X-Misc / স্পাউস X-1 স্লট:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
+        '- **ট্যুরিস্ট স্লট:** মোট **৳৫,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)\n\n' +
+        'স্লট বুক করতে আপনার পাসপোর্টের কপি ও ওয়েব ফাইল নম্বর লাগবে।';
   }
 
   // Cost / Pricing General
   if (query.includes('খরচ') || query.includes('ফি') || query.includes('টাকা') || query.includes('cost') || query.includes('fee') || query.includes('price') || query.includes('charge')) {
-    return 'আমাদের ভিসা ও স্লট ফি তালিকা:\n\n' +
-      '**১. প্রসেসিং + স্লট (আইভ্যাক ফি ৳১,৫০০ সহ):**\n' +
-      '- মেডিকেল ও অ্যাটেনডেন্ট / ট্যুরিস্ট / বিজনেস / এন্ট্রি (X-Misc) / স্পাউস (X-1): **৳৬,০০০**\n' +
-      '- ডাবল এন্ট্রি (X-3): **৳৬,৫০০**\n' +
-      '- স্টুডেন্ট (S-1) / ট্রানজিট (TR): **৳৫,৫০০**\n\n' +
-      '**২. শুধুমাত্র স্লট (৳৪,৫০০ থেকে শুরু — আইভ্যাক ফি ৳১,৫০০ ফিক্সড):**\n' +
-      '- মেডিকেল / ডাবল এন্ট্রি X-3 / বিজনেস / স্টুডেন্ট / ট্রানজিট / এন্ট্রি X-Misc / স্পাউস X-1: **৳৪,৫০০** (১,৫০০ + ৩,০০০)\n' +
-      '- ট্যুরিস্ট স্লট: **৳৫,৫০০** (১,৫০০ + ৪,০০০)\n\n' +
-      '- **টিকেট বুকিং:** মূল মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে)';
+    return isEn
+      ? 'Our Visa & Slot Fee Schedule:\n\n' +
+        '**1. Full Processing + Slot (including ৳1,500 IVAC fee):**\n' +
+        '- Medical & Attendant / Tourist / Business / Entry (X-Misc) / Spouse (X-1): **৳6,000**\n' +
+        '- Double Entry (X-3): **৳6,500**\n' +
+        '- Student (S-1) / Transit (TR): **৳5,500**\n\n' +
+        '**2. Slot Booking Only (from ৳4,500 — fixed ৳1,500 IVAC fee included):**\n' +
+        '- Medical / Double Entry X-3 / Business / Student / Transit / Entry X-Misc / Spouse X-1: **৳4,500** (৳1,500 + ৳3,000)\n' +
+        '- Tourist Slot: **৳5,500** (৳1,500 + ৳4,000)\n\n' +
+        '- **Ticket Booking:** Service charge starting from **৳599** (negotiable) on top of base ticket fare'
+      : 'আমাদের ভিসা ও স্লট ফি তালিকা:\n\n' +
+        '**১. প্রসেসিং + স্লট (আইভ্যাক ফি ৳১,৫০০ সহ):**\n' +
+        '- মেডিকেল ও অ্যাটেনডেন্ট / ট্যুরিস্ট / বিজনেস / এন্ট্রি (X-Misc) / স্পাউস (X-1): **৳৬,০০০**\n' +
+        '- ডাবল এন্ট্রি (X-3): **৳৬,৫০০**\n' +
+        '- স্টুডেন্ট (S-1) / ট্রানজিট (TR): **৳৫,৫০০**\n\n' +
+        '**২. শুধুমাত্র স্লট (৳৪,৫০০ থেকে শুরু — আইভ্যাক ফি ৳১,৫০০ ফিক্সড):**\n' +
+        '- মেডিকেল / ডাবল এন্ট্রি X-3 / বিজনেস / স্টুডেন্ট / ট্রানজিট / এন্ট্রি X-Misc / স্পাউস X-1: **৳৪,৫০০** (১,৫০০ + ৩,০০০)\n' +
+        '- ট্যুরিস্ট স্লট: **৳৫,৫০০** (১,৫০০ + ৪,০০০)\n\n' +
+        '- **টিকেট বুকিং:** মূল মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু** (আলোচনা সাপেক্ষে)';
   }
 
   // Bank Statement / Dollar Endorsement questions
-  if (query.includes('ব্যাংক') || query.includes('bank') || query.includes('স্টেটমেন্ট') || query.includes('ব্যালেন্স') || query.includes('ডলার') || query.includes('sbi') || query.includes('এসবিআই') || query.includes('টাকা থাকতে')) {
-    return 'ব্যাংক স্টেটমেন্ট, ডলার এন্ডোর্সমেন্ট ও ট্রাভেল কার্ডের নিয়মগুলো হলো:\n\n' +
-      '- পাসপোর্টে ন্যূনতম **$২০০ ডলার এন্ডোর্সমেন্ট**, অথবা\n' +
-      '- সমপরিমাণ টাকা ব্যাংক অ্যাকাউন্টে থাকা অবস্থায় বিগত **৬ মাসের ব্যাংক স্টেটমেন্ট**, অথবা\n' +
-      '- স্টেট ব্যাংক অফ ইন্ডিয়া (SBI) কর্তৃক প্রদত্ত **SBI ট্রাভেল কার্ড** বা ইন্টারন্যাশনাল ট্রাভেল কার্ড।';
+  if (query.includes('ব্যাংক') || query.includes('bank') || query.includes('স্টেটমেন্ট') || query.includes('statement') || query.includes('ব্যালেন্স') || query.includes('balance') || query.includes('ডলার') || query.includes('dollar') || query.includes('sbi') || query.includes('এসবিআই') || query.includes('টাকা থাকতে')) {
+    return isEn
+      ? 'Financial Proof Rules (Bank Statement, Dollar Endorsement & Travel Card):\n\n' +
+        '- Minimum **$200 Dollar Endorsement** on your passport, OR\n' +
+        '- Last **6 months Bank Statement** showing sufficient equivalent balance, OR\n' +
+        '- State Bank of India (**SBI Travel Card**) or International Travel Card.'
+      : 'ব্যাংক স্টেটমেন্ট, ডলার এন্ডোর্সমেন্ট ও ট্রাভেল কার্ডের নিয়মগুলো হলো:\n\n' +
+        '- পাসপোর্টে ন্যূনতম **$২০০ ডলার এন্ডোর্সমেন্ট**, অথবা\n' +
+        '- সমপরিমাণ টাকা ব্যাংক অ্যাকাউন্টে থাকা অবস্থায় বিগত **৬ মাসের ব্যাংক স্টেটমেন্ট**, অথবা\n' +
+        '- স্টেট ব্যাংক অফ ইন্ডিয়া (SBI) কর্তৃক প্রদত্ত **SBI ট্রাভেল কার্ড** বা ইন্টারন্যাশনাল ট্রাভেল কার্ড।';
   }
 
   // Photo specifications
-  if (query.includes('ছবি') || query.includes('photo') || query.includes('picture') || query.includes('সাইজ')) {
-    return 'ভিসার ছবির সঠিক মাপ ও নিয়ম:\n\n' +
-      '- সাইজ: ২×২ ইঞ্চি (50mm × 50mm) ল্যাব প্রিন্ট।\n' +
-      '- ব্যাকগ্রাউন্ড: সম্পূর্ণ পরিষ্কার সাদা (White Background)।\n' +
-      '- কান ও কপাল স্পষ্ট থাকতে হবে, এবং ছবি ৩ মাসের বেশি পুরনো হওয়া যাবে না।';
+  if (query.includes('ছবি') || query.includes('photo') || query.includes('picture') || query.includes('সাইজ') || query.includes('size')) {
+    return isEn
+      ? 'Official Visa Photo Specifications:\n\n' +
+        '- Size: **2×2 inches (50mm × 50mm)** lab print.\n' +
+        '- Background: **100% plain White Background** with no border.\n' +
+        '- Ears and forehead must be clearly visible, and the photo must be taken within the last 3 months.'
+      : 'ভিসার ছবির সঠিক মাপ ও নিয়ম:\n\n' +
+        '- সাইজ: ২×২ ইঞ্চি (50mm × 50mm) ল্যাব প্রিন্ট।\n' +
+        '- ব্যাকগ্রাউন্ড: সম্পূর্ণ পরিষ্কার সাদা (White Background)।\n' +
+        '- কান ও কপাল স্পষ্ট থাকতে হবে, এবং ছবি ৩ মাসের বেশি পুরনো হওয়া যাবে না।';
   }
 
   // Contact / Phone / Address
-  if (query.includes('ফোন') || query.includes('নম্বর') || query.includes('যোগাযোগ') || query.includes('ঠিকানা') || query.includes('contact') || query.includes('phone') || query.includes('address') || query.includes('whatsapp') || query.includes('হোয়াটসঅ্যাপ')) {
-    return 'আমাদের সাথে সরাসরি যোগাযোগের মাধ্যম:\n\n' +
-      '- হটলাইন ও WhatsApp: **+8801577464706**\n' +
-      '- অফিস: যমুনা ফিউচার পার্ক সংলগ্ন, কুড়িল, বারিধারা, ঢাকা-১২২৯\n' +
-      '- ওয়েবসাইট ও ইমেইল: processinghub.fun | support@processinghub.fun';
+  if (query.includes('ফোন') || query.includes('নম্বর') || query.includes('যোগাযোগ') || query.includes('ঠিকানা') || query.includes('contact') || query.includes('phone') || query.includes('address') || query.includes('office') || query.includes('whatsapp') || query.includes('হোয়াটসঅ্যাপ')) {
+    return isEn
+      ? 'You can reach us directly via:\n\n' +
+        '- Hotline & WhatsApp: **+8801577464706**\n' +
+        '- Office: Adjacent to Jamuna Future Park, Kuril, Baridhara, Dhaka-1229\n' +
+        '- Website & Email: processinghub.fun | support@processinghub.fun'
+      : 'আমাদের সাথে সরাসরি যোগাযোগের মাধ্যম:\n\n' +
+        '- হটলাইন ও WhatsApp: **+৮৮০১৫৭৭৪৬৪৭০৬**\n' +
+        '- অফিস: যমুনা ফিউচার পার্ক সংলগ্ন, কুড়িল, বারিধারা, ঢাকা-১২২৯\n' +
+        '- ওয়েবসাইট ও ইমেইল: processinghub.fun | support@processinghub.fun';
   }
 
   // Duration / Time required
-  if (query.includes('কত দিন') || query.includes('সময়') || query.includes('লাগে') || query.includes('duration') || query.includes('time') || query.includes('ডেলিভারি')) {
-    return 'ভিসা প্রসেসিং ও ডেলিভারির সাধারণ সময়সীমা:\n\n' +
-      '• আমাদের ফাইল প্রসেসিং: **১ থেকে ২ কর্মদিবস**\n' +
-      '• আইভ্যাকে জমা দেওয়ার পর ডেলিভারি: ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী সাধারণত **৭ থেকে ১৫ কর্মদিবস**।';
+  if (query.includes('কত দিন') || query.includes('সময়') || query.includes('লাগে') || query.includes('duration') || query.includes('how long') || query.includes('time') || query.includes('delivery') || query.includes('ডেলিভারি')) {
+    return isEn
+      ? 'Typical Visa Processing & Delivery Timeline:\n\n' +
+        '- Our file preparation: **1 to 2 working days**\n' +
+        '- Passport delivery after IVAC submission: Typically **7 to 15 working days** as per Indian High Commission regulations.'
+      : 'ভিসা প্রসেসিং ও ডেলিভারির সাধারণ সময়সীমা:\n\n' +
+        '- আমাদের ফাইল প্রসেসিং: **১ থেকে ২ কর্মদিবস**\n' +
+        '- আইভ্যাকে জমা দেওয়ার পর ডেলিভারি: ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী সাধারণত **৭ থেকে ১৫ কর্মদিবস**।';
   }
 
   // Conversation Closings / Thank you / Service done
-  if (query.includes('ধন্যবাদ') || query.includes('thank') || query.includes('থ্যাংক') || query.includes('আল্লাহ হাফেজ') || query.includes('bye') || query.includes('বাই') || query.includes('বিদায়') || query.includes('বিদায়') || query.includes('কাজ শেষ') || query.includes('বুঝেছি') || query.includes('ঠিক আছে')) {
-    return 'প্রসেসিং হাবের সাথে যোগাযোগ করার জন্য আন্তরিক ধন্যবাদ! ভবিষ্যতে যেকোনো ভিসা বা ভ্রমণ সংক্রান্ত প্রয়োজনে আমরা সর্বদা পাশে আছি। আপনার যাত্রা শুভ ও নিরাপদ হোক, আল্লাহ হাফেজ।';
+  if (query.includes('ধন্যবাদ') || query.includes('thank') || query.includes('থ্যাংক') || query.includes('আল্লাহ হাফেজ') || query.includes('allah hafez') || query.includes('bye') || query.includes('বাই') || query.includes('বিদায়') || query.includes('বিদায়') || query.includes('কাজ শেষ') || query.includes('বুঝেছি') || query.includes('ঠিক আছে')) {
+    return isEn
+      ? 'Thank you for reaching out to Processing Hub! We are always here whenever you need help with visas or travel. Wishing you a safe and pleasant journey, Allah Hafez.'
+      : 'প্রসেসিং হাবের সাথে যোগাযোগ করার জন্য আন্তরিক ধন্যবাদ! ভবিষ্যতে যেকোনো ভিসা বা ভ্রমণ সংক্রান্ত প্রয়োজনে আমরা সর্বদা পাশে আছি। আপনার যাত্রা শুভ ও নিরাপদ হোক, আল্লাহ হাফেজ।';
   }
 
   // Default Reply
+  if (isEn) {
+    return `${firstReplyHonorific}I am **${agentName}** from Processing Hub. Please let me know your question about Indian visa processing or documents, and I will gladly help.`;
+  }
   return `${firstReplyHonorific}আমি **${agentName}**, প্রসেসিং হাব থেকে বলছি। আপনার ভিসা প্রসেসিং বা ডকুমেন্টস সংক্রান্ত প্রশ্নটি বলুন, আমি সাহায্য করছি।`;
 }
 
@@ -973,6 +1243,7 @@ app.post('/api/chat/end-session', async (req, res) => {
 // API endpoint for chatbot
 app.post('/api/chat', async (req, res) => {
   const agentName = sanitizeAgentName(req.body?.agentName);
+  const language: 'bn' | 'en' = req.body?.language === 'en' ? 'en' : 'bn';
   const messages = req.body?.messages;
   const serviceContext = req.body?.serviceContext;
   const userName = req.body?.userName;
@@ -1004,15 +1275,21 @@ app.post('/api/chat', async (req, res) => {
     const pastUserMemorySection = buildPastUserMemorySection(serverPastSessions, pastConversations);
 
     // Dynamically build persona and inject full website context + verified adaptive brain + returning user memory + addressing context
-    let contextualSystemInstruction = `${buildSystemInstruction(agentName)}\n${SHARED_KNOWLEDGE_BASE}\n${WEBSITE_FULL_CONTEXT}${adaptiveKnowledgeSection}${pastUserMemorySection}`;
+    let contextualSystemInstruction = `${buildSystemInstruction(agentName, language)}\n${SHARED_KNOWLEDGE_BASE}\n${WEBSITE_FULL_CONTEXT}${adaptiveKnowledgeSection}${pastUserMemorySection}`;
     if (userName) {
+      const firstAddressRule =
+        language === 'en'
+          ? `This is your FIRST reply to this user. Address them politely ONCE as "Sir" (if "${userName}" is male) or "Ma'am" (if "${userName}" is female), or use a polite neutral greeting if unclear. NEVER say "Mr. ${userName}" or repeat their name.`
+          : `This is your FIRST reply to this user. Address them politely ONCE as "স্যার" (if "${userName}" is male) or "ম্যাডাম"/"ম্যাম" (if "${userName}" is female), or a polite neutral greeting if gender is unclear. NEVER say "${userName} সাহেব".`;
+      const followUpAddressRule =
+        language === 'en'
+          ? `This is a FOLLOW-UP reply (message #${userMsgCount}). STRICTLY DO NOT repeat their name ("${userName}"), "Sir", or "Ma'am". Speak completely naturally.`
+          : `This is a FOLLOW-UP reply (message #${userMsgCount}). STRICTLY DO NOT repeat their name ("${userName}"), "সাহেব", "স্যার", or "ম্যাডাম"/"ম্যাম". Speak completely naturally face-to-face.`;
+
       contextualSystemInstruction += `\n\n### CLIENT IDENTITY & NATURAL ADDRESSING:
 Client Name: "${userName}"${userPhone ? ` | Phone: "${userPhone}"` : ''}.
 Current User Message Count in Session: ${userMsgCount}.
-- ${isFirstReply
-  ? `This is your FIRST reply to this user. Address them politely ONCE as "স্যার" (if "${userName}" is male) or "ম্যাডাম"/"ম্যাম" (if "${userName}" is female), or a polite neutral greeting if gender is unclear. NEVER say "${userName} সাহেব".`
-  : `This is a FOLLOW-UP reply (message #${userMsgCount}). STRICTLY DO NOT repeat their name ("${userName}"), "সাহেব", "স্যার", or "ম্যাডাম"/"ম্যাম". Speak completely naturally face-to-face.`
-}
+- ${isFirstReply ? firstAddressRule : followUpAddressRule}
 - NEVER ask for their name or mobile number again—they already submitted it.`;
     }
     if (serviceContext && (serviceContext.title || serviceContext.category)) {
@@ -1025,7 +1302,7 @@ The customer is currently inquiring about:
 ${serviceContext.documents && serviceContext.documents.length > 0 ? `- **Standard Document Checklist**:\n  * ${serviceContext.documents.join('\n  * ')}` : ''}
 
 **SPECIFIC DIRECTIVE**:
-Prioritize concise, accurate, actionable guidance specifically for "${serviceContext.title}".
+Prioritize concise, accurate, actionable guidance specifically for "${serviceContext.title}" in ${language === 'en' ? '100% English' : '100% Bengali'}.
 - Keep your tone natural, warm, strictly as ${agentName} from Processing Hub, and NEVER use the words "Visa Consultant", "Consultant", "ভিসা কনসালটেন্ট", or "কনসালটেন্ট".`;
     }
 
@@ -1047,7 +1324,7 @@ Prioritize concise, accurate, actionable guidance specifically for "${serviceCon
                 try {
                   const decodedText = Buffer.from(att.data, 'base64').toString('utf8');
                   parts.push({
-                    text: `[সংযুক্ত ফাইল: ${att.name || 'document.txt'}]\n${decodedText.slice(0, 15000)}`,
+                    text: `[${language === 'en' ? 'Attached File' : 'সংযুক্ত ফাইল'}: ${att.name || 'document.txt'}]\n${decodedText.slice(0, 15000)}`,
                   });
                 } catch {
                   parts.push({ inlineData: { mimeType: att.mimeType, data: att.data } });
@@ -1061,7 +1338,9 @@ Prioritize concise, accurate, actionable guidance specifically for "${serviceCon
                 });
               }
             } else if (att?.name) {
-              parts.push({ text: `[পূর্বে সংযুক্ত ফাইল: ${att.name}]` });
+              parts.push({
+                text: `[${language === 'en' ? 'Previously attached file' : 'পূর্বে সংযুক্ত ফাইল'}: ${att.name}]`,
+              });
             }
           }
         }
@@ -1071,7 +1350,10 @@ Prioritize concise, accurate, actionable guidance specifically for "${serviceCon
           parts.push({ text: trimmedText });
         } else if (parts.length > 0 && role === 'user') {
           parts.push({
-            text: 'এই সংযুক্ত ছবি বা পিডিএফ ফাইলটি ভালোভাবে পড়ে বিশ্লেষণ করুন, মূল তথ্যগুলো তুলে ধরুন এবং আমাদের ভিসা/সার্ভিস অনুযায়ী পরবর্তী করণীয় বা পদক্ষেপ কী হবে তা স্পষ্টভাবে বলুন।',
+            text:
+              language === 'en'
+                ? 'Please carefully inspect this attached image or PDF file, highlight the key details, note any discrepancies against IVAC rules, and state the clear next steps in English.'
+                : 'এই সংযুক্ত ছবি বা পিডিএফ ফাইলটি ভালোভাবে পড়ে বিশ্লেষণ করুন, মূল তথ্যগুলো তুলে ধরুন এবং আমাদের ভিসা/সার্ভিস অনুযায়ী পরবর্তী করণীয় বা পদক্ষেপ কী হবে তা স্পষ্টভাবে বলুন।',
           });
         } else if (parts.length === 0) {
           parts.push({ text: '' });
@@ -1125,7 +1407,7 @@ Prioritize concise, accurate, actionable guidance specifically for "${serviceCon
               if (Array.isArray(groundingMetadata.groundingChunks)) {
                 sources = groundingMetadata.groundingChunks
                   .map((chunk: any) => ({
-                    title: chunk.web?.title || 'অফিসিয়াল তথ্যসূত্র',
+                    title: chunk.web?.title || (language === 'en' ? 'Official Source' : 'অফিসিয়াল তথ্যসূত্র'),
                     uri: chunk.web?.uri || '',
                   }))
                   .filter((s: { uri: string }) => Boolean(s.uri));
@@ -1154,14 +1436,15 @@ Prioritize concise, accurate, actionable guidance specifically for "${serviceCon
       }
     }
 
-    // High-quality deterministic fallback with dynamic agent name & service context
+    // High-quality deterministic fallback with dynamic agent name, service context & active language
     const fallbackReply = generateAgentFallbackReply(
       lastUserMessage,
       serviceContext,
       agentName,
       isFirstReply,
       userName,
-      lastAttachments
+      lastAttachments,
+      language
     );
     return res.json({
       reply: normalizeMarkdownListReply(fallbackReply),
@@ -1175,7 +1458,8 @@ Prioritize concise, accurate, actionable guidance specifically for "${serviceCon
       agentName,
       isFirstReply,
       userName,
-      lastAttachments
+      lastAttachments,
+      language
     );
     return res.json({
       reply: normalizeMarkdownListReply(safeFallback),

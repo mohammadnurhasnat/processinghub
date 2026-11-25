@@ -11,7 +11,7 @@ Google Maps: https://www.google.com/maps/search/?api=1&query=Jamuna+Future+Park+
 ---
 
 ## 1. About Processing Hub
-Processing Hub is a specialized Indian Visa Processing, Document Verification, and IVAC Appointment Slot facilitation service in Bangladesh. We guide applicants from all 64 districts across all 16 official IVAC Centers in Bangladesh to ensure zero-error documentation, accurate Indian Visa Online (IVAS) sub-category selection (including Tourist, Medical M-1, Medical Attendant M-2, Business, Student S-1, Transit TR, and Miscellaneous categories X-Misc, X-1, X-3), hospital invitation letters, and fast slot confirmation.
+Processing Hub is a specialized Indian Visa Processing, Document Verification, and IVAC Appointment Slot facilitation service in Bangladesh. We guide applicants through the 5 active official IVAC Centers in Bangladesh (Dhaka Jamuna Future Park, Chittagong, Khulna, Sylhet, and Rajshahi) to ensure zero-error documentation, accurate Indian Visa Online (IVAS) sub-category selection (including Tourist, Medical M-1, Medical Attendant M-2, Business, Student S-1, Transit TR, and Miscellaneous categories X-Misc, X-1, X-3), hospital invitation letters, and fast slot confirmation.
 
 ---
 
@@ -77,30 +77,19 @@ Processing Hub is a specialized Indian Visa Processing, Document Verification, a
 
 ---
 
-## 4. Official 16 IVAC Centers in Bangladesh (Visa Office Locations)
+## 4. Active 5 IVAC Centers in Bangladesh (Visa Office Locations)
 1. **Dhaka (Only Center)**: Jamuna Future Park (JFP), Floor G1, South Court, Progoti Sharani, Baridhara, Dhaka-1229.
 2. **Chittagong**: 2111, Zakir Hossain Road, Habib Lane, Opposite Holy Crescent Hospital
 3. **Khulna**: Dr. Motiar Rahman Tower, 64 KDA Avenue, KDA Commercial Area
 4. **Sylhet**: Rahim Tower, Subhanighat Biswa Road, Sylhet-3100
 5. **Rajshahi**: Morium Ali Tower, House #18, Old Bilsimla, Barnali More
-6. **Rangpur**: J. B. Sen Road, Opposite Ramakrishna Mission, Mahigonj
-7. **Mymensingh**: Shahjahan Center, Patgudam (Relir Moor), Sadar
-8. **Barisal**: Mir Tower, Kasipur, Ichakati, Ward-29
-9. **Cumilla**: 211 Gangchil, Kandirpar, Nazrul Avenue
-10. **Noakhali**: Morshed Alam Complex, Nurul Haque Road, Chowmohoni
-11. **Brahmanbaria**: 87 West Paik Para
-12. **Thakurgaon**: 1906/3 Shantinagar, Ward No-01
-13. **Bogura**: Momo Inn Limited, Nowda Para, Rangpur Road
-14. **Kushtia**: Kushtia IVAC Regional Center
-15. **Jessore**: 210 Narail Road
-16. **Satkhira**: Sangram Market, 1st Floor, Etagacha, Bangaler More
 
 ---
 
 ## 5. High-Intent Frequently Asked Questions (FAQ)
 
 Q: When will the next Indian visa appointment slot open / release in Bangladesh (ভিসার স্লট কবে ছাড়বে)?
-A: IVAC Bangladesh and the High Commission of India do not announce advance slot drop schedules publicly; slots are released dynamically in batches. Keeping your application and Web File Number prepared with Processing Hub (+8801577464706) allows immediate booking as soon as new slots open at any of the 16 IVAC centers.
+A: IVAC Bangladesh and the High Commission of India do not announce advance slot drop schedules publicly; slots are released dynamically in batches. Keeping your application and Web File Number prepared with Processing Hub (+8801577464706) allows immediate booking as soon as new slots open at any of the 5 active IVAC centers (Dhaka JFP, Chittagong, Khulna, Sylhet, Rajshahi).
 
 Q: What is the financial proof requirement for an Indian visa from Bangladesh?
 A: Every visa requires a $200 USD passport endorsement, OR a 6-month bank statement holding equivalent BDT balance in the bank account, OR a State Bank of India (SBI) Travel Card / international travel card.

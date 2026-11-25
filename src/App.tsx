@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { VisaService } from './types';
-import { VISA_SERVICES } from './data/visaData';
+import { getVisaServices } from './data/visaData';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ServicesSection } from './components/ServicesSection';
@@ -11,77 +11,92 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { QuickBookModal } from './components/QuickBookModal';
 import { ServiceChecklistModal } from './components/ServiceChecklistModal';
 import { WhatsAppProvider, useWhatsApp } from './context/WhatsAppContext';
+import { Language, LanguageProvider, useLanguage } from './context/LanguageContext';
 import { WhatsAppConfirmModal } from './components/WhatsAppConfirmModal';
 import { useBodyScrollLock } from './hooks/useBodyScrollLock';
 import { updateMetaForService } from './utils/metaTags';
 
-function matchServiceFromSubject(subject?: string): VisaService | null {
+function matchServiceFromSubject(subject: string | undefined, language: Language): VisaService | null {
   if (!subject) return null;
+  const services = getVisaServices(language);
   const lower = subject.toLowerCase();
   if (lower.includes('medical') || lower.includes('মেডিকেল') || lower.includes('attendant') || lower.includes('অ্যাটেনডেন্ট')) {
-    return VISA_SERVICES.find(s => s.id === 'medical-visa') || null;
+    return services.find(s => s.id === 'medical-visa') || null;
   }
   if (lower.includes('tourist') || lower.includes('ট্যুরিস্ট')) {
-    return VISA_SERVICES.find(s => s.id === 'tourist-visa') || null;
+    return services.find(s => s.id === 'tourist-visa') || null;
   }
   if (lower.includes('double') || lower.includes('ডাবল') || lower.includes('ডবল') || lower.includes('x-3')) {
-    return VISA_SERVICES.find(s => s.id === 'double-entry-visa') || null;
+    return services.find(s => s.id === 'double-entry-visa') || null;
   }
   if (lower.includes('business') || lower.includes('বিজনেস')) {
-    return VISA_SERVICES.find(s => s.id === 'business-visa') || null;
+    return services.find(s => s.id === 'business-visa') || null;
   }
   if (lower.includes('student') || lower.includes('স্টুডেন্ট')) {
-    return VISA_SERVICES.find(s => s.id === 'student-visa') || null;
+    return services.find(s => s.id === 'student-visa') || null;
   }
   if (lower.includes('transit') || lower.includes('ট্রানজিট')) {
-    return VISA_SERVICES.find(s => s.id === 'transit-visa') || null;
+    return services.find(s => s.id === 'transit-visa') || null;
   }
   if (lower.includes('spouse') || lower.includes('স্পাউস') || lower.includes('family') || lower.includes('x-1')) {
-    return VISA_SERVICES.find(s => s.id === 'spouse-visa') || null;
+    return services.find(s => s.id === 'spouse-visa') || null;
   }
   if (lower.includes('entry') || lower.includes('এন্ট্রি') || lower.includes('x-misc')) {
-    return VISA_SERVICES.find(s => s.id === 'entry-visa') || null;
+    return services.find(s => s.id === 'entry-visa') || null;
   }
   if (lower.includes('slot') || lower.includes('স্লট')) {
-    return VISA_SERVICES.find(s => s.id === 'visa-slot-booking' || s.isSlotBooking) || null;
+    return services.find(s => s.id === 'visa-slot-booking' || s.isSlotBooking) || null;
   }
   if (lower.includes('ticket') || lower.includes('টিকেট') || lower.includes('টিকিট')) {
-    return VISA_SERVICES.find(s => s.id === 'ticket-booking') || null;
+    return services.find(s => s.id === 'ticket-booking') || null;
   }
   return null;
 }
 
 function AppContent() {
+  const { language } = useLanguage();
+  const services = getVisaServices(language);
+
   const [isScrolled, setIsScrolled] = useState(false);
-  const [selectedService, setSelectedService] = useState<VisaService | null>(null);
-  const [activeServiceContext, setActiveServiceContext] = useState<VisaService | null>(null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [activeServiceContextId, setActiveServiceContextId] = useState<string | null>(null);
   const [isForcedChatbotOpen, setIsForcedChatbotOpen] = useState(false);
   const [isQuickBookOpen, setIsQuickBookOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const { pendingAgentHandoff } = useWhatsApp();
 
+  const selectedService = useMemo(
+    () => (selectedServiceId ? services.find((s) => s.id === selectedServiceId) || null : null),
+    [services, selectedServiceId]
+  );
+
+  const activeServiceContext = useMemo(
+    () => (activeServiceContextId ? services.find((s) => s.id === activeServiceContextId) || null : null),
+    [services, activeServiceContextId]
+  );
+
   // When user clicks "Talk to Agent" from any form, close underlying modals and open chatbot
   useEffect(() => {
     if (pendingAgentHandoff) {
-      setSelectedService(null);
+      setSelectedServiceId(null);
       setIsQuickBookOpen(false);
       setIsMobileNavOpen(false);
-      const matched = matchServiceFromSubject(pendingAgentHandoff.subject);
+      const matched = matchServiceFromSubject(pendingAgentHandoff.subject, language);
       if (matched) {
-        setActiveServiceContext(matched);
+        setActiveServiceContextId(matched.id);
       }
       setIsForcedChatbotOpen(true);
     }
-  }, [pendingAgentHandoff]);
+  }, [pendingAgentHandoff, language]);
 
-  // Dynamically update Open Graph meta tags when a service is opened/focused
+  // Dynamically update Open Graph meta tags when a service or language changes
   useEffect(() => {
-    updateMetaForService(selectedService);
+    updateMetaForService(selectedService, language);
     if (selectedService) {
-      setActiveServiceContext(selectedService);
+      setActiveServiceContextId(selectedService.id);
     }
-  }, [selectedService]);
+  }, [selectedService, language]);
 
   // Lock background scrolling completely when main full-screen modals are open
   const isAnyModalOpen = Boolean(selectedService || isQuickBookOpen);
@@ -101,7 +116,7 @@ function AppContent() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setSelectedService(null);
+        setSelectedServiceId(null);
         setIsQuickBookOpen(false);
         setIsMobileNavOpen(false);
       }
@@ -117,9 +132,9 @@ function AppContent() {
   }, [isAnyModalOpen, isMobileNavOpen]);
 
   const handleOpenSlotBooking = () => {
-    const slotService = VISA_SERVICES.find(s => s.id === 'visa-slot-booking' || s.isSlotBooking) || VISA_SERVICES[0];
-    setSelectedService(slotService);
-    setActiveServiceContext(slotService);
+    const slotService = services.find(s => s.id === 'visa-slot-booking' || s.isSlotBooking) || services[0];
+    setSelectedServiceId(slotService.id);
+    setActiveServiceContextId(slotService.id);
   };
 
   return (
@@ -139,8 +154,8 @@ function AppContent() {
       {/* Visa Services & Packages */}
       <ServicesSection 
         onOpenModal={(service) => {
-          setSelectedService(service);
-          setActiveServiceContext(service);
+          setSelectedServiceId(service.id);
+          setActiveServiceContextId(service.id);
         }} 
       />
 
@@ -156,7 +171,7 @@ function AppContent() {
       {/* Floating WhatsApp Action Button with dynamic service context */}
       <FloatingWhatsApp 
         serviceContext={activeServiceContext}
-        onClearServiceContext={() => setActiveServiceContext(null)}
+        onClearServiceContext={() => setActiveServiceContextId(null)}
         isChatbotForcedOpen={isForcedChatbotOpen}
         onCloseForcedChatbot={() => setIsForcedChatbotOpen(false)}
       />
@@ -170,7 +185,7 @@ function AppContent() {
       {/* Service Details & Document Checklist Modal */}
       <ServiceChecklistModal
         service={selectedService}
-        onClose={() => setSelectedService(null)}
+        onClose={() => setSelectedServiceId(null)}
       />
 
       {/* WhatsApp Confirmation & Redirection Popup Modal */}
@@ -181,8 +196,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <WhatsAppProvider>
-      <AppContent />
-    </WhatsAppProvider>
+    <LanguageProvider>
+      <WhatsAppProvider>
+        <AppContent />
+      </WhatsAppProvider>
+    </LanguageProvider>
   );
 }

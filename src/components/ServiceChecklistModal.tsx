@@ -9,10 +9,11 @@ import {
   Sparkles, 
   Download 
 } from 'lucide-react';
-import { VisaService, SlotType } from '../types';
-import { SLOT_TYPES } from '../data/visaData';
-import { CONFIG, IVAC_CENTERS } from '../config';
+import { VisaService } from '../types';
+import { getSlotTypes } from '../data/visaData';
+import { CONFIG, getIvacCenters, getPhoneDisplay } from '../config';
 import { generateChecklistPdf } from '../utils/generateChecklistPdf';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ServiceChecklistModalProps {
   service: VisaService | null;
@@ -23,12 +24,20 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
   service,
   onClose
 }) => {
+  const { language, t, num, currency } = useLanguage();
+  const isBn = language === 'bn';
+  const slotTypes = getSlotTypes(language);
+  const ivacCenters = getIvacCenters(language);
+
   const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>({});
-  const [selectedSlot, setSelectedSlot] = useState<SlotType>(SLOT_TYPES[0]);
-  const [selectedIvacCenter, setSelectedIvacCenter] = useState<string>(IVAC_CENTERS[0]);
+  const [selectedSlotId, setSelectedSlotId] = useState<string>(slotTypes[0]?.id || 'medical-slot');
+  const [selectedIvacIdx, setSelectedIvacIdx] = useState<number>(0);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   if (!service) return null;
+
+  const selectedSlot = slotTypes.find((s) => s.id === selectedSlotId) || slotTypes[0];
+  const selectedIvacCenter = ivacCenters[selectedIvacIdx] || ivacCenters[0];
 
   const toggleDoc = (index: number) => {
     const key = `${service.id}-${index}`;
@@ -52,10 +61,16 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
         serviceTitle: service.title,
         category: service.category,
         price: service.isSlotBooking 
-          ? `৳${selectedSlot.totalFee.toLocaleString('bn-BD')} (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ${selectedSlot.serviceCharge.toLocaleString('bn-BD')}৳)` 
+          ? isBn
+            ? `${currency(selectedSlot.totalFee)} (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ${currency(selectedSlot.serviceCharge)})`
+            : `${currency(selectedSlot.totalFee)} (IVAC Fee ৳1,500 + Slot Charge ${currency(selectedSlot.serviceCharge)})`
           : service.id === 'ticket-booking'
-            ? `${service.price} (মূল টিকেট মূল্যের সাথে অতিরিক্ত, আলোচনা সাপেক্ষে)`
-            : `${service.price} (আইভ্যাক ফি ১,৫০০৳ ও স্লটসহ)`,
+            ? isBn
+              ? `${service.price} (মূল টিকেট মূল্যের সাথে অতিরিক্ত, আলোচনা সাপেক্ষে)`
+              : `${service.price} (Service charge on top of base fare, negotiable)`
+            : isBn
+              ? `${service.price} (আইভ্যাক ফি ১,৫০০৳ ও স্লটসহ)`
+              : `${service.price} (Including ৳1,500 IVAC fee & slot)`,
         isSlotBooking: service.isSlotBooking,
         slotName: service.isSlotBooking ? selectedSlot.name : undefined,
         ivacCenter: service.isSlotBooking ? selectedIvacCenter : undefined,
@@ -63,9 +78,10 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
           title: doc,
           isCompleted: !!checkedDocs[`${service.id}-${idx}`]
         })),
-        phoneDisplay: CONFIG.phoneDisplay,
+        phoneDisplay: getPhoneDisplay(language),
         email: CONFIG.email,
-        brandName: CONFIG.brandName
+        brandName: CONFIG.brandName,
+        language
       });
     } catch (err) {
       console.error('PDF generation error:', err);
@@ -101,15 +117,26 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
             <p className="text-xs text-[#6B7563] mt-1.5">
               {service.isSlotBooking ? (
                 <span>
-                  মোট ফি: <strong className="text-[#1E2519] font-bold">৳{selectedSlot.totalFee.toLocaleString('bn-BD')}</strong> (আইভ্যাক ফি ১,৫০০৳ + স্লট ফি {selectedSlot.serviceCharge.toLocaleString('bn-BD')}৳)
+                  {t('মোট ফি:', 'Total Fee:')}{' '}
+                  <strong className="text-[#1E2519] font-bold">{currency(selectedSlot.totalFee)}</strong>{' '}
+                  {isBn
+                    ? `(আইভ্যাক ফি ১,৫০০৳ + স্লট ফি ${currency(selectedSlot.serviceCharge)})`
+                    : `(IVAC Fee ৳1,500 + Slot Charge ${currency(selectedSlot.serviceCharge)})`}
                 </span>
               ) : service.id === 'ticket-booking' ? (
                 <span>
-                  সার্ভিস ফি: <strong className="text-[#1E2519] font-bold">{service.price}</strong> (মূল টিকেট মূল্যের সাথে অতিরিক্ত ৳৫৯৯ থেকে শুরু, আলোচনা সাপেক্ষে)
+                  {t('সার্ভিস ফি:', 'Service Fee:')}{' '}
+                  <strong className="text-[#1E2519] font-bold">{service.price}</strong>{' '}
+                  {t(
+                    '(মূল টিকেট মূল্যের সাথে অতিরিক্ত ৳৫৯৯ থেকে শুরু, আলোচনা সাপেক্ষে)',
+                    '(Starting from ৳599 on top of base ticket fare, negotiable)'
+                  )}
                 </span>
               ) : (
                 <span>
-                  মোট ফি: <strong className="text-[#1E2519] font-bold">{service.price}</strong> (আইভ্যাক ফি ১,৫০০৳ ও স্লটসহ)
+                  {t('মোট ফি:', 'Total Fee:')}{' '}
+                  <strong className="text-[#1E2519] font-bold">{service.price}</strong>{' '}
+                  {t('(আইভ্যাক ফি ১,৫০০৳ ও স্লটসহ)', '(Including ৳1,500 IVAC fee & slot)')}
                 </span>
               )}
             </p>
@@ -121,24 +148,24 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
           {/* SPECIAL SECTION FOR VISA SLOT BOOKING */}
           {service.isSlotBooking && (
             <div className="p-3.5 rounded-xl bg-[#FAF9F5] border border-[#E5E0D4] space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-[#26301F] flex items-center gap-1.5">
                   <CalendarClock className="w-4 h-4 text-[#5F7758]" />
-                  ভিসার স্লট ক্যাটাগরি নির্বাচন করুন:
+                  {t('ভিসার স্লট ক্যাটাগরি নির্বাচন করুন:', 'Select Visa Slot Category:')}
                 </span>
                 <span className="text-[11px] font-medium text-[#65715D] bg-[#ECE8DC] px-2 py-0.5 rounded">
-                  IVAC নির্ধারিত ফি: ১৫০০৳
+                  {t('আইভ্যাক নির্ধারিত ফি: ১,৫০০৳', 'Official IVAC Fee: ৳1,500')}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {SLOT_TYPES.map((slot) => {
+                {slotTypes.map((slot) => {
                   const isSelected = selectedSlot.id === slot.id;
                   return (
                     <div
                       key={slot.id}
                       id={`slot-card-${slot.id}`}
-                      onClick={() => setSelectedSlot(slot)}
+                      onClick={() => setSelectedSlotId(slot.id)}
                       className={`slot-category-card ${isSelected ? 'selected' : ''}`}
                     >
                       <div className="flex items-start justify-between gap-1">
@@ -146,10 +173,10 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                         {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-[#5F7758] flex-shrink-0 mt-0.5" />}
                       </div>
                       <div className="mt-1.5 text-[11px] text-[#65715D] space-y-0.5">
-                        <div>আইভ্যাক ফি: ৳{slot.ivacFee.toLocaleString('bn-BD')}</div>
-                        <div>স্লট ফি: ৳{slot.serviceCharge.toLocaleString('bn-BD')}</div>
+                        <div>{t('আইভ্যাক ফি:', 'IVAC Fee:')} {currency(slot.ivacFee)}</div>
+                        <div>{t('স্লট ফি:', 'Slot Charge:')} {currency(slot.serviceCharge)}</div>
                         <div className="pt-1 border-t border-[#E5E0D4] font-bold text-[#1E2519]">
-                          মোট ফি: ৳{slot.totalFee.toLocaleString('bn-BD')}
+                          {t('মোট ফি:', 'Total Fee:')} {currency(slot.totalFee)}
                         </div>
                       </div>
                     </div>
@@ -161,16 +188,16 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               <div className="pt-2 border-t border-[#E5E0D4] flex flex-col gap-1.5">
                 <label htmlFor="modal-ivac-center-select" className="text-xs font-bold text-[#26301F] flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-[#5F7758]" />
-                  পছন্দসই আইভ্যাক সেন্টার নির্বাচন করুন:
+                  {t('পছন্দসই আইভ্যাক সেন্টার নির্বাচন করুন:', 'Select Preferred IVAC Center:')}
                 </label>
                 <select
                   id="modal-ivac-center-select"
-                  value={selectedIvacCenter}
-                  onChange={(e) => setSelectedIvacCenter(e.target.value)}
+                  value={selectedIvacIdx}
+                  onChange={(e) => setSelectedIvacIdx(Number(e.target.value))}
                   className="w-full text-xs font-medium py-2 px-3 bg-white border border-[#D5CFBF] rounded-lg text-[#1E2519] focus:outline-none focus:border-[#5F7758]"
                 >
-                  {IVAC_CENTERS.map((center) => (
-                    <option key={center} value={center}>{center}</option>
+                  {ivacCenters.map((center, idx) => (
+                    <option key={idx} value={idx}>{center}</option>
                   ))}
                 </select>
               </div>
@@ -182,18 +209,26 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#5F7758]" />
               <span className="text-sm font-bold text-[#26301F]">
-                {service.isSlotBooking ? 'স্লট বুকিংয়ের জন্য প্রয়োজনীয় তথ্য' : 'প্রয়োজনীয় ডকুমেন্টস চেকলিস্ট'}
+                {service.isSlotBooking
+                  ? t('স্লট বুকিংয়ের জন্য প্রয়োজনীয় তথ্য', 'Required Information for Slot Booking')
+                  : t('প্রয়োজনীয় ডকুমেন্টস চেকলিস্ট', 'Required Documents Checklist')}
               </span>
             </div>
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded bg-[#F2F6EF] text-[#4E5C46] border border-[#DEE6D8]">
-              মোট: {service.documents.length}টি
+              {isBn ? `মোট: ${num(totalCount)}টি` : `Total: ${totalCount} items`}
             </span>
           </div>
 
           <p className="text-xs text-[#6B7563] leading-relaxed">
             {service.isSlotBooking 
-              ? 'আপনার প্রস্তুত থাকা তথ্যে টিক দিন এবং নিচে ক্লিক করে WhatsApp বা এজেন্টের মাধ্যমে দ্রুত স্লট কনফার্ম করুন:'
-              : 'আপনার সংগ্রহে থাকা ডকুমেন্টসগুলোতে টিক চিহ্ন দিন। কোনো ডকুমেন্ট বাকি থাকলে আমরা ফাইল প্রসেসিংয়ে সহায়তা করব:'
+              ? t(
+                  'আপনার প্রস্তুত থাকা তথ্যে টিক দিন এবং নিচে ক্লিক করে হোয়াটসঅ্যাপ বা লাইভ এজেন্টের মাধ্যমে দ্রুত স্লট কনফার্ম করুন:',
+                  'Check off your ready information and click below to confirm your slot via WhatsApp or a Live Agent:'
+                )
+              : t(
+                  'আপনার সংগ্রহে থাকা ডকুমেন্টসগুলোতে টিক চিহ্ন দিন। কোনো ডকুমেন্ট বাকি থাকলে আমরা ফাইল প্রসেসিংয়ে সহায়তা করব:',
+                  'Check off the documents you already have ready. If anything is missing, our team will guide you on how to prepare it:'
+                )
             }
           </p>
 
@@ -227,15 +262,19 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
         <div className="service-modal-progress">
           <div className="flex items-center justify-between text-xs font-medium text-[#26301F]">
             <span className="flex items-center gap-1.5 text-[#3D5237] font-semibold">
-              অগ্রগতি: {progressPercent}% সম্পন্ন
+              {isBn
+                ? `অগ্রগতি: ${num(progressPercent)}% সম্পন্ন`
+                : `Progress: ${progressPercent}% Completed`}
             </span>
             {completedCount === totalCount ? (
               <span className="text-[11px] font-bold text-[#20BD5A] bg-[#E8F8EE] px-2 py-0.5 rounded-full flex items-center gap-1 border border-[#BCE8CB]">
-                <Sparkles className="w-3 h-3" /> সকল তথ্য প্রস্তুত!
+                <Sparkles className="w-3 h-3" /> {t('সকল তথ্য প্রস্তুত!', 'All Items Ready!')}
               </span>
             ) : (
               <span className="text-[11px] font-semibold text-[#5F7758] bg-[#F2F6EF] px-2 py-0.5 rounded-md border border-[#DEE6D8]">
-                {completedCount} / {totalCount} প্রস্তুত
+                {isBn
+                  ? `${num(completedCount)} / ${num(totalCount)} প্রস্তুত`
+                  : `${completedCount} / ${totalCount} Ready`}
               </span>
             )}
           </div>
@@ -251,11 +290,11 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
         <div className="service-modal-footer">
           <div className="text-xs font-semibold text-[#4E5C46] bg-[#F2F6EF] px-2.5 py-1.5 rounded-md border border-[#DEE6D8] hidden md:inline-flex items-center flex-shrink-0">
             {service.isSlotBooking ? (
-              <span>মোট ফি: <strong className="text-[#1E2519]">৳{selectedSlot.totalFee.toLocaleString('bn-BD')}</strong></span>
+              <span>{t('মোট ফি:', 'Total Fee:')} <strong className="text-[#1E2519]">{currency(selectedSlot.totalFee)}</strong></span>
             ) : service.id === 'ticket-booking' ? (
-              <span>সার্ভিস চার্জ: <strong className="text-[#1E2519]">{service.price}</strong></span>
+              <span>{t('সার্ভিস চার্জ:', 'Service Charge:')} <strong className="text-[#1E2519]">{service.price}</strong></span>
             ) : (
-              <span>মোট ফি (স্লটসহ): <strong className="text-[#1E2519]">{service.price}</strong></span>
+              <span>{t('মোট ফি (স্লটসহ):', 'Total (With Slot):')} <strong className="text-[#1E2519]">{service.price}</strong></span>
             )}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2.5 w-full md:w-auto justify-between sm:justify-end flex-nowrap ml-auto">
@@ -264,11 +303,11 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               type="button"
               id="modal-bottom-close-btn"
               onClick={onClose}
-              title="উইন্ডো বন্ধ করুন"
+              title={t('উইন্ডো বন্ধ করুন', 'Close window')}
               className="btn-3d-red-glass flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap cursor-pointer"
             >
               <X className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>বন্ধ</span>
+              <span>{t('বন্ধ', 'Close')}</span>
             </button>
 
             {/* 2. Download Checklist Button */}
@@ -277,18 +316,21 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
               id="modal-download-checklist-btn"
               onClick={handleDownloadChecklist}
               disabled={isDownloadingPdf}
-              title="আপনার সিলেক্টেড ডকুমেন্টস সহ চেকলিস্ট ডাউনলোড করুন"
+              title={t(
+                'আপনার সিলেক্টেড ডকুমেন্টস সহ চেকলিস্ট ডাউনলোড করুন',
+                'Download PDF checklist with your selected items'
+              )}
               className="btn-3d-matte-secondary flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap text-center"
             >
               {isDownloadingPdf ? (
                 <>
                   <span className="w-3.5 h-3.5 border-2 border-[var(--periwinkle-dark)] border-t-transparent rounded-full animate-spin"></span>
-                  <span className="text-[11px] sm:text-xs">তৈরি হচ্ছে...</span>
+                  <span className="text-[11px] sm:text-xs">{t('তৈরি হচ্ছে...', 'Generating...')}</span>
                 </>
               ) : (
                 <>
                   <Download className="w-3.5 h-3.5 text-[var(--periwinkle-dark)] flex-shrink-0" />
-                  <span>চেকলিস্ট</span>
+                  <span>{t('চেকলিস্ট', 'Checklist PDF')}</span>
                 </>
               )}
             </button>
@@ -303,14 +345,22 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                     ? `Hello Processing Hub, I want to book ${service.title} (Service Charge starts from ৳599 on top of base ticket fare, negotiable). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for booking.`
                     : `Hello Processing Hub, I want to book ${service.title} with slot (Total: ${service.price}, including ৳1,500 IVAC fee). I have checked my required documents (${completedCount}/${totalCount} ready). Please guide me for file submission.`
               )}`}
-              data-service-name={service.isSlotBooking ? `ভিসা স্লট বুকিং (${selectedSlot.name}) - ${selectedIvacCenter}` : `${service.title} প্রসেসিং`}
-              data-section="চেকলিস্ট ও বুকিং উইন্ডো"
-              data-whatsapp-title={service.isSlotBooking ? 'ভিসা স্লট বুকিং' : service.title}
+              data-service-name={
+                service.isSlotBooking
+                  ? isBn
+                    ? `ভিসা স্লট বুকিং (${selectedSlot.name}) - ${selectedIvacCenter}`
+                    : `Visa Slot Booking (${selectedSlot.name}) - ${selectedIvacCenter}`
+                  : isBn
+                    ? `${service.title} প্রসেসিং`
+                    : `${service.title} Processing`
+              }
+              data-section={t('চেকলিস্ট ও বুকিং উইন্ডো', 'Checklist & Booking Modal')}
+              data-whatsapp-title={service.isSlotBooking ? t('ভিসা স্লট বুকিং', 'Visa Slot Booking') : service.title}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-3d-matte-green flex-[1.2] sm:flex-initial inline-flex items-center justify-center px-3.5 sm:px-4.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center"
             >
-              <span>WhatsApp / Agent</span>
+              <span>{t('হোয়াটসঅ্যাপ / এজেন্ট', 'WhatsApp / Agent')}</span>
             </a>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { CONFIG } from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 // 12 Compressed WebP Bangladeshi Natural Beauty Assets for Fast Hero Loading
 import saintMartinCheradwip from '../assets/images/hd_saintmartin_cheradwip_1790792435084.webp';
@@ -18,102 +19,113 @@ import sundarbansMangroveBoat from '../assets/images/hd_sundarbans_mangrove_boat
 interface HeroSlide {
   id: string;
   image: string;
-  location: string;
-  division: string;
-  alt: string;
+  locationBn: string;
+  locationEn: string;
+  altBn: string;
+  altEn: string;
 }
 
 const ALL_SLIDES: HeroSlide[] = [
   {
     id: 'sajek-1',
     image: sajekValleyClouds,
-    location: 'সাজেক ভ্যালি · কংলাক পাহাড়',
-    division: 'রাঙ্গামাটি',
-    alt: 'সাজেক ভ্যালির মেঘ ও সবুজ পাহাড়'
+    locationBn: 'সাজেক ভ্যালি · কংলাক পাহাড়',
+    locationEn: 'Sajek Valley · Konglak Hill',
+    altBn: 'সাজেক ভ্যালির মেঘ ও সবুজ পাহাড়',
+    altEn: 'Clouds and green hills of Sajek Valley'
   },
   {
     id: 'saintmartin-1',
     image: saintMartinCheradwip,
-    location: 'ছেঁড়া দ্বীপ · সেন্টমার্টিন',
-    division: 'কক্সবাজার',
-    alt: 'সেন্টমার্টিন ছেঁড়া দ্বীপের নীল জলরাশি'
+    locationBn: 'ছেঁড়া দ্বীপ · সেন্টমার্টিন',
+    locationEn: 'Chera Dwip · Saint Martin’s',
+    altBn: 'সেন্টমার্টিন ছেঁড়া দ্বীপের নীল জলরাশি',
+    altEn: 'Turquoise waters of Chera Dwip, Saint Martin’s'
   },
   {
     id: 'sreemangal-1',
     image: sreemangalTeaGarden,
-    location: 'সবুজ চা বাগান · শ্রীমঙ্গল',
-    division: 'মৌলভীবাজার',
-    alt: 'শ্রীমঙ্গলের দিগন্তজোড়া চা বাগান'
+    locationBn: 'সবুজ চা বাগান · শ্রীমঙ্গল',
+    locationEn: 'Lush Tea Gardens · Sreemangal',
+    altBn: 'শ্রীমঙ্গলের দিগন্তজোড়া চা বাগান',
+    altEn: 'Expansive green tea gardens in Sreemangal'
   },
   {
     id: 'coxsbazar-1',
     image: coxBazarMarineDrive,
-    location: 'মেরিন ড্রাইভ · কক্সবাজার',
-    division: 'চট্টগ্রাম',
-    alt: 'কক্সবাজার মেরিন ড্রাইভ ও সমুদ্র সৈকত'
+    locationBn: 'মেরিন ড্রাইভ · কক্সবাজার',
+    locationEn: 'Marine Drive · Cox’s Bazar',
+    altBn: 'কক্সবাজার মেরিন ড্রাইভ ও সমুদ্র সৈকত',
+    altEn: 'Marine Drive scenic coastline in Cox’s Bazar'
   },
   {
     id: 'bandarban-1',
     image: bandarbanNilgiri,
-    location: 'নীলগিরি হিলটপ · বান্দরবান',
-    division: 'বান্দরবান',
-    alt: 'বান্দরবান নীলগিরি মেঘের উপত্যকা'
+    locationBn: 'নীলগিরি হিলটপ · বান্দরবান',
+    locationEn: 'Nilgiri Hilltop · Bandarban',
+    altBn: 'বান্দরবান নীলগিরি মেঘের উপত্যকা',
+    altEn: 'Misty mountain valley at Nilgiri, Bandarban'
   },
   {
     id: 'sundarbans-1',
     image: sundarbansRiver,
-    location: 'সুন্দরবন ম্যানগ্রোভ বন',
-    division: 'খুলনা',
-    alt: 'সুন্দরবনের শান্ত নদী ও ম্যানগ্রোভ বনাঞ্চল'
+    locationBn: 'সুন্দরবন ম্যানগ্রোভ বন',
+    locationEn: 'Sundarbans Mangrove Forest',
+    altBn: 'সুন্দরবনের শান্ত নদী ও ম্যানগ্রোভ বনাঞ্চল',
+    altEn: 'Serene river and mangroves of the Sundarbans'
   },
   {
     id: 'sajek-2',
     image: sajekWoodenResort,
-    location: 'মেঘের রাজ্য · সাজেক রিসোর্ট',
-    division: 'রাঙ্গামাটি',
-    alt: 'সাজেক ভ্যালির ইকো রিসোর্ট ও পাহাড়ের দৃশ্য'
+    locationBn: 'মেঘের রাজ্য · সাজেক রিসোর্ট',
+    locationEn: 'Kingdom of Clouds · Sajek Resort',
+    altBn: 'সাজেক ভ্যালির ইকো রিসোর্ট ও পাহাড়ের দৃশ্য',
+    altEn: 'Eco wooden resort overlooking Sajek hills'
   },
   {
     id: 'saintmartin-2',
     image: saintMartinCorals,
-    location: 'প্রবাল সৈকত · সেন্টমার্টিন দ্বীপ',
-    division: 'কক্সবাজার',
-    alt: 'সেন্টমার্টিন প্রবাল সৈকত ও স্বচ্ছ সমুদ্র'
+    locationBn: 'প্রবাল সৈকত · সেন্টমার্টিন দ্বীপ',
+    locationEn: 'Coral Beach · Saint Martin’s Island',
+    altBn: 'সেন্টমার্টিন প্রবাল সৈকত ও স্বচ্ছ সমুদ্র',
+    altEn: 'Coral shoreline and clear sea at Saint Martin’s Island'
   },
   {
     id: 'sreemangal-2',
     image: sreemangalLawachara,
-    location: 'লাউয়াছড়া রেইনফরেস্ট · শ্রীমঙ্গল',
-    division: 'মৌলভীবাজার',
-    alt: 'শ্রীমঙ্গল লাউয়াছড়া জাতীয় উদ্যান'
+    locationBn: 'লাউয়াছড়া রেইনফরেস্ট · শ্রীমঙ্গল',
+    locationEn: 'Lawachara Rainforest · Sreemangal',
+    altBn: 'শ্রীমঙ্গল লাউয়াছড়া জাতীয় উদ্যান',
+    altEn: 'Lawachara National Park rainforest in Sreemangal'
   },
   {
     id: 'coxsbazar-2',
     image: coxBazarInaniBeach,
-    location: 'ইনানী পাথুরে সৈকত · কক্সবাজার',
-    division: 'চট্টগ্রাম',
-    alt: 'কক্সবাজার ইনানী বিচের সূর্যাস্ত ও প্রবাল পাথর'
+    locationBn: 'ইনানী পাথুরে সৈকত · কক্সবাজার',
+    locationEn: 'Inani Coral Beach · Cox’s Bazar',
+    altBn: 'কক্সবাজার ইনানী বিচের সূর্যাস্ত ও প্রবাল পাথর',
+    altEn: 'Sunset and coral stones at Inani Beach, Cox’s Bazar'
   },
   {
     id: 'bandarban-2',
     image: bandarbanBogaLake,
-    location: 'বগালেক ও পাহাড় · বান্দরবান',
-    division: 'বান্দরবান',
-    alt: 'বান্দরবান বগালেক ও সবুজ পর্বতমালা'
+    locationBn: 'বগালেক ও পাহাড় · বান্দরবান',
+    locationEn: 'Boga Lake & Hills · Bandarban',
+    altBn: 'বান্দরবান বগালেক ও সবুজ পর্বতমালা',
+    altEn: 'Boga Lake surrounded by green hills in Bandarban'
   },
   {
     id: 'sundarbans-2',
     image: sundarbansMangroveBoat,
-    location: 'ম্যানগ্রোভ জলপথ · সুন্দরবন',
-    division: 'বাগেরহাট',
-    alt: 'সুন্দরবনের জলপথ ও ঐতিহ্যবাহী কাঠের নৌকা'
+    locationBn: 'ম্যানগ্রোভ জলপথ · সুন্দরবন',
+    locationEn: 'Mangrove Waterways · Sundarbans',
+    altBn: 'সুন্দরবনের জলপথ ও ঐতিহ্যবাহী কাঠের নৌকা',
+    altEn: 'Traditional wooden boat along Sundarbans waterways'
   }
 ];
 
-// Helper to create a randomized order of slide indices
 const createRandomizedSequence = (count: number): number[] => {
   const indices = Array.from({ length: count }, (_, i) => i);
-  // Fisher-Yates shuffle
   for (let i = indices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -122,6 +134,7 @@ const createRandomizedSequence = (count: number): number[] => {
 };
 
 export const Hero: React.FC = () => {
+  const { language, t, num } = useLanguage();
   const [slides] = useState<HeroSlide[]>(ALL_SLIDES);
   const [sequence] = useState<number[]>(() => createRandomizedSequence(ALL_SLIDES.length));
   const [sequenceIndex, setSequenceIndex] = useState<number>(0);
@@ -145,7 +158,6 @@ export const Hero: React.FC = () => {
     });
   }, []);
 
-  // Ensure active slide is always mounted immediately and preload next slide shortly after
   useEffect(() => {
     mountSlide(activeSlideIndex);
     const preloadTimer = window.setTimeout(() => {
@@ -158,7 +170,6 @@ export const Hero: React.FC = () => {
     setSequenceIndex((prev) => (prev + 1) % sequence.length);
   }, [sequence.length]);
 
-  // 6-second automatic slide change interval
   useEffect(() => {
     if (isPaused) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -174,16 +185,18 @@ export const Hero: React.FC = () => {
     };
   }, [isPaused, goToNextSlide]);
 
+  const activeLocation = language === 'bn' ? currentSlide.locationBn : currentSlide.locationEn;
+
   return (
-    <section 
-      id="hero-section" 
+    <section
+      id="hero-section"
       className="hero relative overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={() => setIsPaused(true)}
       onTouchEnd={() => setIsPaused(false)}
       aria-roledescription="carousel"
-      aria-label="বাংলাদেশের প্রাকৃতিক সৌন্দর্যের দৃশ্য ও ভিসা সার্ভিস"
+      aria-label={t('বাংলাদেশের প্রাকৃতিক সৌন্দর্যের দৃশ্য ও ভিসা সার্ভিস', 'Scenic views of Bangladesh and visa services')}
     >
       {/* Background Slides Container with Compressed WebP & Progressive Loading */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950 pointer-events-none">
@@ -202,7 +215,7 @@ export const Hero: React.FC = () => {
             >
               <img
                 src={slide.image}
-                alt={slide.alt}
+                alt={language === 'bn' ? slide.altBn : slide.altEn}
                 className="w-full h-full object-cover object-center select-none"
                 referrerPolicy="no-referrer"
                 loading={isActive ? 'eager' : 'lazy'}
@@ -214,12 +227,12 @@ export const Hero: React.FC = () => {
           );
         })}
 
-        {/* Soft Transparent Scrim for Maximum Clarity while Maintaining Crisp Text Readability */}
-        <div 
-          className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-r from-black/60 via-black/25 to-transparent md:from-black/65 md:via-black/25 md:to-transparent" 
+        {/* Soft Transparent Scrim */}
+        <div
+          className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-r from-black/60 via-black/25 to-transparent md:from-black/65 md:via-black/25 md:to-transparent"
         />
-        <div 
-          className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-t from-black/45 via-transparent to-black/20" 
+        <div
+          className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-t from-black/45 via-transparent to-black/20"
         />
       </div>
 
@@ -229,30 +242,33 @@ export const Hero: React.FC = () => {
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-4 rounded-full bg-black/50 backdrop-blur-md border border-white/25 text-xs text-emerald-300 shadow-md">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="font-semibold tracking-wide text-white drop-shadow">
-            {currentSlide.location} ({currentSlide.division})
+            {activeLocation}
           </span>
         </div>
 
         <h1 className="text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.9)] font-bold">
-          সহজ ও নির্ভুল ইন্ডিয়ান ভিসা প্রসেসিং
+          {t('সহজ ও নির্ভুল ইন্ডিয়ান ভিসা প্রসেসিং', 'Fast & Accurate Indian Visa Processing')}
         </h1>
-        
+
         <p className="text-white text-base sm:text-lg leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] font-medium">
-          সঠিক ডকুমেন্টেশন ও অভিজ্ঞ ভিসা কনসালট্যান্টদের সহায়তায় দ্রুততম সময়ে ভারতীয় ভিসা প্রাপ্তি নিশ্চিত করুন। কোনো প্রকার ঝামেলা ছাড়াই নিশ্চিন্তে আবেদন করুন।
+          {t(
+            'সঠিক ডকুমেন্টেশন ও অভিজ্ঞ ভিসা বিশেষজ্ঞদের সহায়তায় দ্রুততম সময়ে ভারতীয় ভিসা প্রাপ্তি নিশ্চিত করুন। কোনো প্রকার ঝামেলা ছাড়াই নিশ্চিন্তে আবেদন করুন।',
+            'Ensure smooth Indian visa processing with accurate documentation and experienced specialist guidance. Apply with confidence and zero hassle.'
+          )}
         </p>
 
         <div className="mt-6">
-          <a 
+          <a
             id="hero-reserve-btn"
-            className="btn-primary inline-flex items-center gap-2" 
+            className="btn-primary inline-flex items-center gap-2"
             href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I would like to get a free consultation for Indian Visa Processing.')}`}
-            data-service-name="ফ্রি ভিসা পরামর্শ ও প্রাথমিক ফাইল যাচাই"
-            data-section="হিরো সেকশন"
-            data-whatsapp-title="ফ্রি ভিসা পরামর্শ"
-            target="_blank" 
+            data-service-name={t('ফ্রি ভিসা পরামর্শ ও প্রাথমিক ফাইল যাচাই', 'Free Visa Consultation & Initial File Review')}
+            data-section={t('হিরো সেকশন', 'Hero Section')}
+            data-whatsapp-title={t('ফ্রি ভিসা পরামর্শ', 'Free Visa Consultation')}
+            target="_blank"
             rel="noopener noreferrer"
           >
-            <span>ফ্রি ভিসা পরামর্শ নিন</span>
+            <span>{t('ফ্রি ভিসা পরামর্শ নিন', 'Get Free Visa Consultation')}</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
@@ -260,26 +276,27 @@ export const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* 12-Slide Progress Indicator Dots - Beautifully Centered at the Middle Bottom */}
-      <div 
+      {/* 12-Slide Progress Indicator Dots */}
+      <div
         className="absolute bottom-6 left-0 right-0 z-30 flex justify-center items-center pointer-events-auto"
-        aria-label="স্লাইড নির্দেশক"
+        aria-label={t('স্লাইড নির্দেশক', 'Slide indicators')}
       >
         <div className="flex items-center gap-1.5 bg-black/45 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-lg">
           {sequence.map((slideIndex, sIdx) => {
             const isDotActive = sIdx === sequenceIndex;
+            const slideLoc = language === 'bn' ? slides[slideIndex].locationBn : slides[slideIndex].locationEn;
             return (
               <button
                 key={slides[slideIndex].id}
                 type="button"
                 onClick={() => setSequenceIndex(sIdx)}
                 className={`h-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
-                  isDotActive 
-                    ? 'w-7 bg-emerald-400 shadow-md shadow-emerald-400/60' 
+                  isDotActive
+                    ? 'w-7 bg-emerald-400 shadow-md shadow-emerald-400/60'
                     : 'w-2 bg-white/50 hover:bg-white/90 hover:w-3'
                 }`}
-                aria-label={`স্লাইড ${sIdx + 1} (${slides[slideIndex].location})`}
-                title={slides[slideIndex].location}
+                aria-label={t(`স্লাইড ${num(sIdx + 1)} (${slideLoc})`, `Slide ${sIdx + 1} (${slideLoc})`)}
+                title={slideLoc}
               />
             );
           })}

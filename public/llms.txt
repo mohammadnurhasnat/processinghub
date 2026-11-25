@@ -9,7 +9,7 @@
 > Google Maps Location: https://www.google.com/maps/search/?api=1&query=Jamuna+Future+Park+Kuril+Dhaka
 
 ## Overview
-Processing Hub is Bangladesh's dedicated Indian Visa Processing and IVAC Appointment Slot service supporting applicants across all 64 districts and all 16 official IVAC Centers in Bangladesh. We handle Tourist Visa, Medical & Attendant Visa (M-1/M-2), Double Entry Miscellaneous Visa (X-3), Business Visa (B-1/B-2), Student Visa (S-1), Transit Visa (TR), Entry Visa (X-Misc), Spouse & Family Visa (X-1), IVAC Appointment Slot Booking, and Domestic/International Ticket Booking.
+Processing Hub is Bangladesh's dedicated Indian Visa Processing and IVAC Appointment Slot service supporting applicants across Bangladesh through the 5 active official IVAC Centers (Dhaka JFP, Chittagong, Khulna, Sylhet, Rajshahi). We handle Tourist Visa, Medical & Attendant Visa (M-1/M-2), Double Entry Miscellaneous Visa (X-3), Business Visa (B-1/B-2), Student Visa (S-1), Transit Visa (TR), Entry Visa (X-Misc), Spouse & Family Visa (X-1), IVAC Appointment Slot Booking, and Domestic/International Ticket Booking.
 
 ## Official Visa & Slot Rates (Includes ৳1,500 Fixed IVAC Government Fee)
 - **Tourist Visa (ট্যুরিস্ট ভিসা)**: Full Processing + Slot **৳6,000** | Slot Only **৳5,500** (৳1,500 IVAC + ৳4,000 Slot).
@@ -23,23 +23,12 @@ Processing Hub is Bangladesh's dedicated Indian Visa Processing and IVAC Appoint
 - **IVAC Visa Slot Booking (শুধু স্লট বুকিং)**: Starts from **৳4,500+** (৳4,500 for Medical/Double Entry X-3/Business/Student/Transit/Entry X-Misc/Spouse X-1; ৳5,500 for Tourist; includes ৳1,500 IVAC government fee).
 - **Ticket Booking (এয়ার ও ট্রানজিট টিকেট বুকিং)**: Service charge starts from **৳599+** on top of the base ticket price (negotiable by route and ticket type).
 
-## Official 16 IVAC Centers Across Bangladesh
+## Active 5 IVAC Centers in Bangladesh
 1. Dhaka — Jamuna Future Park (JFP), Progoti Sharani, Baridhara, Dhaka-1229 (Only IVAC center in Dhaka)
 2. Chittagong (Zakir Hossain Road, Habib Lane)
 3. Khulna (KDA Avenue, Banking Zone)
 4. Sylhet (Rahim Tower, Subhanighat Biswa Road)
 5. Rajshahi (Morium Ali Tower, Barnali More)
-6. Rangpur (J. B. Sen Road, Mahigonj)
-7. Mymensingh (Shahjahan Center, Patgudam)
-8. Barisal (Mir Tower, Kasipur)
-9. Cumilla (Gangchil, Kandirpar, Nazrul Avenue)
-10. Noakhali (Morshed Alam Complex, Chowmohoni)
-11. Brahmanbaria (West Paik Para)
-12. Thakurgaon (Shantinagar, Ward-01)
-13. Bogura (Momo Inn, Nowda Para, Rangpur Road)
-14. Kushtia
-15. Jessore (Narail Road)
-16. Satkhira (Sangram Market, Bangaler More)
 
 ## Common Core Documents Required for All Indian Visas
 1. Online Visa Application Form printed & signed.

@@ -1,7 +1,9 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Language, toBnDigits, toEnDigits } from '../context/LanguageContext';
 
 export interface ChecklistPdfData {
+  language?: Language;
   serviceTitle: string;
   category: string;
   price: string;
@@ -18,127 +20,291 @@ export interface ChecklistPdfData {
 }
 
 export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void> {
+  const lang: Language = data.language || 'bn';
+  const isBn = lang === 'bn';
+  const fmtNum = (val: string | number) => (isBn ? toBnDigits(val) : toEnDigits(val));
+
+  // Ensure web fonts are loaded before rendering to canvas
+  if (typeof document !== 'undefined' && 'fonts' in document) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Ignore font readiness errors
+    }
+  }
+
   // Create an offscreen container specifically styled for clean A4 printing
   const container = document.createElement('div');
+  container.id = 'pdf-export-root';
   container.style.position = 'fixed';
-  container.style.top = '-9999px';
+  container.style.top = '0';
   container.style.left = '-9999px';
   container.style.width = '794px'; // ~96 DPI A4 width
   container.style.minHeight = '1123px'; // A4 height
-  container.style.padding = '40px 48px';
+  container.style.padding = '36px 44px';
   container.style.backgroundColor = '#FFFFFF';
   container.style.color = '#1E2519';
-  container.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif';
+  container.style.fontFamily = '"Inter", "Noto Serif Bengali", "Noto Sans Bengali", Arial, sans-serif';
   container.style.boxSizing = 'border-box';
   container.style.zIndex = '-1000';
 
-  const completedCount = data.documents.filter(d => d.isCompleted).length;
+  const completedCount = data.documents.filter((d) => d.isCompleted).length;
   const totalCount = data.documents.length;
   const progressPercent = Math.round((completedCount / (totalCount || 1)) * 100);
+  const remainingCount = Math.max(0, totalCount - completedCount);
 
-  const formattedDate = new Date().toLocaleDateString('bn-BD', {
+  const formattedDateRaw = new Date().toLocaleDateString(isBn ? 'bn-BD' : 'en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
+  const formattedDate = fmtNum(formattedDateRaw);
+  const localizedPhone = fmtNum(data.phoneDisplay);
+
+  // Optical vertical shift to counter html2canvas font baseline drop inside pill boxes
+  const pillTextOffset = isBn ? '-4px' : '-1px';
+  const rowTextOffset = isBn ? '-3px' : '-1px';
+
+  // Pure SVG checkmark inside exact pixel-centered box (eliminates html2canvas font baseline shift)
+  const renderCheckbox = (isCompleted: boolean) => `
+    <div style="
+      position: relative;
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      box-sizing: border-box;
+      border: 2px solid ${isCompleted ? '#5F7758' : '#B5BCAD'};
+      border-radius: 4px;
+      background-color: ${isCompleted ? '#EFF4EC' : '#FFFFFF'};
+    ">
+      ${isCompleted ? `
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" style="position: absolute; top: 2px; left: 2px; display: block;">
+          <path d="M2.8 8.4L6.4 12L13.2 4.2" stroke="#3A6832" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      ` : ''}
+    </div>
+  `;
+
+  const copy = isBn
+    ? {
+        tagline: 'ইন্ডিয়ান ভিসা প্রসেসিং ও ফাইল সহায়তা সার্ভিস',
+        helplineLabel: 'হেল্পলাইন:',
+        emailLabel: 'ইমেইল:',
+        offlineBadge: 'অফলাইন প্রস্তুতি চেকলিস্ট',
+        dateLabel: 'তারিখ:',
+        serviceFeeLabel: 'সার্ভিস ফি:',
+        slotCategoryLabel: 'ক্যাটাগরি:',
+        ivacCenterLabel: 'আইভ্যাক সেন্টার:',
+        progressText: `ফাইল প্রস্তুতির অবস্থা: ${fmtNum(completedCount)} / ${fmtNum(totalCount)} টি প্রস্তুত (${fmtNum(progressPercent)}%)`,
+        remainingText:
+          completedCount === totalCount
+            ? 'সকল তথ্য প্রস্তুত'
+            : `বাকি রয়েছে: ${fmtNum(remainingCount)} টি`,
+        listTitle: 'প্রয়োজনীয় ডকুমেন্টস ও তথ্যের তালিকা',
+        statusReady: 'প্রস্তুত',
+        statusCollect: 'সংগ্রহ করুন',
+        guidelinesTitle: 'সাধারণ জরুরি নির্দেশনা (IVAC নিয়মাবলী):',
+        guidelines: [
+          'পাসপোর্টের মেয়াদ আবেদনের দিন থেকে ন্যূনতম ৬ মাস এবং কমপক্ষে ২টি ফাঁকা পৃষ্ঠা থাকতে হবে।',
+          'ছবি অবশ্যই সদ্য তোলা (৩ মাসের কম পুরনো), ২×২ ইঞ্চি, সম্পূর্ণ সাদা ব্যাকগ্রাউন্ড ও ল্যাব প্রিন্ট হতে হবে।',
+          'বর্তমান ঠিকানার স্বপক্ষে বিদ্যুৎ, গ্যাস অথবা পানি বিলের আসল ও ফটোকপি সাথে রাখতে হবে।',
+          'ব্যাংক স্টেটমেন্টে আবেদনকারী বা স্পনসরের পর্যাপ্ত ব্যালেন্স ও ব্যাংক কর্তৃক সিল-স্বাক্ষর থাকতে হবে।',
+        ],
+        footerContact: `যেকোনো সহায়তা ও ফাইল পর্যালোচনার জন্য হোয়াটসঅ্যাপ: <strong style="color: #26301F;">${localizedPhone}</strong>`,
+        footerPlatform: `Processing Hub | ${data.email}`,
+        filePrefix: 'ProcessingHub_Checklist_BN',
+      }
+    : {
+        tagline: 'Indian Visa Processing & File Assistance Service',
+        helplineLabel: 'Helpline:',
+        emailLabel: 'Email:',
+        offlineBadge: 'Offline Preparation Checklist',
+        dateLabel: 'Date:',
+        serviceFeeLabel: 'Service Fee:',
+        slotCategoryLabel: 'Category:',
+        ivacCenterLabel: 'IVAC Center:',
+        progressText: `File Preparation Status: ${fmtNum(completedCount)} / ${fmtNum(totalCount)} Ready (${fmtNum(progressPercent)}%)`,
+        remainingText:
+          completedCount === totalCount
+            ? 'All Documents Ready'
+            : `Remaining: ${fmtNum(remainingCount)}`,
+        listTitle: 'Required Documents & Information Checklist',
+        statusReady: 'Ready',
+        statusCollect: 'Collect',
+        guidelinesTitle: 'Important IVAC Guidelines:',
+        guidelines: [
+          'Passport must have at least 6 months validity from the application date and a minimum of 2 blank pages.',
+          'Photographs must be recently taken (under 3 months), 2×2 inch, plain white background, and lab-printed.',
+          'Carry the original and photocopy of a recent electricity, gas, or water utility bill for current address proof.',
+          'Bank statements must show sufficient balance and carry the bank’s official seal and signature.',
+        ],
+        footerContact: `For assistance and file review on WhatsApp: <strong style="color: #26301F;">${localizedPhone}</strong>`,
+        footerPlatform: `Processing Hub Platform | ${data.email}`,
+        filePrefix: 'ProcessingHub_Checklist_EN',
+      };
 
   container.innerHTML = `
-    <div style="border: 2px solid #5F7758; border-radius: 12px; padding: 28px 32px; background-color: #FFFFFF; min-height: 1040px; display: flex; flex-direction: column; justify-content: space-between;">
+    <style>
+      #pdf-export-root, #pdf-export-root * {
+        font-family: "Inter", "Noto Serif Bengali", "Noto Sans Bengali", Arial, sans-serif !important;
+        box-sizing: border-box !important;
+        letter-spacing: normal !important;
+      }
+    </style>
+    <div style="
+      border: 2px solid #5F7758;
+      border-radius: 12px;
+      padding: 26px 30px;
+      background-color: #FFFFFF;
+      min-height: 1050px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    ">
       <div>
-        <!-- Brand Header -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #EAE5DA; padding-bottom: 20px; margin-bottom: 24px;">
-          <div>
-            <div style="font-size: 24px; font-weight: 800; color: #26301F; letter-spacing: -0.5px; margin-bottom: 4px;">
-              ${data.brandName}
+          <!-- Brand Header -->
+          <table style="width: 100%; border-collapse: collapse; border-bottom: 2px solid #EAE5DA; margin-bottom: 20px;">
+            <tr>
+              <td style="vertical-align: top; padding-bottom: 18px;">
+                <div style="font-size: 24px; font-weight: 800; color: #26301F; line-height: 1.2; margin-bottom: 4px;">
+                  ${data.brandName}
+                </div>
+                <div style="font-size: 13px; font-weight: 600; color: #5F7758; line-height: 1.35; margin-bottom: 5px;">
+                  ${copy.tagline}
+                </div>
+                <div style="font-size: 11px; color: #6E7866; line-height: 1.35;">
+                  ${copy.helplineLabel} <strong style="color: #26301F;">${localizedPhone}</strong> | ${copy.emailLabel} ${data.email}
+                </div>
+              </td>
+              <td style="vertical-align: top; text-align: right; padding-bottom: 18px;">
+                <div style="
+                  display: inline-block;
+                  background-color: #EFF4EC;
+                  color: #3A4E33;
+                  border: 1px solid #C8D8C2;
+                  font-size: 11px;
+                  font-weight: 700;
+                  line-height: 1;
+                  padding: 6px 12px;
+                  border-radius: 6px;
+                  margin-bottom: 7px;
+                  text-align: center;
+                "><span style="position: relative; top: ${pillTextOffset}; display: inline-block; line-height: 1.15;">${copy.offlineBadge}</span></div>
+                <div style="font-size: 11px; color: #8A9584; line-height: 1.3;">${copy.dateLabel} ${formattedDate}</div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Service Info Box -->
+          <div style="background-color: #FAF9F5; border: 1px solid #E5DFD1; border-radius: 10px; padding: 14px 18px 16px 18px; margin-bottom: 18px;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
+              <tr>
+                <td style="vertical-align: middle; font-size: 16px; font-weight: 700; color: #1E2519; line-height: 1.35;">
+                  ${data.serviceTitle}
+                </td>
+                <td style="vertical-align: middle; text-align: right; white-space: nowrap;">
+                  <span style="
+                    display: inline-block;
+                    font-size: 11.5px;
+                    font-weight: 700;
+                    color: #4E5C46;
+                    background-color: #ECE8DC;
+                    line-height: 1;
+                    padding: 5px 11px;
+                    border-radius: 5px;
+                    text-align: center;
+                  "><span style="position: relative; top: ${pillTextOffset}; display: inline-block; line-height: 1.15;">${data.category}</span></span>
+                </td>
+              </tr>
+            </table>
+
+            <div style="font-size: 12px; color: #55604C; line-height: 1.45;">
+              <span>${copy.serviceFeeLabel} <strong style="color: #1E2519;">${fmtNum(data.price)}</strong></span>
+              ${data.isSlotBooking && data.slotName ? `<span style="margin-left: 18px;">${copy.slotCategoryLabel} <strong style="color: #1E2519;">${data.slotName}</strong></span>` : ''}
+              ${data.isSlotBooking && data.ivacCenter ? `<span style="margin-left: 18px;">${copy.ivacCenterLabel} <strong style="color: #1E2519;">${data.ivacCenter}</strong></span>` : ''}
             </div>
-            <div style="font-size: 13px; font-weight: 600; color: #5F7758; margin-bottom: 6px;">
-              ইন্ডিয়ান ভিসা প্রসেসিং ও ফাইল কনসালটেন্সি সার্ভিস
+          </div>
+
+          <!-- Progress Summary -->
+          <div style="background-color: #F4F7F2; border: 1px solid #D9E4D3; border-radius: 8px; margin-bottom: 18px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="vertical-align: middle; padding: 9px 16px; font-size: 12px; font-weight: 700; color: #3A4E33; line-height: 1.2;">
+                  <span style="position: relative; top: ${rowTextOffset}; display: inline-block;">${copy.progressText}</span>
+                </td>
+                <td style="vertical-align: middle; text-align: right; padding: 9px 16px; font-size: 11px; color: #5F7758; font-weight: 600; line-height: 1.2;">
+                  <span style="position: relative; top: ${rowTextOffset}; display: inline-block;">${copy.remainingText}</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Checklist Title -->
+          <table style="border-collapse: collapse; margin-bottom: 10px;">
+            <tr>
+              <td style="vertical-align: middle; width: 4px; padding: 0;">
+                <div style="width: 4px; height: 15px; background-color: #5F7758; border-radius: 2px;"></div>
+              </td>
+              <td style="vertical-align: middle; padding: 0 0 0 10px; font-size: 14px; font-weight: 700; color: #26301F; line-height: 1.3;">
+                <span style="position: relative; top: ${isBn ? '-2px' : '0px'}; display: inline-block;">${copy.listTitle}</span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Documents Table -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px;">
+            ${data.documents
+              .map(
+                (doc, idx) => `
+              <tr style="background-color: ${doc.isCompleted ? '#F9FBF8' : '#FFFFFF'}; border-bottom: 1px solid #EFEBE2;">
+                <td style="width: 34px; vertical-align: top; padding: 10px 4px 10px 10px;">
+                  ${renderCheckbox(doc.isCompleted)}
+                </td>
+                <td style="vertical-align: top; padding: 9px 10px 11px 4px; font-size: 12px; line-height: 1.5; color: ${doc.isCompleted ? '#1E2519' : '#3A4432'}; font-weight: ${doc.isCompleted ? '600' : '400'};">
+                  <span style="color: #727C6B; font-size: 11px; font-weight: 600; margin-right: 5px;">${fmtNum(idx + 1)}.</span>${fmtNum(doc.title)}
+                </td>
+                <td style="width: 104px; vertical-align: top; text-align: right; padding: 9px 10px 10px 4px; white-space: nowrap;">
+                  <span style="
+                    display: inline-block;
+                    font-size: 10.5px;
+                    font-weight: 700;
+                    line-height: 1;
+                    color: ${doc.isCompleted ? '#3A6832' : '#7A8575'};
+                    background-color: ${doc.isCompleted ? '#E4EFE0' : '#F1EFEA'};
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    text-align: center;
+                  "><span style="position: relative; top: ${pillTextOffset}; display: inline-block; line-height: 1.1;">${doc.isCompleted ? copy.statusReady : copy.statusCollect}</span></span>
+                </td>
+              </tr>
+            `
+              )
+              .join('')}
+          </table>
+
+          <!-- General Indian Visa Instructions -->
+          <div style="background-color: #FAF9F5; border: 1px dashed #D5CFBF; border-radius: 8px; padding: 12px 16px 14px 16px; margin-top: 10px;">
+            <div style="font-size: 12px; font-weight: 700; color: #26301F; line-height: 1.35; margin-bottom: 6px;">
+              📌 ${copy.guidelinesTitle}
             </div>
-            <div style="font-size: 11px; color: #6E7866;">
-              হেল্পলাইন: <strong>${data.phoneDisplay}</strong> | ইমেইল: ${data.email}
-            </div>
+            <ul style="margin: 0; padding-left: 18px; font-size: 11px; color: #55604C; line-height: 1.6;">
+              ${copy.guidelines.map((line) => `<li>${line}</li>`).join('')}
+            </ul>
           </div>
-          <div style="text-align: right;">
-            <span style="display: inline-block; background-color: #EFF4EC; color: #3A4E33; border: 1px solid #C8D8C2; font-size: 11px; font-weight: 700; padding: 4px 10px; rounded: 6px; border-radius: 6px; margin-bottom: 6px;">
-              অফলাইন প্রস্তুতি চেকলিস্ট
-            </span>
-            <div style="font-size: 11px; color: #8A9584;">তারিখ: ${formattedDate}</div>
-          </div>
-        </div>
-
-        <!-- Service Info Box -->
-        <div style="background-color: #FAF9F5; border: 1px solid #E5DFD1; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="font-size: 16px; font-weight: 700; color: #1E2519;">
-              ${data.serviceTitle}
-            </div>
-            <span style="font-size: 12px; font-weight: 700; color: #4E5C46; background-color: #ECE8DC; padding: 3px 8px; border-radius: 4px;">
-              ${data.category}
-            </span>
-          </div>
-
-          <div style="display: flex; gap: 24px; font-size: 12px; color: #55604C;">
-            <div>সার্ভিস ফি: <strong style="color: #1E2519;">${data.price}</strong></div>
-            ${data.isSlotBooking && data.slotName ? `<div>ক্যাটাগরি: <strong style="color: #1E2519;">${data.slotName}</strong></div>` : ''}
-            ${data.isSlotBooking && data.ivacCenter ? `<div>আইভ্যাক সেন্টার: <strong style="color: #1E2519;">${data.ivacCenter}</strong></div>` : ''}
-          </div>
-        </div>
-
-        <!-- Progress Summary -->
-        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F4F7F2; border: 1px solid #D9E4D3; border-radius: 8px; padding: 10px 16px; margin-bottom: 20px;">
-          <div style="font-size: 12px; font-weight: 700; color: #3A4E33;">
-            ফাইল প্রস্তুতির অবস্থা: ${completedCount} / ${totalCount} টি রেডি (${progressPercent}%)
-          </div>
-          <div style="font-size: 11px; color: #5F7758; font-weight: 600;">
-            ${completedCount === totalCount ? '✓ সকল তথ্য প্রস্তুত' : `বাকি রয়েছে: ${totalCount - completedCount} টি`}
-          </div>
-        </div>
-
-        <!-- Checklist Title -->
-        <div style="font-size: 14px; font-weight: 700; color: #26301F; margin-bottom: 12px; border-left: 4px solid #5F7758; padding-left: 10px;">
-          প্রয়োজনীয় ডকুমেন্টস ও তথ্যের তালিকা
-        </div>
-
-        <!-- Documents Table -->
-        <div style="margin-bottom: 24px;">
-          ${data.documents.map((doc, idx) => `
-            <div style="display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #EFEBE2; background-color: ${doc.isCompleted ? '#F9FBF8' : '#FFFFFF'};">
-              <div style="width: 20px; height: 20px; border: 2px solid ${doc.isCompleted ? '#5F7758' : '#B5BCAD'}; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #5F7758; flex-shrink: 0; margin-top: 1px;">
-                ${doc.isCompleted ? '✓' : ''}
-              </div>
-              <div style="font-size: 12px; line-height: 1.5; color: ${doc.isCompleted ? '#1E2519' : '#3A4432'}; font-weight: ${doc.isCompleted ? '600' : '400'}; flex: 1;">
-                <span style="color: #727C6B; font-size: 11px; margin-right: 6px;">${idx + 1}.</span>
-                ${doc.title}
-              </div>
-              <div style="font-size: 11px; font-weight: 600; color: ${doc.isCompleted ? '#3A6832' : '#8A9584'}; background-color: ${doc.isCompleted ? '#E4EFE0' : '#F1EFEA'}; padding: 2px 8px; border-radius: 4px; flex-shrink: 0;">
-                ${doc.isCompleted ? 'প্রস্তুত' : 'সংগ্রহ করুন'}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-
-        <!-- General Indian Visa Instructions -->
-        <div style="background-color: #FAF9F5; border: 1px dashed #D5CFBF; border-radius: 8px; padding: 14px 18px; margin-top: 16px;">
-          <div style="font-size: 12px; font-weight: 700; color: #26301F; margin-bottom: 6px;">
-            📌 সাধারণ জরুরি নির্দেশনা (IVAC নিয়মাবলী):
-          </div>
-          <ul style="margin: 0; padding-left: 18px; font-size: 11px; color: #55604C; line-height: 1.6;">
-            <li>পাসপোর্টের মেয়াদ আবেদনের দিন থেকে নূন্যতম ৬ মাস এবং কমপক্ষে ২টি ফাঁকা পৃষ্ঠা থাকতে হবে।</li>
-            <li>ছবি অবশ্যই সদ্য তোলা (৩ মাসের কম পুরানো), ২×২ ইঞ্চি, সম্পূর্ণ সাদা ব্যাকগ্রাউন্ড ও ল্যাব প্রিন্ট হতে হবে।</li>
-            <li>বর্তমান ঠিকানার স্বপক্ষে বিদ্যুৎ, গ্যাস অথবা পানি বিলের আসল ও ফটোকপি সাথে রাখতে হবে।</li>
-            <li>ব্যাংক স্টেটমেন্টে আবেদনকারী বা স্পন্সরের পর্যাপ্ত ব্যালেন্স ও ব্যাংক কর্তৃক সিল-স্বাক্ষর থাকতে হবে।</li>
-          </ul>
-        </div>
       </div>
 
       <!-- Footer Note -->
-      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #EAE5DA; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #6E7866;">
-        <div>
-          যেকোনো সহায়তা ও ফাইল পর্যালোচনার জন্য WhatsApp: <strong>${data.phoneDisplay}</strong>
-        </div>
-        <div>
-          Processing Hub Platform | ${data.email}
-        </div>
+      <div style="padding-top: 22px;">
+        <table style="width: 100%; border-collapse: collapse; border-top: 1px solid #EAE5DA;">
+          <tr>
+            <td style="padding-top: 12px; font-size: 11px; color: #6E7866; line-height: 1.3;">
+              ${copy.footerContact}
+            </td>
+            <td style="padding-top: 12px; text-align: right; font-size: 11px; color: #6E7866; line-height: 1.3;">
+              ${copy.footerPlatform}
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
   `;
@@ -150,24 +316,37 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
       scale: 2, // High resolution crisp text
       useCORS: true,
       logging: false,
-      backgroundColor: '#FFFFFF'
+      backgroundColor: '#FFFFFF',
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: 794,
     });
 
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'a4'
+      format: 'a4',
     });
 
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    let renderWidth = pageWidth;
+    let renderHeight = (canvas.height * pageWidth) / canvas.width;
 
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    
+    // Fit cleanly on a single A4 page if extra-long checklists exceed 297mm
+    if (renderHeight > pageHeight) {
+      const ratio = pageHeight / renderHeight;
+      renderHeight = pageHeight;
+      renderWidth = pageWidth * ratio;
+    }
+
+    const offsetX = (pageWidth - renderWidth) / 2;
+    pdf.addImage(imgData, 'PNG', offsetX, 0, renderWidth, renderHeight);
+
     // Clean filename
     const safeServiceName = data.serviceTitle.replace(/[^a-zA-Z0-9\u0980-\u09FF]/g, '_').substring(0, 30);
-    pdf.save(`Indian_Visa_Checklist_${safeServiceName}.pdf`);
+    pdf.save(`${copy.filePrefix}_${safeServiceName}.pdf`);
   } finally {
     if (document.body.contains(container)) {
       document.body.removeChild(container);

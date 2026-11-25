@@ -2,30 +2,37 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { VisaService } from '../types';
-import { VISA_SERVICES } from '../data/visaData';
+import { getVisaServices } from '../data/visaData';
 import { CONFIG } from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ServicesSectionProps {
   onOpenModal: (service: VisaService) => void;
 }
 
 export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal }) => {
+  const { language, t } = useLanguage();
+  const services = getVisaServices(language);
+
   return (
     <section id="services" className="relative">
       <div className="section-head max-w-2xl mb-10">
         <span className="text-xs font-bold uppercase tracking-wider text-[#1E743B] bg-[#EBF7EE] px-3 py-1 rounded-full border border-[#CDE5D5]">
-          ভিসা ক্যাটাগরি ও সার্ভিস
+          {t('ভিসা ক্যাটাগরি ও সার্ভিস', 'Visa Categories & Services')}
         </span>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1E2519] tracking-tight mt-3">
-          আপনার প্রয়োজনীয় ভিসা বেছে নিন
+          {t('আপনার প্রয়োজনীয় ভিসা বেছে নিন', 'Choose Your Required Visa Service')}
         </h2>
         <p className="text-[#4E5C46] text-sm sm:text-base leading-relaxed mt-2">
-          ট্যুরিস্ট, মেডিকেল ও অ্যাটেনডেন্ট, ডাবল এন্ট্রি (X-3), বিজনেস, স্টুডেন্ট, ট্রানজিট, এন্ট্রি (X-Misc) কিংবা স্পাউস (X-1)—প্রতিটি ভিসার জন্য রয়েছে আমাদের ডেডিকেটেড টিম ও সহজ প্রসেসিং ব্যবস্থা।
+          {t(
+            'ট্যুরিস্ট, মেডিকেল ও অ্যাটেনডেন্ট, ডাবল এন্ট্রি (X-3), বিজনেস, স্টুডেন্ট, ট্রানজিট, এন্ট্রি (X-Misc) কিংবা স্পাউস (X-1)—প্রতিটি ভিসার জন্য রয়েছে আমাদের ডেডিকেটেড টিম ও সহজ প্রসেসিং ব্যবস্থা।',
+            'Tourist, Medical & Attendant, Double Entry (X-3), Business, Student, Transit, Entry (X-Misc), or Spouse (X-1)—our dedicated team ensures fast and accurate processing for every visa category.'
+          )}
         </p>
       </div>
 
       <div className="gear-grid">
-        {VISA_SERVICES.map((service, index) => (
+        {services.map((service, index) => (
           <motion.div
             key={service.id}
             initial={{ opacity: 0, y: 32 }}
@@ -38,17 +45,17 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
             }}
             className="h-full"
           >
-            <div 
-              id={`service-card-${service.id}`} 
+            <div
+              id={`service-card-${service.id}`}
               className="gear-card flex flex-col justify-between h-full !rounded-[6px] overflow-hidden text-left"
               style={{ borderRadius: '6px' }}
             >
               <div className="w-full text-left">
                 <div className="gear-img-wrap !rounded-t-[6px]">
-                  <img 
-                    src={service.image} 
-                    alt={service.title} 
-                    loading="lazy" 
+                  <img
+                    src={service.image}
+                    alt={service.title}
+                    loading="lazy"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = CONFIG.fallbackImage;
                     }}
@@ -70,10 +77,10 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
                 <div className="gear-price text-left">
                   <span className="lbl text-left">
                     {service.isSlotBooking
-                      ? 'শুধু স্লট ফি (শুরু)'
+                      ? t('শুধু স্লট ফি (শুরু)', 'Slot Fee (Starting)')
                       : service.id === 'ticket-booking'
-                        ? 'অতিরিক্ত সার্ভিস ফি'
-                        : 'মোট ফি (আইভ্যাক ফিসহ)'}
+                        ? t('অতিরিক্ত সার্ভিস ফি', 'Extra Service Charge')
+                        : t('মোট ফি (আইভ্যাক ফিসহ)', 'Total Fee (Incl. IVAC Fee)')}
                   </span>
                   <div className="flex items-baseline gap-1 justify-start text-left">
                     <span className="amt">{service.price}</span>
@@ -86,7 +93,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onOpenModal })
                   onClick={() => onOpenModal(service)}
                   className="gear-book-btn"
                 >
-                  <span>প্রসেস শুরু করুন</span>
+                  <span>{t('প্রসেস শুরু করুন', 'Start Processing')}</span>
                   <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
                 </button>
               </div>

@@ -11,6 +11,7 @@ import {
 import { Destination } from '../types';
 import { CONFIG } from '../config';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useLanguage } from '../context/LanguageContext';
 
 interface DestinationDetailModalProps {
   destination: Destination | null;
@@ -21,6 +22,9 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
   destination,
   onClose
 }) => {
+  const { language, t } = useLanguage();
+  const isBn = language === 'bn';
+
   useBodyScrollLock(Boolean(destination));
 
   // Escape key handler
@@ -66,10 +70,10 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
             <div className="absolute bottom-3 left-4 right-4">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#2A6A26] text-white shadow-xs">
                 <Compass className="w-3.5 h-3.5" />
-                জনপ্রিয় পর্যটন গন্তব্য
+                {t('জনপ্রিয় পর্যটন গন্তব্য', 'Popular Travel Destination')}
               </span>
               <h3 className="text-lg sm:text-2xl font-bold font-['Space_Grotesk'] text-white mt-1.5 leading-snug drop-shadow-sm">
-                {destination.name} {destination.nameBn ? `— ${destination.nameBn}` : ''}
+                {destination.name}
               </h3>
               <p className="text-xs sm:text-sm text-gray-200 flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3.5 h-3.5 text-[#A3D69B]" />
@@ -83,7 +87,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
             id="destination-modal-close-btn"
             onClick={onClose}
             className="absolute top-3 right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer z-10 backdrop-blur-xs border border-white/20"
-            aria-label="Close modal"
+            aria-label={t('বন্ধ করুন', 'Close modal')}
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
           </button>
@@ -97,7 +101,9 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
               <Calendar className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[11px] font-bold text-[#4E5C46] uppercase block">ভ্রমণের সেরা সময়:</span>
+              <span className="text-[11px] font-bold text-[#4E5C46] uppercase block">
+                {t('ভ্রমণের সেরা সময়:', 'Best Time to Visit:')}
+              </span>
               <span className="text-xs sm:text-[13px] font-bold text-[#1E5624]">{destination.bestTime}</span>
             </div>
           </div>
@@ -105,7 +111,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
           {/* Description */}
           <div>
             <h4 className="text-xs font-bold text-[#65715D] uppercase tracking-wider mb-1.5">
-              গন্তব্য পরিচিতি ও আকর্ষণ
+              {t('গন্তব্য পরিচিতি ও আকর্ষণ', 'Destination Overview')}
             </h4>
             <p className="text-xs sm:text-[13.5px] text-[#2C3627] leading-relaxed">
               {destination.description}
@@ -116,7 +122,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
           <div>
             <h4 className="text-xs font-bold text-[#65715D] uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <Compass className="w-3.5 h-3.5 text-[#2E7D32]" />
-              প্রধান দর্শনীয় স্থানসমূহ
+              {t('প্রধান দর্শনীয় স্থানসমূহ', 'Top Attractions')}
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {destination.attractions.map((attr, idx) => (
@@ -136,7 +142,9 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
         <div className="service-modal-footer flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3.5 sm:p-4 bg-[#F8F7F2] border-t border-[#E8E4D8]">
           <div className="flex items-center gap-1.5 text-xs text-[#4E5C46]">
             <Plane className="w-4 h-4 text-[#2E7D32] flex-shrink-0" />
-            <span className="font-medium">ট্যুরিস্ট ভিসা ও ফাইল প্রসেসিং সাপোর্ট</span>
+            <span className="font-medium">
+              {t('ট্যুরিস্ট ভিসা ও ফাইল প্রসেসিং সাপোর্ট', 'Tourist Visa & File Processing Support')}
+            </span>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end flex-nowrap w-full sm:w-auto">
@@ -147,7 +155,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
               className="btn-3d-red-glass flex-initial inline-flex items-center justify-center gap-1 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap cursor-pointer"
             >
               <X className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>বন্ধ</span>
+              <span>{t('বন্ধ', 'Close')}</span>
             </button>
 
             <a
@@ -156,20 +164,24 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
               className="btn-3d-matte-secondary flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3.5 py-2 text-xs font-bold rounded-full whitespace-nowrap text-[#1E2519]"
             >
               <PhoneCall className="w-3.5 h-3.5 text-[#2E7D32]" />
-              <span>কল করুন</span>
+              <span>{t('কল করুন', 'Call Now')}</span>
             </a>
 
             <a
               id="dest-whatsapp-booking-btn"
               href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(waTravelText)}`}
-              data-service-name={`ট্যুরিস্ট ভিসা ও ${destination.name} ট্রাভেল ফাইল`}
-              data-section="ভ্রমণ গন্তব্য সেকশন"
-              data-whatsapp-title="ট্যুরিস্ট ভিসা ও ভ্রমণ গন্তব্য"
+              data-service-name={
+                isBn
+                  ? `ট্যুরিস্ট ভিসা ও ${destination.name} ট্রাভেল ফাইল`
+                  : `Tourist Visa & ${destination.name} Travel File`
+              }
+              data-section={t('ভ্রমণ গন্তব্য সেকশন', 'Destinations Section')}
+              data-whatsapp-title={t('ট্যুরিস্ট ভিসা ও ভ্রমণ গন্তব্য', 'Tourist Visa & Destination')}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-3d-matte-green flex-[1.4] sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center text-[#124218]"
             >
-              <span>ভিসা প্রসেসিং করুন</span>
+              <span>{t('ভিসা প্রসেসিং করুন', 'Apply for Visa')}</span>
             </a>
           </div>
         </div>

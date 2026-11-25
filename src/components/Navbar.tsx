@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
-import { 
-  Menu, 
-  X, 
-  PhoneCall, 
-  MessageCircle
+import {
+  Menu,
+  X,
+  PhoneCall,
+  MessageCircle,
+  Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   isScrolled: boolean;
@@ -23,6 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenQuickBook,
   onOpenSlotBooking
 }) => {
+  const { language, setLanguage, t } = useLanguage();
+
   // Mobile history back gesture/button handler
   useEffect(() => {
     if (!isMobileNavOpen) return;
@@ -54,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [isMobileNavOpen, setIsMobileNavOpen]);
 
   const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>, 
+    e: React.MouseEvent<HTMLAnchorElement>,
     href: string,
     action?: () => void
   ) => {
@@ -66,7 +70,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       return;
     }
 
-    // Small delay to allow any mobile transition/render to settle cleanly
     setTimeout(() => {
       if (href === '#' || href === '#hero-section') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -85,14 +88,25 @@ export const Navbar: React.FC<NavbarProps> = ({
     }, 40);
   };
 
+  const navLabels = {
+    home: t('হোম', 'Home'),
+    services: t('সেবাসমূহ', 'Services'),
+    destinations: t('গন্তব্য', 'Destinations'),
+    slots: t('স্লট', 'Slots'),
+    contact: t('যোগাযোগ', 'Contact'),
+    cta: t('বুকিং করুন', 'Book Now'),
+    callNow: t('কল করুন', 'Call Now'),
+    whatsapp: t('হোয়াটসঅ্যাপ', 'WhatsApp'),
+  };
+
   return (
     <>
       {/* HEADER & TOP NAVBAR */}
       <header className={`site-header ${isScrolled ? 'scrolled' : ''} ${isMobileNavOpen ? 'menu-open' : ''}`}>
         <nav id="mainNav" className={isScrolled ? 'scrolled' : ''}>
-          <a 
-            href="#" 
-            id="brand-logo" 
+          <a
+            href="#"
+            id="brand-logo"
             className="brand-btn"
             onClick={(e) => handleNavClick(e, '#')}
             title={CONFIG.brandName}
@@ -103,61 +117,96 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* CENTERED DESKTOP MENU CAPSULE CONTAINER */}
           <div className="nav-menu-capsule-wrapper">
             <div className="nav-menu-capsule">
-              <a 
-                href="#hero-section" 
+              <a
+                href="#hero-section"
                 id="desktop-link-home"
                 className="nav-capsule-item"
                 onClick={(e) => handleNavClick(e, '#hero-section')}
               >
-                Home
+                {navLabels.home}
               </a>
               <span className="nav-capsule-separator" aria-hidden="true">|</span>
-              <a 
-                href="#services" 
+              <a
+                href="#services"
                 id="desktop-link-services"
                 className="nav-capsule-item"
                 onClick={(e) => handleNavClick(e, '#services')}
               >
-                Services
+                {navLabels.services}
               </a>
               <span className="nav-capsule-separator" aria-hidden="true">|</span>
-              <a 
-                href="#destinations" 
+              <a
+                href="#destinations"
                 id="desktop-link-destinations"
                 className="nav-capsule-item"
                 onClick={(e) => handleNavClick(e, '#destinations')}
               >
-                Destinations
+                {navLabels.destinations}
               </a>
               <span className="nav-capsule-separator" aria-hidden="true">|</span>
-              <a 
-                href="#services" 
+              <a
+                href="#services"
                 id="desktop-link-slot-booking"
                 className="nav-capsule-item"
                 onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
               >
-                Slots
+                {navLabels.slots}
               </a>
               <span className="nav-capsule-separator" aria-hidden="true">|</span>
-              <a 
-                href="#contact" 
+              <a
+                href="#contact"
                 id="desktop-link-contact"
                 className="nav-capsule-item"
                 onClick={(e) => handleNavClick(e, '#contact')}
               >
-                Contact
+                {navLabels.contact}
               </a>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button 
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Desktop Top-Nav Language Switcher */}
+            <div
+              id="desktop-language-toggle"
+              role="group"
+              aria-label={t('ভাষা নির্বাচন করুন', 'Select language')}
+              className="hidden md:inline-flex items-center p-0.5 rounded-full bg-white/80 backdrop-blur-md border border-[#BAC5FA] shadow-xs shrink-0"
+            >
+              <button
+                type="button"
+                id="desktop-lang-bn"
+                onClick={() => setLanguage('bn')}
+                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  language === 'bn'
+                    ? 'bg-[#263375] text-white shadow-xs'
+                    : 'text-[#263375] hover:bg-[#EEF1FE]'
+                }`}
+                aria-pressed={language === 'bn'}
+              >
+                বাংলা
+              </button>
+              <button
+                type="button"
+                id="desktop-lang-en"
+                onClick={() => setLanguage('en')}
+                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  language === 'en'
+                    ? 'bg-[#263375] text-white shadow-xs'
+                    : 'text-[#263375] hover:bg-[#EEF1FE]'
+                }`}
+                aria-pressed={language === 'en'}
+              >
+                EN
+              </button>
+            </div>
+
+            <button
               type="button"
               id="nav-cta-btn"
-              className="nav-cta cursor-pointer border-0" 
+              className="nav-cta cursor-pointer border-0 whitespace-nowrap shrink-0"
               onClick={onOpenQuickBook}
             >
-              বুকিং করুন
+              {navLabels.cta}
             </button>
             <button
               type="button"
@@ -165,7 +214,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="mobile-nav-toggle"
               onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
               aria-expanded={isMobileNavOpen}
-              aria-label={isMobileNavOpen ? "Close mobile menu" : "Open mobile menu"}
+              aria-label={
+                isMobileNavOpen
+                  ? t('মোবাইল মেনু বন্ধ করুন', 'Close mobile menu')
+                  : t('মোবাইল মেনু খুলুন', 'Open mobile menu')
+              }
             >
               <AnimatePresence mode="wait" initial={false}>
                 {isMobileNavOpen ? (
@@ -174,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     initial={{ rotate: -90, opacity: 0 }}
                     animate={{ rotate: 0, opacity: 1 }}
                     exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
                     className="flex items-center justify-center"
                   >
                     <X className="w-5 h-5 stroke-[2.2]" />
@@ -185,7 +238,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     initial={{ rotate: 90, opacity: 0 }}
                     animate={{ rotate: 0, opacity: 1 }}
                     exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
                     className="flex items-center justify-center"
                   >
                     <Menu className="w-5 h-5 stroke-[2.2]" />
@@ -196,7 +249,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </nav>
 
-        {/* MOBILE FLOATING DROPDOWN CARD (MATCHING REFERENCE IMAGE) */}
+        {/* MOBILE FLOATING DROPDOWN CARD */}
         <AnimatePresence>
           {isMobileNavOpen && (
             <motion.div
@@ -205,67 +258,104 @@ export const Navbar: React.FC<NavbarProps> = ({
               initial={{ opacity: 0, y: -16, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -14, scale: 0.96 }}
-              transition={{ 
-                duration: 0.26, 
-                ease: [0.16, 1, 0.3, 1] 
+              transition={{
+                duration: 0.26,
+                ease: [0.16, 1, 0.3, 1]
               }}
               style={{ willChange: 'transform, opacity' }}
               className="mobile-floating-card md:hidden"
             >
               {/* Centered navigation links */}
               <div className="mobile-card-links">
-                <a 
+                <a
                   href="#hero-section"
                   id="mobile-link-home"
                   onClick={(e) => handleNavClick(e, '#hero-section')}
                   className="mobile-card-link"
                 >
-                  Home
+                  {navLabels.home}
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
 
-                <a 
+                <a
                   href="#services"
                   id="mobile-link-services"
                   onClick={(e) => handleNavClick(e, '#services')}
                   className="mobile-card-link"
                 >
-                  Services
+                  {navLabels.services}
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
 
-                <a 
+                <a
                   href="#destinations"
                   id="mobile-link-destinations"
                   onClick={(e) => handleNavClick(e, '#destinations')}
                   className="mobile-card-link"
                 >
-                  Destinations
+                  {navLabels.destinations}
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
 
-                <a 
+                <a
                   href="#services"
                   id="mobile-link-slot-booking"
                   onClick={(e) => handleNavClick(e, '#services', onOpenSlotBooking)}
                   className="mobile-card-link"
                 >
-                  Slots
+                  {navLabels.slots}
                 </a>
 
                 <div className="mobile-menu-divider" aria-hidden="true" />
 
-                <a 
+                <a
                   href="#contact"
                   id="mobile-link-contact"
                   onClick={(e) => handleNavClick(e, '#contact')}
                   className="mobile-card-link"
                 >
-                  Contact
+                  {navLabels.contact}
                 </a>
+              </div>
+
+              {/* Mobile Menu Language Switcher */}
+              <div
+                id="mobile-language-toggle"
+                role="group"
+                aria-label={t('ভাষা পরিবর্তন', 'Switch language')}
+                className="w-full mt-4 p-1 rounded-full bg-[#EEF1FE] border border-[#BAC5FA] grid grid-cols-2 gap-1"
+              >
+                <button
+                  type="button"
+                  id="mobile-lang-bn"
+                  onClick={() => setLanguage('bn')}
+                  className={`py-2 px-3 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    language === 'bn'
+                      ? 'bg-[#263375] text-white shadow-xs'
+                      : 'text-[#263375] hover:bg-white/60'
+                  }`}
+                  aria-pressed={language === 'bn'}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>বাংলা</span>
+                </button>
+                <button
+                  type="button"
+                  id="mobile-lang-en"
+                  onClick={() => setLanguage('en')}
+                  className={`py-2 px-3 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    language === 'en'
+                      ? 'bg-[#263375] text-white shadow-xs'
+                      : 'text-[#263375] hover:bg-white/60'
+                  }`}
+                  aria-pressed={language === 'en'}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>English</span>
+                </button>
               </div>
 
               {/* Secondary Quick Contact Pills */}
@@ -276,7 +366,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="mobile-pill-call"
                 >
                   <PhoneCall className="w-3.5 h-3.5 text-[#374492]" />
-                  <span>Call Now</span>
+                  <span>{navLabels.callNow}</span>
                 </a>
 
                 <a
@@ -288,7 +378,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="mobile-pill-whatsapp"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
-                  <span>WhatsApp</span>
+                  <span>{navLabels.whatsapp}</span>
                 </a>
               </div>
             </motion.div>
@@ -304,7 +394,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             className="mobile-dropdown-backdrop md:hidden"
             onClick={() => setIsMobileNavOpen(false)}
             aria-hidden="true"

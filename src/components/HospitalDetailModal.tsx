@@ -14,6 +14,7 @@ import {
 import { Hospital } from '../types';
 import { CONFIG } from '../config';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HospitalDetailModalProps {
   hospital: Hospital | null;
@@ -24,6 +25,9 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
   hospital,
   onClose
 }) => {
+  const { language, t, num } = useLanguage();
+  const isBn = language === 'bn';
+
   useBodyScrollLock(Boolean(hospital));
 
   // Escape key handler
@@ -66,7 +70,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#141B10] via-black/40 to-transparent" />
             
-            {/* City Badge, Brand Logo & Details */}
+            {/* City Badge & Details */}
             <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -92,7 +96,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             id="hospital-modal-close-btn"
             onClick={onClose}
             className="absolute top-3 right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer z-10 backdrop-blur-xs border border-white/20"
-            aria-label="Close modal"
+            aria-label={t('বন্ধ করুন', 'Close modal')}
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
           </button>
@@ -108,10 +112,18 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             <div>
               <h4 className="text-xs sm:text-sm font-bold text-[#1E5624] flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
-                অফিশিয়াল ইনভাইটেশন ও অ্যাপয়েন্টমেন্ট নিশ্চয়তা
+                {t('অফিশিয়াল ইনভাইটেশন ও অ্যাপয়েন্টমেন্ট নিশ্চয়তা', 'Official Invitation & Appointment Assurance')}
               </h4>
               <p className="text-xs text-[#35533A] leading-relaxed mt-1">
-                আমরা সরাসরি <strong>{hospital.name}</strong> থেকে রোগীর জন্য ডক্টরস ইনভাইটেশন লেটার (Visa Invitation Letter), আয়ুশ (AYUSH) ও রেজিস্টার্ড বিশেষজ্ঞ ডাক্তারের অ্যাপয়েন্টমেন্ট কনফার্মেশন সংগ্রহ করে মেডিকেল ভিসা ফাইল প্রস্তুত করি।
+                {isBn ? (
+                  <>
+                    আমরা সরাসরি <strong>{hospital.name}</strong> থেকে রোগীর জন্য ডাক্তারের ইনভাইটেশন লেটার, আয়ুশ সনদ ও বিশেষজ্ঞ ডাক্তারের অ্যাপয়েন্টমেন্ট কনফার্মেশন সংগ্রহ করে মেডিকেল ভিসা ফাইল প্রস্তুত করি।
+                  </>
+                ) : (
+                  <>
+                    We coordinate directly with <strong>{hospital.name}</strong> to arrange your official Visa Invitation Letter, AYUSH registration, and confirmed specialist appointment for medical visa processing.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -119,7 +131,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
           {/* Hospital Overview */}
           <div>
             <h4 className="text-xs font-bold text-[#65715D] uppercase tracking-wider mb-1.5">
-              হাসপাতালের পরিচিতি
+              {t('হাসপাতালের পরিচিতি', 'Hospital Overview')}
             </h4>
             <p className="text-xs sm:text-[13.5px] text-[#2C3627] leading-relaxed">
               {hospital.description}
@@ -131,10 +143,10 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-bold text-[#65715D] uppercase tracking-wider flex items-center gap-1.5">
                 <Stethoscope className="w-3.5 h-3.5 text-[#2E7D32]" />
-                প্রধান চিকিৎসা বিভাগ ও বিশেষত্ব (Specialties)
+                {t('প্রধান চিকিৎসা বিভাগ ও বিশেষত্ব', 'Key Medical Specialties & Departments')}
               </h4>
               <span className="text-[11px] font-semibold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded">
-                {hospital.specialties.length}টি প্রধান বিভাগ
+                {isBn ? `${num(hospital.specialties.length)}টি প্রধান বিভাগ` : `${hospital.specialties.length} Key Departments`}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -155,7 +167,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
             <div>
               <h4 className="text-xs font-bold text-[#65715D] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#2E7D32]" />
-                প্রধান সুযোগ-সুবিধা ও বৈশিষ্ট্য
+                {t('প্রধান সুযোগ-সুবিধা ও বৈশিষ্ট্য', 'Key Highlights & Facilities')}
               </h4>
               <ul className="space-y-1.5">
                 {hospital.highlights.map((highlight, idx) => (
@@ -173,7 +185,9 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
         <div className="service-modal-footer flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3.5 sm:p-4 bg-[#F8F7F2] border-t border-[#E8E4D8]">
           <div className="flex items-center gap-2 text-xs text-[#4E5C46]">
             <HeartHandshake className="w-4 h-4 text-[#2E7D32] flex-shrink-0" />
-            <span className="font-medium">মেডিকেল ভিসা ও ইনভাইটেশন হেল্পলাইন</span>
+            <span className="font-medium">
+              {t('মেডিকেল ভিসা ও ইনভাইটেশন হেল্পলাইন', 'Medical Visa & Invitation Helpline')}
+            </span>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end flex-nowrap w-full sm:w-auto">
@@ -184,7 +198,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
               className="btn-3d-red-glass flex-initial inline-flex items-center justify-center gap-1 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap cursor-pointer"
             >
               <X className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>বন্ধ</span>
+              <span>{t('বন্ধ', 'Close')}</span>
             </button>
 
             <a
@@ -193,20 +207,24 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
               className="btn-3d-matte-secondary flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-full whitespace-nowrap text-[#1E2519]"
             >
               <PhoneCall className="w-3.5 h-3.5 text-[#2E7D32]" />
-              <span>কল করুন</span>
+              <span>{t('কল করুন', 'Call Now')}</span>
             </a>
 
             <a
               id="hospital-whatsapp-booking-btn"
               href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(waAppointmentText)}`}
-              data-service-name={`মেডিকেল ভিসা ও ${hospital.name} ডক্টর অ্যাপয়েন্টমেন্ট`}
-              data-section="টপ হসপিটাল সেকশন"
-              data-whatsapp-title="মেডিকেল ভিসা ও হাসপাতাল"
+              data-service-name={
+                isBn
+                  ? `মেডিকেল ভিসা ও ${hospital.name} ডাক্তারের অ্যাপয়েন্টমেন্ট`
+                  : `Medical Visa & ${hospital.name} Appointment`
+              }
+              data-section={t('টপ হসপিটাল সেকশন', 'Top Hospitals Section')}
+              data-whatsapp-title={t('মেডিকেল ভিসা ও হাসপাতাল', 'Medical Visa & Hospital')}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-3d-matte-green flex-[1.4] sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center text-[#124218]"
             >
-              <span>অ্যাপয়েন্টমেন্ট নিন</span>
+              <span>{t('অ্যাপয়েন্টমেন্ট নিন', 'Book Appointment')}</span>
             </a>
           </div>
         </div>
