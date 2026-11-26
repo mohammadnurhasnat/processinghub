@@ -14,6 +14,8 @@ export interface ChecklistPdfData {
     title: string;
     isCompleted: boolean;
   }[];
+  specialNotes?: string[];
+  portNote?: string;
   phoneDisplay: string;
   email: string;
   brandName: string;
@@ -44,7 +46,7 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
   container.style.padding = '36px 44px';
   container.style.backgroundColor = '#FFFFFF';
   container.style.color = '#1E2519';
-  container.style.fontFamily = '"Inter", "Noto Serif Bengali", "Noto Sans Bengali", Arial, sans-serif';
+  container.style.fontFamily = '"Aptos", "Kalpurush", "Inter", "Noto Serif Bengali", "Noto Sans Bengali", Arial, sans-serif';
   container.style.boxSizing = 'border-box';
   container.style.zIndex = '-1000';
 
@@ -100,9 +102,17 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
           completedCount === totalCount
             ? 'সকল তথ্য প্রস্তুত'
             : `বাকি রয়েছে: ${fmtNum(remainingCount)} টি`,
-        listTitle: 'প্রয়োজনীয় ডকুমেন্টস ও তথ্যের তালিকা',
+        listTitle: data.isSlotBooking
+          ? 'স্লট বুকিংয়ের জন্য প্রয়োজনীয় তথ্য'
+          : 'প্রয়োজনীয় ডকুমেন্টস ও তথ্যের তালিকা',
         statusReady: 'প্রস্তুত',
         statusCollect: 'সংগ্রহ করুন',
+        statusOwnSim: 'নিজস্ব সিম',
+        statusHubSim: 'অফিস থেকে (চার্জ)',
+        portTitle: 'অনুমোদিত সীমান্ত পোর্ট (IVAC নোটিশ বোর্ড):',
+        specialNotesTitle: data.isSlotBooking
+          ? 'আইভ্যাক স্লট বুকিং নিয়মাবলি (সকল ক্যাটাগরির জন্য প্রযোজ্য):'
+          : 'বিশেষ দ্রষ্টব্য (IVAC নোটিশ বোর্ড):',
         guidelinesTitle: 'সাধারণ জরুরি নির্দেশনা (IVAC নিয়মাবলী):',
         guidelines: [
           'পাসপোর্টের মেয়াদ আবেদনের দিন থেকে ন্যূনতম ৬ মাস এবং কমপক্ষে ২টি ফাঁকা পৃষ্ঠা থাকতে হবে।',
@@ -128,9 +138,17 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
           completedCount === totalCount
             ? 'All Documents Ready'
             : `Remaining: ${fmtNum(remainingCount)}`,
-        listTitle: 'Required Documents & Information Checklist',
+        listTitle: data.isSlotBooking
+          ? 'Required Information for Slot Booking'
+          : 'Required Documents & Information Checklist',
         statusReady: 'Ready',
         statusCollect: 'Collect',
+        statusOwnSim: 'Own SIM',
+        statusHubSim: 'Via Hub (Extra)',
+        portTitle: 'Approved Border Ports (IVAC Notice Board):',
+        specialNotesTitle: data.isSlotBooking
+          ? 'Official IVAC Slot Booking Rules (All Categories):'
+          : 'Special Notes (IVAC Notice Board):',
         guidelinesTitle: 'Important IVAC Guidelines:',
         guidelines: [
           'Passport must have at least 6 months validity from the application date and a minimum of 2 blank pages.',
@@ -142,6 +160,12 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
         footerPlatform: `Processing Hub Platform | ${data.email}`,
         filePrefix: 'ProcessingHub_Checklist_EN',
       };
+
+  const isCompactList = totalCount > 10;
+  const rowPadCheck = isCompactList ? '6px 4px 6px 10px' : '10px 4px 10px 10px';
+  const rowPadText = isCompactList ? '5px 10px 7px 4px' : '9px 10px 11px 4px';
+  const rowPadBadge = isCompactList ? '5px 10px 6px 4px' : '9px 10px 10px 4px';
+  const rowFontSize = isCompactList ? '11.5px' : '12px';
 
   container.innerHTML = `
     <style>
@@ -252,18 +276,18 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
           </table>
 
           <!-- Documents Table -->
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px;">
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: ${isCompactList ? '12px' : '18px'};">
             ${data.documents
               .map(
                 (doc, idx) => `
               <tr style="background-color: ${doc.isCompleted ? '#F9FBF8' : '#FFFFFF'}; border-bottom: 1px solid #EFEBE2;">
-                <td style="width: 34px; vertical-align: top; padding: 10px 4px 10px 10px;">
+                <td style="width: 34px; vertical-align: top; padding: ${rowPadCheck};">
                   ${renderCheckbox(doc.isCompleted)}
                 </td>
-                <td style="vertical-align: top; padding: 9px 10px 11px 4px; font-size: 12px; line-height: 1.5; color: ${doc.isCompleted ? '#1E2519' : '#3A4432'}; font-weight: ${doc.isCompleted ? '600' : '400'};">
-                  <span style="color: #727C6B; font-size: 11px; font-weight: 600; margin-right: 5px;">${fmtNum(idx + 1)}.</span>${fmtNum(doc.title)}
+                <td style="vertical-align: top; padding: ${rowPadText}; font-size: ${rowFontSize}; line-height: 1.45; color: ${doc.isCompleted ? '#1E2519' : '#3A4432'}; font-weight: ${doc.isCompleted ? '600' : '400'};">
+                  <span style="color: #727C6B; font-size: 11px; font-weight: 700; margin-right: 5px;">${fmtNum(idx + 1)}.</span>${fmtNum(doc.title)}
                 </td>
-                <td style="width: 104px; vertical-align: top; text-align: right; padding: 9px 10px 10px 4px; white-space: nowrap;">
+                <td style="width: 104px; vertical-align: top; text-align: right; padding: ${rowPadBadge}; white-space: nowrap;">
                   <span style="
                     display: inline-block;
                     font-size: 10.5px;
@@ -274,7 +298,15 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
                     padding: 5px 10px;
                     border-radius: 4px;
                     text-align: center;
-                  "><span style="position: relative; top: ${pillTextOffset}; display: inline-block; line-height: 1.1;">${doc.isCompleted ? copy.statusReady : copy.statusCollect}</span></span>
+                  "><span style="position: relative; top: ${pillTextOffset}; display: inline-block; line-height: 1.1;">${
+                    data.isSlotBooking && idx === 1
+                      ? doc.isCompleted
+                        ? copy.statusOwnSim
+                        : copy.statusHubSim
+                      : doc.isCompleted
+                        ? copy.statusReady
+                        : copy.statusCollect
+                  }</span></span>
                 </td>
               </tr>
             `
@@ -282,15 +314,53 @@ export async function generateChecklistPdf(data: ChecklistPdfData): Promise<void
               .join('')}
           </table>
 
+          ${
+            data.portNote
+              ? `
+          <!-- Approved Border Port Note -->
+          <div style="background-color: #EEF6F0; border: 1px solid #C4DFC9; border-radius: 8px; padding: 10px 14px 12px 14px; margin-bottom: 10px;">
+            <div style="font-size: 11.5px; font-weight: 700; color: #1D5E29; line-height: 1.35; margin-bottom: 4px;">
+              🧭 ${copy.portTitle}
+            </div>
+            <div style="font-size: 11px; color: #26422C; line-height: 1.5;">
+              ${fmtNum(data.portNote)}
+            </div>
+          </div>
+          `
+              : ''
+          }
+
+          ${
+            data.specialNotes && data.specialNotes.length > 0
+              ? `
+          <!-- Dedicated IVAC Notice Board Special Notes -->
+          <div style="background-color: #FFFBEB; border: 1px solid #F5D07A; border-radius: 8px; padding: 10px 14px 12px 14px; margin-bottom: 10px;">
+            <div style="font-size: 12px; font-weight: 700; color: #78350F; line-height: 1.35; margin-bottom: 5px;">
+              ⚠️ ${copy.specialNotesTitle}
+            </div>
+            <ul style="margin: 0; padding-left: 18px; font-size: 11px; color: #78350F; line-height: 1.55;">
+              ${data.specialNotes.map((line) => `<li>${fmtNum(line)}</li>`).join('')}
+            </ul>
+          </div>
+          `
+              : ''
+          }
+
+          ${
+            !data.isSlotBooking
+              ? `
           <!-- General Indian Visa Instructions -->
-          <div style="background-color: #FAF9F5; border: 1px dashed #D5CFBF; border-radius: 8px; padding: 12px 16px 14px 16px; margin-top: 10px;">
-            <div style="font-size: 12px; font-weight: 700; color: #26301F; line-height: 1.35; margin-bottom: 6px;">
+          <div style="background-color: #FAF9F5; border: 1px dashed #D5CFBF; border-radius: 8px; padding: 10px 14px 12px 14px; margin-top: 8px;">
+            <div style="font-size: 11.5px; font-weight: 700; color: #26301F; line-height: 1.35; margin-bottom: 5px;">
               📌 ${copy.guidelinesTitle}
             </div>
-            <ul style="margin: 0; padding-left: 18px; font-size: 11px; color: #55604C; line-height: 1.6;">
+            <ul style="margin: 0; padding-left: 18px; font-size: 10.5px; color: #55604C; line-height: 1.55;">
               ${copy.guidelines.map((line) => `<li>${line}</li>`).join('')}
             </ul>
           </div>
+          `
+              : ''
+          }
       </div>
 
       <!-- Footer Note -->

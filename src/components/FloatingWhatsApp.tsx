@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, MessagesSquare } from 'lucide-react';
+import { X, MessagesSquare, Puzzle, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
 import { VisaService } from '../types';
@@ -104,15 +104,15 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 12 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-[86px] right-6 z-60 bg-[#FAF8F5]/95 backdrop-blur-xl border border-[#D5CFBF]/90 shadow-[0_16px_40px_rgba(0,0,0,0.18)] rounded-2xl p-4 w-[240px] origin-bottom-right"
+            className="fixed bottom-[78px] right-6 z-60 bg-[#FAF8F5]/95 backdrop-blur-xl border border-[#D5CFBF]/90 shadow-[0_16px_40px_rgba(0,0,0,0.18)] rounded-2xl p-3.5 w-[245px] origin-bottom-right"
             role="dialog"
             aria-label={t('যোগাযোগ অপশন', 'Contact Options')}
           >
             {/* Subtle Heading */}
-            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-[#EAE5DA]">
+            <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#EAE5DA]">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#1FA855] animate-pulse" />
-                <span className="text-[13px] font-semibold text-[#1E2519]">
+                <span className="text-[12.5px] font-semibold text-[#1E2519]">
                   {t('সহায়তা ও যোগাযোগ', 'Support & Contact')}
                 </span>
               </div>
@@ -126,51 +126,79 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
               </button>
             </div>
 
-            {/* TWO ICONS SIDE-BY-SIDE: Left (WhatsApp), Right (Live Support) */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* TWO COMPACT ICONS SIDE-BY-SIDE: Left (WhatsApp), Right (Agent Support) */}
+            <div className="grid grid-cols-2 gap-2.5">
               {/* LEFT: WhatsApp */}
               <button
                 type="button"
                 id="popup-whatsapp-btn"
                 onClick={handleOpenWhatsApp}
-                className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-white border border-[#CDE5D5] hover:border-[#25D366] hover:bg-[#F2FAF5] transition-all duration-200 cursor-pointer group shadow-xs hover:-translate-y-0.5 active:scale-95"
+                className="flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-xl bg-white border border-[#CDE5D5] hover:border-[#25D366] hover:bg-[#F2FAF5] transition-all duration-200 cursor-pointer group shadow-xs hover:-translate-y-0.5 active:scale-95"
                 title={t('হোয়াটসঅ্যাপ চ্যাট', 'WhatsApp Chat')}
               >
-                <div className="w-12 h-12 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_12px_rgba(37,211,102,0.30)] group-hover:scale-108 transition-transform">
-                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current" aria-hidden="true">
+                <div className="w-9 h-9 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_3px_10px_rgba(37,211,102,0.28)] group-hover:scale-105 transition-transform">
+                  <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current" aria-hidden="true">
                     <path d="M17.6 6.32A7.85 7.85 0 0 0 12.02 4C7.66 4 4.13 7.53 4.13 11.89c0 1.4.37 2.76 1.06 3.96L4 20l4.27-1.12a7.9 7.9 0 0 0 3.75.95h.01c4.36 0 7.89-3.53 7.89-7.89 0-2.11-.82-4.09-2.32-5.62zm-5.58 12.1h-.01a6.55 6.55 0 0 1-3.34-.92l-.24-.14-2.49.65.67-2.43-.16-.25a6.56 6.56 0 0 1-1.01-3.5c0-3.63 2.96-6.58 6.6-6.58 1.76 0 3.42.69 4.66 1.94a6.55 6.55 0 0 1 1.93 4.65c0 3.63-2.96 6.58-6.61 6.58zm3.6-4.93c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.44.1-.13.2-.5.64-.62.77-.11.13-.23.14-.42.05-.2-.1-.83-.31-1.58-.98-.58-.52-.98-1.16-1.09-1.36-.11-.2-.01-.3.09-.4.09-.09.2-.23.3-.35.1-.11.13-.2.2-.33.07-.13.03-.25-.02-.35-.05-.1-.44-1.06-.6-1.45-.16-.38-.32-.33-.44-.33-.11-.01-.24-.01-.37-.01s-.35.05-.53.25c-.18.2-.7.68-.7 1.66s.72 1.93.82 2.06c.1.13 1.41 2.15 3.42 3.02.48.21.85.33 1.14.42.48.15.92.13 1.26.08.38-.06 1.17-.48 1.34-.94.16-.46.16-.86.11-.94-.05-.09-.18-.14-.38-.24z" />
                   </svg>
                 </div>
                 <span className="text-[11px] font-semibold text-[#14532D]">{t('হোয়াটসঅ্যাপ', 'WhatsApp')}</span>
               </button>
 
-              {/* RIGHT: Live Support */}
+              {/* RIGHT: Agent Support */}
               <button
                 type="button"
                 id="popup-ai-support-btn"
                 onClick={handleOpenChatbot}
-                className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-white border border-[#D5CFBF] hover:border-[#1FA855] hover:bg-[#F2FAF5] transition-all duration-200 cursor-pointer group shadow-xs hover:-translate-y-0.5 active:scale-95"
-                title={t('ভিসা সহায়তা ও লাইভ চ্যাট', 'Visa Support & Live Chat')}
+                className="flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-xl bg-white border border-[#D5CFBF] hover:border-[#1FA855] hover:bg-[#F2FAF5] transition-all duration-200 cursor-pointer group shadow-xs hover:-translate-y-0.5 active:scale-95"
+                title={t('ভিসা সহায়তা ও এজেন্ট সাপোর্ট', 'Visa Guidance & Agent Support')}
               >
-                <div className="w-12 h-12 rounded-full bg-white text-[#1E2519] border border-[#D5CFBF] flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] group-hover:scale-108 group-hover:border-[#1FA855] group-hover:text-[#1FA855] transition-all">
-                  <MessagesSquare className="w-6 h-6 stroke-[2]" />
+                <div className="w-9 h-9 rounded-full bg-white text-[#1E2519] border border-[#D5CFBF] flex items-center justify-center shadow-[0_3px_10px_rgba(0,0,0,0.07)] group-hover:scale-105 group-hover:border-[#1FA855] group-hover:text-[#1FA855] transition-all">
+                  <MessagesSquare className="w-4.5 h-4.5 stroke-[2]" />
                 </div>
-                <span className="text-[11px] font-semibold text-[#1E2519]">{t('লাইভ সাপোর্ট', 'Live Support')}</span>
+                <span className="text-[11px] font-semibold text-[#1E2519]">{t('এজেন্ট সাপোর্ট', 'Agent Support')}</span>
               </button>
+            </div>
+
+            {/* BOTTOM: Chrome Extension Affiliate / Autofill Button */}
+            <div className="mt-2.5 pt-2.5 border-t border-[#EAE5DA]">
+              <a
+                id="popup-extension-btn"
+                href={CONFIG.chromeExtension.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsPopupOpen(false)}
+                className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl bg-[#EEF1FE] hover:bg-[#E1E7FD] border border-[#C6D0FB] text-[#263375] transition-all duration-200 group shadow-2xs"
+                title={CONFIG.chromeExtension.name}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#263375] text-white flex items-center justify-center shrink-0">
+                    <Puzzle className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <div className="text-[11px] font-bold text-[#161D28] truncate leading-tight">
+                      {t('ইন্ডিয়ান ভিসা অটোফিল', 'Indian Visa Autofill')}
+                    </div>
+                    <div className="text-[9.5px] font-medium text-[#374492] truncate leading-tight mt-0.5">
+                      Tracker Chrome Extension
+                    </div>
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-[#263375] shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              </a>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* MAIN BOTTOM-RIGHT FLOATING TRIGGER BUTTON (WHITE THEME) */}
+      {/* MAIN BOTTOM-RIGHT FLOATING TRIGGER BUTTON (7PX ROUNDED SQUARE, COMPACT SIZE) */}
       <div className="fixed bottom-6 right-6 z-60">
         <button
           id="main-support-trigger"
           type="button"
           onClick={handleToggleTrigger}
-          className={`w-[56px] h-[56px] sm:w-[58px] sm:h-[58px] rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(0,0,0,0.14)] hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.20)] active:translate-y-0 active:scale-95 border border-[#E2DDD2] ${
+          className={`w-[46px] h-[46px] sm:w-[48px] sm:h-[48px] rounded-[7px] flex items-center justify-center cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(0,0,0,0.14)] hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.20)] active:translate-y-0 active:scale-95 border border-[#E2DDD2] ${
             isPopupOpen || isChatbotOpen
-              ? 'bg-white text-[#1E2519] rotate-90'
+              ? 'bg-white text-[#1E2519]'
               : 'bg-white text-[#1E2519] hover:text-[#1FA855] hover:border-[#1FA855]'
           }`}
           aria-label={
@@ -182,11 +210,11 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           title={t('ভিসা পরামর্শ ও সহায়তা', 'Visa Guidance & Support')}
         >
           {isPopupOpen || isChatbotOpen ? (
-            <X className="w-6 h-6 stroke-[2.5]" />
+            <X className="w-5 h-5 stroke-[2.4]" />
           ) : (
             <div className="relative flex items-center justify-center">
-              <MessagesSquare className="w-[26px] h-[26px] stroke-[2]" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#1FA855] border-2 border-white" />
+              <MessagesSquare className="w-[21px] h-[21px] stroke-[2]" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#1FA855] border-2 border-white" />
             </div>
           )}
         </button>

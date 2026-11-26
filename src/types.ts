@@ -8,6 +8,8 @@ export interface VisaService {
   per: string;
   waText: string;
   documents: string[];
+  specialNotes?: string[];
+  portNote?: string;
   isSlotBooking?: boolean;
 }
 
@@ -31,6 +33,12 @@ export interface Destination {
   description: string;
 }
 
+export interface HospitalEstimatedCosts {
+  consultation: string;
+  diagnosticPackage: string;
+  majorProcedureRange: string;
+}
+
 export interface Hospital {
   id: string;
   name: string;
@@ -46,4 +54,25 @@ export interface Hospital {
   highlights: string[];
   description: string;
   ayushSupport?: boolean;
+  estimatedCosts?: HospitalEstimatedCosts;
+  airportPickup?: string;
+}
+
+export type TrackingStage =
+  | 'received'
+  | 'reviewing'
+  | 'form_ready'
+  | 'slot_confirmed'
+  | 'ready_delivery';
+
+export interface PublicTrackRecord {
+  serial: string;
+  maskedName: string;
+  phoneLast4: string;
+  serviceTitle: string;
+  source: 'callback' | 'chat';
+  stage: TrackingStage;
+  stageNote: string;
+  createdAt: string;
+  updatedAt: string;
 }

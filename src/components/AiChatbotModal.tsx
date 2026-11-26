@@ -16,7 +16,8 @@ import {
   LogOut,
   ArrowRight,
   Paperclip,
-  FileText
+  FileText,
+  Puzzle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
@@ -34,6 +35,7 @@ export interface UserProfile {
 
 const USER_PROFILE_KEY = 'processinghub_user_profile';
 const AGENT_STORAGE_KEY = 'processinghub_assigned_agent_v1';
+const LAST_SUMMARIZED_KEY = 'processinghub_last_summarized_fp_v1';
 
 const AGENT_NAMES = ['Nur Sajid', 'Eity', 'Nur Hasnat', 'Mohammad', 'Aysha'] as const;
 type AgentName = (typeof AGENT_NAMES)[number];
@@ -152,7 +154,7 @@ const getContextualQuickPrompts = (
       return [
         'How can I book a fast slot at Dhaka IVAC?',
         'What are the total fees for Tourist & Medical slots?',
-        'What passport details are needed for slot booking?',
+        'What are the Web File & SIM card rules for slot booking?',
         'Are slots available for Sylhet or Chattogram centers?'
       ];
     }
@@ -201,7 +203,7 @@ const getContextualQuickPrompts = (
     return [
       'ঢাকা আইভ্যাক সেন্টারে দ্রুত স্লট বুকিং কিভাবে করব?',
       'ট্যুরিস্ট ও মেডিকেল স্লটের মোট ফি কত?',
-      'পাসপোর্টের কি কি তথ্য স্লট বুকিংয়ের জন্য লাগবে?',
+      'ওয়েব ফাইল ও সিম কার্ড দিয়ে স্লট বুকিংয়ের নিয়ম কি?',
       'সিলেট/চট্টগ্রাম সেন্টারে স্লট পাওয়া যাবে?'
     ];
   }
@@ -388,7 +390,34 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
   const [formError, setFormError] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  const lastSummarizedMsgIdRef = useRef<string | null>(null);
+  const computeSummaryFingerprint = (
+    msgs: ChatMessage[],
+    profile: UserProfile | null
+  ): string | null => {
+    const userMsgs = msgs.filter((m) => m.role === 'user');
+    if (userMsgs.length === 0) return null;
+    const phoneKey = (profile?.phone || '').replace(/\D/g, '').slice(-10);
+    const nameKey = (profile?.name || '').trim().toLowerCase().slice(0, 40);
+    const userSig = userMsgs
+      .map((m) => `${m.id}|${(m.text || '').trim().slice(0, 160)}|${m.attachments?.length || 0}`)
+      .join('||');
+    return `${phoneKey || nameKey}::${userMsgs.length}::${userSig}`;
+  };
+
+  const lastSummarizedFpRef = useRef<string | null>(
+    typeof window !== 'undefined'
+      ? (() => {
+          try {
+            return localStorage.getItem(LAST_SUMMARIZED_KEY);
+          } catch {
+            return null;
+          }
+        })()
+      : null
+  );
+  // Only dispatch Telegram leads when the customer actually sent a NEW message during this page session
+  // (prevents old localStorage chats from yesterday from ever re-sending on reload/tab-switch)
+  const hasUnsentUserActivityRef = useRef<boolean>(false);
   const processedHandoffIdRef = useRef<string | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -711,6 +740,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     };
 
     const newMessages = [...messages, userMessage];
+    hasUnsentUserActivityRef.current = true;
     setMessages(newMessages);
     if (textToSend === undefined) {
       setInputText('');
@@ -876,8 +906,11 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     };
   }, [messages, userProfile, serviceContext, assignedAgent]);
 
-  // Helper to trigger full conversation & summary dispatch to Telegram (deduplicated per last message)
+  // Helper to trigger full conversation & summary dispatch to Telegram (strictly deduplicated across reloads/tabs)
   const triggerTelegramSummary = (trigger: 'close' | 'manual' | 'idle' | 'unload') => {
+    // Never re-send old restored localStorage chats that had no new user activity in this session
+    if (!hasUnsentUserActivityRef.current) return;
+
     const {
       messages: currentMessages,
       userProfile: currentProfile,
@@ -889,9 +922,29 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     const userMsgs = currentMessages.filter(m => m.role === 'user');
     if (userMsgs.length === 0) return;
 
-    const lastMsgId = currentMessages[currentMessages.length - 1]?.id;
-    if (!lastMsgId || lastSummarizedMsgIdRef.current === lastMsgId) return;
-    lastSummarizedMsgIdRef.current = lastMsgId;
+    const fingerprint = computeSummaryFingerprint(currentMessages, currentProfile);
+    if (!fingerprint) return;
+
+    // Check both in-memory ref and persistent localStorage so tab switches / reloads never resend
+    let persistedFp: string | null = null;
+    try {
+      persistedFp = localStorage.getItem(LAST_SUMMARIZED_KEY);
+    } catch {
+      persistedFp = null;
+    }
+
+    if (lastSummarizedFpRef.current === fingerprint || persistedFp === fingerprint) {
+      hasUnsentUserActivityRef.current = false;
+      return;
+    }
+
+    lastSummarizedFpRef.current = fingerprint;
+    hasUnsentUserActivityRef.current = false;
+    try {
+      localStorage.setItem(LAST_SUMMARIZED_KEY, fingerprint);
+    } catch {
+      // Ignore storage quota errors
+    }
 
     const payload = JSON.stringify({
       user: currentProfile,
@@ -924,7 +977,18 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         keepalive: true, // Guarantees browser executes the dispatch even when modal unmounts
         body: payload,
-      }).catch(err => console.error('Telegram dispatch failed:', err));
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.serialNumber && isMountedRef.current) {
+            try {
+              localStorage.setItem('processinghub_last_serial', String(data.serialNumber));
+            } catch {
+              // Ignore storage quota errors
+            }
+          }
+        })
+        .catch(err => console.error('Telegram dispatch failed:', err));
     } catch (err) {
       console.error('Failed to send telegram summary:', err);
     }
@@ -1080,7 +1144,7 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
 
     const nextAgent = pickRandomAgent(assignedAgent);
     setAssignedAgent(nextAgent);
-    lastSummarizedMsgIdRef.current = null;
+    hasUnsentUserActivityRef.current = false;
 
     const freshWelcomeId = `welcome-${Date.now()}`;
     initialMessageIdsRef.current.add(freshWelcomeId);
@@ -1576,6 +1640,26 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                       </button>
                     ))}
                   </div>
+
+                  {/* Subtle Chrome Extension Recommendation */}
+                  <a
+                    id="chatbot-extension-tip"
+                    href={CONFIG.chromeExtension.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2.5 px-3 py-2 rounded-xl bg-[#EEF1FE] hover:bg-[#E4E9FD] border border-[#C6D0FB] flex items-center justify-between gap-2 text-[11.5px] text-[#263375] transition-colors"
+                  >
+                    <span className="flex items-center gap-1.5 font-semibold truncate">
+                      <Puzzle className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">
+                        {t(
+                          `ফর্ম অটোফিল: ${CONFIG.chromeExtension.name}`,
+                          `Form Autofill: ${CONFIG.chromeExtension.name}`
+                        )}
+                      </span>
+                    </span>
+                    <ExternalLink className="w-3 h-3 shrink-0" />
+                  </a>
                 </div>
               )}
 

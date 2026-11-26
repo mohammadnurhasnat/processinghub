@@ -70,35 +70,42 @@ export const VISA_SERVICES_EN: VisaService[] = [
     per: '/ incl. processing & slot',
     waText: 'Hello Processing Hub, I want to book Indian Tourist Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).',
     documents: [
-      'Completed and signed online visa application form',
-      'Original passport (at least 6 months validity and 2 blank pages) and all previous passports (GD copy if lost)',
-      'Recent 2×2 inch (50mm × 50mm) lab-printed photo with plain white background and no border',
-      'National ID card (NID) or online digital birth registration certificate',
-      'Recent utility bill copy of current address (electricity, gas, water, or landline)',
-      'Professional proof (NOC & office ID for employees / Govt GO / Trade License for business / Student ID for students)',
-      'Proof of financial solvency ($200 passport endorsement, 6-month bank statement with equivalent balance, or SBI / International Travel Card)',
-      'Tentative travel itinerary and hotel booking details (if applicable)'
+      'Online Visa Application Form',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Bank Statement / Dollar Endorsement',
+      'Proof of Occupation / Profession',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    specialNotes: [
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted'
     ]
   },
   {
     id: 'medical-visa',
     title: 'Medical & Attendant Visa',
     category: 'Medical Care (M-1 / M-2)',
-    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80',
     description: 'Doctor appointment, hospital invitation and AYUSH letter collection from top Indian hospitals, plus urgent IVAC slot and processing for Patient (M-1) and Attendant (M-2).',
     price: '৳6,000',
     per: '/ incl. processing & slot',
     waText: 'Hello Processing Hub, I want to book Indian Medical & Attendant Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).',
     documents: [
-      'Completed and signed online Medical (M-1) / Attendant (M-2) visa application form',
-      'Original passports of patient and attendant (6+ months validity, 2 blank pages) and all old passports (GD copy if lost)',
-      'Recent 2×2 inch lab-printed photo (white background, no border)',
-      '[Patient M-1] Original Indian hospital appointment / Doctor Invitation Letter (with MVRN and attendant name) and AYUSH letter (if applicable)',
-      '[Patient M-1] Recent prescription and medical test reports from a registered Bangladeshi physician (not required separately for the attendant)',
-      '[Attendant M-2] Attendant basic documents and proof of family relationship with the patient',
-      'National ID (NID) or digital birth certificate and recent utility bill copy of current address',
-      'Professional proof (NOC for employees / Trade License for business / Student ID for students)',
-      'Financial solvency proof ($200 endorsement, 6-month bank statement with equivalent balance, or SBI / International Travel Card)'
+      'Online Medical (M-1) / Attendant (M-2) Application Form',
+      'Specific-Dated Hospital Appointment Letter & Ayush Letter',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Bank Statement / Dollar Endorsement',
+      'Proof of Occupation / Profession',
+      'Copies of Recent Medical Documents & Test Reports',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    specialNotes: [
+      'Original medical documents must be brought along at submission',
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted',
+      'Medical Attendant (M-2) applicants do not need separate medical reports; only common documents and proof of relationship with the patient are required'
     ]
   },
   {
@@ -111,122 +118,158 @@ export const VISA_SERVICES_EN: VisaService[] = [
     per: '/ incl. processing & slot',
     waText: 'Hello Processing Hub, I want to book Indian Double Entry Visa (X-3 Miscellaneous) processing with slot (Total: ৳6,500, including ৳1,500 IVAC fee).',
     documents: [
-      'Completed and signed online Miscellaneous (X-3) Double Entry visa application form',
-      'Original passport (6+ months validity, 2 blank pages) and all previous passports (GD copy if lost)',
-      'Recent 2×2 inch lab-printed photo (white background, no border)',
-      'Official embassy appointment / interview confirmation letter for the third country in India',
-      'Work permit and contracted company documents for Europe or destination country (job contract, offer, or sponsorship)',
-      'Confirmed flight / transit itinerary and cover letter explaining the double-entry purpose',
-      'National ID (NID) or digital birth certificate and recent utility bill copy of current address',
-      'Professional proof (NOC & office ID / Trade License / Student ID)',
-      'Financial solvency proof ($200 endorsement, 6-month bank statement with equivalent balance, or SBI / International Travel Card)'
+      'Online Application Form (Miscellaneous X-3 Double Entry)',
+      'Official 3rd-Country / European Embassy Appointment Letter',
+      'Work Permit / Employment Contract & Confirmed Travel Route / Cover Letter',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Bank Statement / Dollar Endorsement',
+      'Proof of Occupation / Profession',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    specialNotes: [
+      'Original / verified copies of the embassy appointment and work permit must be brought along',
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted'
     ]
   },
   {
     id: 'business-visa',
     title: 'Business Visa',
     category: 'Trade & Commerce (B-1 / B-2)',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
-    description: 'Complete business visa processing with Indian company invitation letter, forwarding letter, trade license, Chamber of Commerce, TIN, BIN, IRC, LC, VAT return, IVAC fee, and slot.',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+    description: 'Complete business visa processing with Indian company invitation letter, company letterhead request, renewed trade license, TIN, VAT, Chamber of Commerce, IRC/ERC, Memorandum, L/C, IVAC fee, and slot.',
     price: '৳6,000',
     per: '/ incl. processing & slot',
     waText: 'Hello Processing Hub, I want to book Indian Business Visa processing with slot (Total: ৳6,000, including ৳1,500 IVAC fee).',
     documents: [
-      'Completed online Business Visa application form, original passport (6+ months validity, 2 blank pages), and all previous passports',
-      'Recent 2×2 inch white-background photo, National ID (NID), and recent utility bill copy of current address',
-      'Original Invitation Letter from a registered Indian company',
-      'Forwarding / sponsorship letter on Bangladeshi company letterhead along with visiting card / office ID',
-      'Updated Trade License of the business (with notarized English translation)',
-      'Chamber of Commerce or recognized business association membership certificate and recommendation letter',
-      'Company TIN, BIN, Import/Export certificate (IRC/ERC), LC copy, and latest VAT return',
-      'Personal and company bank statements for the past 6 months ($200 endorsement or sufficient balance / SBI & International Card)'
+      'Online Business Visa Application Form',
+      'Visa Invitation Letter (from Indian Company)',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Personal Bank Statement',
+      'Company Bank Statement',
+      'Visa Request / Forwarding Letter on Company Letterhead',
+      'Monthly Salary Certificate',
+      'Renewed Trade License',
+      'Renewed Income Tax Certificate (TIN / Return)',
+      'VAT Registration Certificate (BIN)',
+      'Renewed Chamber of Commerce / Association Membership Certificate',
+      'Renewed Import & Export Certificate (IRC / ERC)',
+      'Company Memorandum of Association (MoA)',
+      'Letter of Credit (L/C)',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    specialNotes: [
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted'
     ]
   },
   {
     id: 'student-visa',
     title: 'Student Visa (S-1)',
     category: 'Higher Education (S-1)',
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+    image: '/images/services/student-visa.jpg',
     description: 'Complete Student Visa package with Indian university admission and bonafide certificate verification, bank solvency preparation, IVAC fee (৳1,500), and slot.',
     price: '৳5,500',
     per: '/ incl. processing & slot',
     waText: 'Hello Processing Hub, I want to book Indian Student Visa (S-1) processing with slot (Total: ৳5,500, including ৳1,500 IVAC fee & ৳3,000 slot + ৳1,000 processing).',
     documents: [
-      'Completed online Student Visa (S-1) application form',
-      'Original passport (6+ months validity, 2 blank pages) and all previous passports (GD copy if lost)',
-      'Recent 2×2 inch lab-printed photo (white background, no border)',
-      'Original admission letter and bonafide certificate from a recognized Indian university or college (with course and duration)',
-      'NOC from the Ministry of Health & Family Welfare of Bangladesh for medical college admission (if applicable)',
-      'National ID (NID) or digital birth certificate and recent utility bill copy of current address',
-      'All previous academic certificates, mark sheets, and current student ID card in Bangladesh',
-      'Financial solvency: guardian or sponsor bank solvency and 6-month bank statement ($200+ or covering tuition) or SBI / International Travel Card'
+      'Online Application Form (Student Visa S-1)',
+      'Original Admission Letter & Bonafide Certificate from Indian University/College',
+      'Previous Academic Certificates, Mark Sheets & Health Ministry NOC (if Medical College)',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Guardian/Sponsor Bank Solvency & 6-Month Bank Statement / Dollar Endorsement',
+      'Current Student ID Card (Academic / Occupational Proof)',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    specialNotes: [
+      'Original admission letter and academic certificates must be brought along',
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted'
     ]
   },
   {
     id: 'transit-visa',
     title: 'Transit Visa (TR)',
     category: 'Border Transit (TR)',
-    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80',
+    image: '/images/services/transit-visa.jpg',
     description: 'Complete Transit Visa processing for traveling through India to Nepal or Bhutan, including confirmed tickets, hotel booking, port selection, IVAC fee (৳1,500), and slot.',
     price: '৳5,500',
     per: '/ incl. processing & slot',
     waText: 'Hello Processing Hub, I want to book Indian Transit Visa (TR) processing with slot (Total: ৳5,500, including ৳1,500 IVAC fee & ৳3,000 slot + ৳1,000 processing).',
     documents: [
-      'Completed online Transit Visa (TR) application form',
-      'Original passport (6+ months validity, 2 blank pages) and all previous passports (GD copy if lost)',
-      'Recent 2×2 inch lab-printed photo (white background, no border)',
-      'Valid visa copy of the third destination country (such as Nepal, if applicable) and confirmed onward and return bus/rail/air tickets',
-      'Hotel booking in the destination country and route details for approved border ports (Bhutan: Changrabandha/Jaigaon, Nepal: Changrabandha/Raniganj)',
-      'National ID (NID) or digital birth certificate and recent utility bill copy of current address',
-      'Professional proof (NOC / office ID / Trade License / Student ID)',
-      'Financial solvency proof ($200 endorsement, 6-month bank statement with equivalent balance, or SBI / International Travel Card)'
+      'Online Transit Visa (TR) Application Form',
+      'Bus Ticket Copy (Onward & Return)',
+      'Hotel Booking Confirmation',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Bank Statement / Dollar Endorsement',
+      'Proof of Occupation / Profession',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    portNote: 'Bhutan: Changrabandha / Jaigaon · Nepal: Changrabandha / Raniganj (Nepal Visa Mandatory)',
+    specialNotes: [
+      'Original bus ticket must be brought along at submission',
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted'
     ]
   },
   {
     id: 'entry-visa',
     title: 'Entry Visa (X-Misc)',
     category: 'Miscellaneous (X-Misc)',
-    image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80',
+    image: '/images/services/entry-visa-desk.jpg',
     description: 'Complete Miscellaneous (X-Misc) Entry Visa processing including document verification, eligibility proof attachment, IVAC fee, slot (৳4,500), and service charge (৳1,500).',
     price: '৳6,000',
     per: '/ slot ৳4,500 + service ৳1,500',
     waText: 'Hello Processing Hub, I want to book Indian Entry Visa (X-Misc) processing with slot (Total: ৳6,000 = ৳4,500 slot + ৳1,500 processing).',
     documents: [
-      'Completed online Miscellaneous Entry (X-Misc) visa application form',
-      'Original passport (6+ months validity, 2 blank pages) and all previous passports (GD copy if lost)',
-      'Recent 2×2 inch lab-printed photo (white background, no border)',
-      'Original proof of X-Misc entry eligibility / invitation letter / PIO or family relationship certificate',
-      'Valid Indian visa and passport copy of the principal visa holder (for dependents)',
-      'National ID (NID) or digital birth certificate and recent utility bill copy of current address',
-      'Professional proof (NOC / office ID / Trade License / Student ID)',
-      'Financial solvency proof ($200 endorsement, 6-month bank statement with equivalent balance, or SBI / International Travel Card)'
+      'Online Entry Visa (X-Misc) Application Form',
+      'Passport Photocopy (B — Principal / Inviting Holder)',
+      'Visa Photocopy (B) / All Relevant & Relationship Supporting Documents',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Bank Statement',
+      'Proof of Occupation / Profession',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    specialNotes: [
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted'
     ]
   },
   {
     id: 'spouse-visa',
     title: 'Spouse & Family Visa (X-1)',
     category: 'Miscellaneous (X-1)',
-    image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=80',
     description: 'Complete Miscellaneous (X-1) Spouse & Family Visa package for spouses and children of Indian citizens or valid visa holders, including slot (৳4,500) and document service (৳1,500).',
     price: '৳6,000',
     per: '/ slot ৳4,500 + service ৳1,500',
     waText: 'Hello Processing Hub, I want to book Indian Spouse / Family Visa (X-1) processing with slot (Total: ৳6,000 = ৳4,500 slot + ৳1,500 processing).',
     documents: [
-      'Completed online Miscellaneous (X-1) Spouse/Family visa application form',
-      'Applicant original passport (6+ months validity, 2 blank pages) and all previous passports (GD copy if lost)',
-      'Recent 2×2 inch lab-printed photo (white background, no border)',
-      'Nikahnama / official marriage certificate (English translation attested by MoFA Bangladesh and Indian High Commission)',
-      'Indian spouse passport / Aadhaar / Voter ID and Indian address utility bill (or principal visa and passport copy)',
-      'National ID (NID) or digital birth certificate and recent utility bill copy of current address',
-      'Professional proof (NOC / office ID / Trade License / Student ID — if applicable)',
-      'Financial solvency proof ($200 endorsement, 6-month bank statement with equivalent balance, or SBI / International Travel Card)'
+      'Online Application Form (Spouse & Family X-1)',
+      'Nikahnama / Official Marriage Certificate (English Translated & Attested)',
+      'Indian Spouse Passport / Aadhaar / Voter ID & Address Proof (or Principal Visa Copy)',
+      'National ID Card (NID) / Birth Registration Certificate',
+      'Utility Bill Copy',
+      'Bank Statement / Dollar Endorsement',
+      'Proof of Occupation / Profession (if applicable)',
+      'Passport Photocopy (Pages 2 & 3)'
+    ],
+    specialNotes: [
+      'Original marriage certificate and relationship documents must be brought along',
+      'All documents must be arranged strictly in the serial order listed above',
+      'All previous / old passports must be submitted'
     ]
   },
   {
     id: 'ticket-booking',
     title: 'Ticket Booking',
     category: 'Travel & Transit',
-    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=800&q=80',
+    image: '/images/services/ticket-booking.jpg',
     description: 'Domestic and international air ticket booking (one-way, round-trip, transit, and confirmed return) with service charges starting from ৳599 (negotiable) on top of the base fare.',
     price: '৳599+',
     per: '/ starts from ৳599 (negotiable)',
@@ -243,18 +286,71 @@ export const VISA_SERVICES_EN: VisaService[] = [
     id: 'visa-slot-booking',
     title: 'Visa Slot Booking',
     category: 'IVAC Appointment',
-    image: 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&w=800&q=80',
-    description: 'Slot-only booking starts from ৳4,500 (including ৳1,500 fixed IVAC fee). View exact category rates inside: Medical, X-3, Business, Student, Transit, X-Misc, X-1 at ৳4,500 and Tourist at ৳5,500.',
+    image: '/images/services/slot-booking-ivac.jpg',
+    description: 'Slot-only booking starts from ৳4,500 (including fixed ৳1,500 IVAC fee). Only your Web File and one SIM card are required—up to 4 Web File slots can be booked under one SIM account.',
     price: '৳4,500+',
     per: '/ starts from ৳4,500 (incl. IVAC fee)',
     waText: 'Hello Processing Hub, I want to book an Indian Visa Appointment Slot (Starting from ৳4,500 including ৳1,500 IVAC fee).',
     isSlotBooking: true,
     documents: [
-      'Applicant original passport copy (at least 6 months validity)',
-      'Web File Number from the online visa application form',
-      'Select one of the 5 active official IVAC centers in Bangladesh (Dhaka Jamuna Future Park, Chittagong, Khulna, Sylhet, Rajshahi)',
-      'Select visa slot category (Medical / Tourist / Double Entry X-3 / Business / Student / Transit / Entry X-Misc / Spouse X-1)',
-      'Preferred appointment date and urgency timeline'
+      'Online Visa Application Web File (Mandatory)',
+      'One SIM Card (Optional — check this box if you will provide your own SIM with your Web File; if not provided, we will arrange a SIM for an extra charge)'
+    ],
+    specialNotes: [
+      'The slot booking rule is identical across all visa categories—only a Web File and one SIM card are required, with no additional documents needed.',
+      'Under official IVAC regulations, only one account can be created per SIM card, and a maximum of 4 Web File slots (4 appointment dates) can be booked under one account—no more than 4.',
+      'If you do not provide your own SIM card, our team will arrange a SIM, open the account, and book your slot by uploading your Web File; an extra charge applies for the SIM.'
+    ]
+  },
+  {
+    id: 'mofa-notary-translation',
+    title: 'Notary & Document Translation',
+    category: 'Documentation & Translation',
+    image: '/images/services/mofa-notary.jpg',
+    description: 'Certified English translation and Notary Public assistance for Nikahnama, marriage/birth certificates, police clearance, academic certificates, and trade licenses.',
+    price: '৳1,200+',
+    per: '/ per document (depends on type)',
+    waText: 'Hello Processing Hub, I need Notary Public and Certified English Document Translation assistance (Starting from ৳1,200).',
+    documents: [
+      'Original certificate or document (Bengali Nikahnama, Marriage/Birth Certificate, Police Clearance, or Trade License)',
+      'Clear copy of applicant passport and NID (to match exact spelling in translation)',
+      'Supporting relationship or principal documents for Spouse (X-1) or Entry cases',
+      'Authorization details for Notary Public & translation file handling (if applicable)',
+      'Contact phone number and preferred turnaround timeline'
+    ]
+  },
+  {
+    id: 'medical-cost-airport-pickup',
+    title: 'Hospital Cost Estimate & Airport Pickup Guide',
+    category: 'Medical Coordination & Logistics',
+    image: '/images/services/medical-pickup.jpg',
+    description: 'Estimated OPD, diagnostic, and procedure cost ranges across top hospitals in Kolkata, Delhi, Chennai & Hyderabad plus airport/rail pickup and Bengali-speaking coordinator support.',
+    price: '৳1,500+',
+    per: '/ coordination & guide package',
+    waText: 'Hello Processing Hub, I need Indian Hospital Treatment Cost Estimate & Airport/Station Pickup coordination (Starting from ৳1,500).',
+    documents: [
+      'Recent medical reports, doctor prescriptions, or discharge summary (for treatment cost estimate)',
+      'Preferred Indian city and hospital (e.g. Kolkata, Chennai, Delhi, Hyderabad)',
+      'Copies of patient and attendant passports and Indian medical visas',
+      'Arrival airport, train station, or border port schedule for cab/ambulance pickup',
+      'Special requests such as wheelchair assistance or Bengali interpreter'
+    ]
+  },
+  {
+    id: 'hotel-rail-bus-package',
+    title: 'Hotel Booking & Train/Bus Travel Package',
+    category: 'Travel & Accommodation',
+    image: '/images/services/hotel-rail-bus.jpg',
+    description: 'Verified hospital-adjacent and tourist hotel bookings in Kolkata, Delhi, and Chennai plus Maitree/Bandhan/Mitali Express train or cross-border bus ticketing and full route planning.',
+    price: '৳799+',
+    per: '/ service charge (route dependent)',
+    waText: 'Hello Processing Hub, I want to book Hotel Booking & India Train/Bus Travel Package assistance (Service charge starts from ৳799).',
+    documents: [
+      'Clear passport copies and valid Indian visa details for all travelers',
+      'Entry and return border port (Benapole-Petrapole, Gede, Hili, Changrabandha, or Airport)',
+      'Preferred hotel budget and room type near hospital or sightseeing area',
+      'Travel dates for Maitree/Bandhan/Mitali Express train or international bus seats',
+      'Traveler phone number and WhatsApp contact'
     ]
   }
 ];

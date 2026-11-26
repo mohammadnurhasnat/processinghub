@@ -13,7 +13,10 @@ import {
   Ticket, 
   CalendarClock, 
   Check, 
-  Phone 
+  Phone,
+  Stamp,
+  HeartPulse,
+  Hotel
 } from 'lucide-react';
 import { CONFIG, getPhoneDisplay } from '../config';
 import { useLanguage } from '../context/LanguageContext';
@@ -23,7 +26,10 @@ interface QuickBookModalProps {
   onClose: () => void;
 }
 
-export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose }) => {
+export const QuickBookModal: React.FC<QuickBookModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const { language, t } = useLanguage();
   const isBn = language === 'bn';
   const phoneDisplay = getPhoneDisplay(language);
@@ -147,6 +153,39 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({ isOpen, onClose 
         : 'Starting from ৳4,500 (including fixed ৳1,500 IVAC fee)',
       price: isBn ? '৳৪,৫০০+' : '৳4,500+',
       waText: 'Hello Processing Hub, I want to book Indian Visa Appointment Slot (Starting from ৳4,500 including ৳1,500 IVAC fee).',
+    },
+    {
+      id: 'quick-mofa-notary',
+      icon: Stamp,
+      accent: 'mint',
+      title: isBn ? 'নোটারি ও ডকুমেন্ট অনুবাদ' : 'Notary & Document Translation',
+      subtitle: isBn
+        ? 'নিকাহনামা, জন্মনিবন্ধন ও একাডেমিক সনদের ইংরেজি অনুবাদ ও নোটারি'
+        : 'Certified English translation & Notary Public support',
+      price: isBn ? '৳১,২০০+' : '৳1,200+',
+      waText: 'Hello Processing Hub, I need Notary Public & Document Translation service (starting ৳1,200+). Please share the steps.',
+    },
+    {
+      id: 'quick-medical-pickup',
+      icon: HeartPulse,
+      accent: 'periwinkle',
+      title: isBn ? 'হাসপাতাল খরচ ও এয়ারপোর্ট পিকআপ গাইড' : 'Indian Hospital Cost & Airport Pickup Guide',
+      subtitle: isBn
+        ? 'ভারতের শীর্ষ হাসপাতালে চিকিৎসা খরচ ধারণা ও এয়ারপোর্ট/স্টেশন পিকআপ সমন্বয়'
+        : 'Hospital treatment estimate & airport/railway pickup coordination',
+      price: isBn ? '৳১,৫০০+' : '৳1,500+',
+      waText: 'Hello Processing Hub, I want Hospital Cost Estimate & Airport/Rail Pickup Coordination service in India (starting ৳1,500+).',
+    },
+    {
+      id: 'quick-hotel-rail-bus',
+      icon: Hotel,
+      accent: 'mint',
+      title: isBn ? 'হোটেল বুকিং ও ট্রেন/বাস প্যাকেজ' : 'Hotel Booking & Train/Bus Travel Package',
+      subtitle: isBn
+        ? 'কলকাতা/দিল্লি/চেন্নাই/ভেলোরে হোটেল ও ট্রেন-বাস ট্রাভেল প্যাকেজ'
+        : 'Visa-supportive hotel booking & Indian rail/bus ticketing package',
+      price: isBn ? '৳৭৯৯+' : '৳799+',
+      waText: 'Hello Processing Hub, I want to book Hotel Booking & Train/Bus Travel Package in India (starting ৳799+).',
     },
   ] as const;
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -11,8 +11,8 @@ import {
   CalendarCheck2, 
   Stethoscope
 } from 'lucide-react';
-import { getDestinations, getHospitals, HOSPITALS } from '../data/visaData';
-import { HOSPITALS_EN } from '../data/visaDataEn';
+import { getDestinations, getHospitals, HOSPITALS, DESTINATIONS } from '../data/visaData';
+import { HOSPITALS_EN, DESTINATIONS_EN } from '../data/visaDataEn';
 import { CONFIG } from '../config';
 import { Destination, Hospital } from '../types';
 import { HospitalDetailModal } from './HospitalDetailModal';
@@ -31,15 +31,59 @@ const DEPARTMENT_FILTERS = [
   { id: 'Pediatrics', bn: 'শিশু বিভাগ', en: 'Pediatrics', emoji: '👶' },
 ];
 
-export const DestinationsSection: React.FC = () => {
+interface DestinationsSectionProps {
+  externalSearchQuery?: string;
+  externalDestinationQuery?: string;
+  onClearExternalDestinationQuery?: () => void;
+}
+
+export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
+  externalSearchQuery,
+  externalDestinationQuery,
+  onClearExternalDestinationQuery,
+}) => {
   const { language, t, num } = useLanguage();
   const isBn = language === 'bn';
 
   const destinations = getDestinations(language);
   const hospitals = getHospitals(language);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [destFilterQuery, setDestFilterQuery] = useState(externalDestinationQuery || '');
+  const [searchQuery, setSearchQuery] = useState(externalSearchQuery || '');
   const [selectedDept, setSelectedDept] = useState('all');
+
+  useEffect(() => {
+    if (typeof externalDestinationQuery === 'string') {
+      setDestFilterQuery(externalDestinationQuery);
+    }
+  }, [externalDestinationQuery]);
+
+  useEffect(() => {
+    if (typeof externalSearchQuery === 'string' && externalSearchQuery.trim()) {
+      setSearchQuery(externalSearchQuery);
+    }
+  }, [externalSearchQuery]);
+
+  const filteredDestinations = useMemo(() => {
+    const q = destFilterQuery.toLowerCase().trim();
+    if (!q) return destinations;
+    const bnMap = new Map(DESTINATIONS.map((d) => [d.id, d]));
+    const enMap = new Map(DESTINATIONS_EN.map((d) => [d.id, d]));
+
+    return destinations.filter((dest) => {
+      const bnItem = bnMap.get(dest.id);
+      const enItem = enMap.get(dest.id);
+      const candidates = [dest, bnItem, enItem].filter((item): item is Destination => Boolean(item));
+      return candidates.some(
+        (item) =>
+          item.name.toLowerCase().includes(q) ||
+          item.location.toLowerCase().includes(q) ||
+          item.description.toLowerCase().includes(q) ||
+          (item.attractions || []).some((a) => a.toLowerCase().includes(q)) ||
+          item.bestTime.toLowerCase().includes(q)
+      );
+    });
+  }, [destinations, destFilterQuery]);
   
   // Modals state by ID so switching language updates open modals live
   const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
@@ -125,13 +169,43 @@ export const DestinationsSection: React.FC = () => {
           </p>
         </div>
 
+        {destFilterQuery.trim() && (
+          <div
+            id="destination-filter-banner"
+            className="mb-4 px-4 py-2.5 rounded-xl bg-[#EEF1FE] border border-[#BAC5FA] flex flex-wrap items-center justify-between gap-2 text-xs text-[#263375]"
+          >
+            <span>
+              {isBn ? (
+                <>
+                  গন্তব্য ফিল্টার সক্রিয়: <strong>“{destFilterQuery}”</strong> ({num(filteredDestinations.length)}টি ফলাফল)
+                </>
+              ) : (
+                <>
+                  Active destination filter: <strong>“{destFilterQuery}”</strong> ({filteredDestinations.length} match)
+                </>
+              )}
+            </span>
+            <button
+              type="button"
+              id="clear-destination-filter-btn"
+              onClick={() => {
+                setDestFilterQuery('');
+                onClearExternalDestinationQuery?.();
+              }}
+              className="px-3 py-1 rounded-full bg-white text-[#263375] border border-[#BAC5FA] font-bold hover:bg-[#DCE3FF] transition-colors cursor-pointer"
+            >
+              {t('সকল গন্তব্য দেখুন', 'Show All Destinations')}
+            </button>
+          </div>
+        )}
+
         {/* Tourist Destinations Polaroid Row */}
         <div 
           className="dest-scroll" 
           id="destinations-scroll-container"
           ref={destScrollRef}
         >
-          {destinations.map((dest, index) => (
+          {filteredDestinations.map((dest, index) => (
             <div 
               key={dest.id || index} 
               id={`destination-polaroid-${dest.id || index}`}

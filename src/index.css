@@ -63,6 +63,17 @@
   font-display: swap;
 }
 
+/* KALPURUSH (BENGALI TEXTBOOK & NUMERALS) WEB FONT DECLARATIONS */
+@font-face {
+  font-family: 'Kalpurush';
+  src: url('/fonts/Kalpurush.woff2') format('woff2'),
+       url('/fonts/Kalpurush.ttf') format('truetype'),
+       local('Kalpurush');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -73,7 +84,7 @@ html {
 }
 
 body {
-  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  font-family: 'Aptos', 'Aptos Display', 'Kalpurush', 'SolaimanLipi', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   background-color: #F8F9FE;
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(204, 210, 251, 0.25) 0%, transparent 40%),
@@ -83,15 +94,19 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', system-ui, -apple-system, sans-serif;
+  font-family: 'Aptos', 'Aptos Display', 'Kalpurush', 'SolaimanLipi', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-button, input, select, textarea, optgroup, p, span, a, li, label {
-  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', system-ui, -apple-system, sans-serif;
+button, input, select, textarea, optgroup, p, span, a, li, label, strong {
+  font-family: 'Aptos', 'Aptos Display', 'Kalpurush', 'SolaimanLipi', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.font-\[\'Space_Grotesk\'\] {
+  font-family: 'Space Grotesk', 'Aptos', 'Kalpurush', 'SolaimanLipi', sans-serif !important;
 }
 
 .font-aptos {
-  font-family: 'Aptos', 'Aptos Display', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+  font-family: 'Aptos', 'Aptos Display', 'Kalpurush', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
 }
 
 a {
@@ -323,12 +338,14 @@ nav.scrolled .nav-menu-capsule,
 .nav-cta {
   background: var(--periwinkle);
   color: var(--periwinkle-dark);
-  padding: 8px 18px;
+  padding: 6px 14px;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  line-height: 1;
+  min-height: 32px;
   border: 1px solid var(--periwinkle-border);
-  box-shadow: 0 4px 0 #9EACF2, 0 6px 14px rgba(158, 172, 242, 0.32);
+  box-shadow: 0 2px 0 #9EACF2, 0 3px 8px rgba(158, 172, 242, 0.24);
   transition: all 0.15s ease;
   position: relative;
   display: inline-flex;
@@ -340,12 +357,12 @@ nav.scrolled .nav-menu-capsule,
 .nav-cta:hover {
   background: #BFCBFA;
   transform: translateY(-1px);
-  box-shadow: 0 5px 0 #9EACF2, 0 8px 18px rgba(158, 172, 242, 0.38);
+  box-shadow: 0 3px 0 #9EACF2, 0 5px 12px rgba(158, 172, 242, 0.30);
   color: var(--periwinkle-dark);
 }
 
 .nav-cta:active {
-  transform: translateY(3px);
+  transform: translateY(1px);
   box-shadow: 0 1px 0 #9EACF2, 0 2px 4px rgba(158, 172, 242, 0.18);
 }
 
@@ -376,7 +393,7 @@ nav.scrolled .nav-menu-capsule,
 }
 
 .hero-content h1 {
-  font-family: 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', Georgia, serif;
+  font-family: 'Kalpurush', 'SolaimanLipi', 'Aptos Display', Georgia, serif;
   font-size: clamp(2.35rem, 4.8vw, 3.75rem);
   font-weight: 600;
   line-height: 1.18;
@@ -904,31 +921,83 @@ section {
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ANIMATED MULTI-COLOR MOVING BORDER FOR HAMBURGER MENU */
+@keyframes hamburgerBorderFlow {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(180deg);
+    filter: hue-rotate(180deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+    filter: hue-rotate(360deg);
+  }
+}
+
+.hamburger-rainbow-wrap {
+  display: none;
+  position: relative;
+  padding: 2px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(38, 51, 117, 0.12);
+}
+
+.hamburger-rainbow-wrap::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220%;
+  height: 220%;
+  background: conic-gradient(
+    from 0deg,
+    #2563EB 0deg,
+    #06B6D4 60deg,
+    #10B981 120deg,
+    #F59E0B 180deg,
+    #EC4899 240deg,
+    #7C3AED 300deg,
+    #2563EB 360deg
+  );
+  animation: hamburgerBorderFlow 3.2s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hamburger-rainbow-wrap::before {
+    animation: none;
+  }
+}
+
 /* MOBILE NAV DROPDOWN */
 .mobile-nav-toggle {
   display: none;
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 1;
+  background: #FFFFFF;
+  border: none;
   color: var(--ink);
-  padding: 7px;
+  padding: 6px;
   cursor: pointer;
-  border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .mobile-nav-toggle:hover {
-  background: rgba(255, 255, 255, 0.8);
-  transform: scale(1.04);
+  background: #F4F6FF;
 }
 
 .mobile-nav-toggle:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
-/* FLOATING ISLAND MOBILE MENU (MATCHING REFERENCE IMAGE) */
+/* FLOATING ISLAND MOBILE MENU */
 @media (max-width: 767px) {
   .site-header {
     background: transparent !important;
@@ -936,25 +1005,26 @@ section {
     -webkit-backdrop-filter: none !important;
     border-bottom: none !important;
     box-shadow: none !important;
-    padding: 12px 16px 0 !important;
+    padding: 10px 12px 0 !important;
   }
 
   .site-header nav {
-    background: rgba(255, 255, 255, 0.88) !important;
+    background: rgba(255, 255, 255, 0.92) !important;
     backdrop-filter: blur(24px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(204, 211, 251, 0.65) !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(204, 211, 251, 0.7) !important;
     box-shadow: 
       inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
       0 8px 24px rgba(35, 45, 68, 0.08) !important;
-    padding: 7px 12px 7px 18px !important;
+    padding: 6px 10px 6px 12px !important;
     margin: 0 auto !important;
-    max-width: 440px !important;
+    max-width: 460px !important;
     width: 100% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
+    gap: 6px !important;
   }
 
   .site-header .brand-btn {
@@ -968,11 +1038,11 @@ section {
 
   .site-header .brand-btn .brand-text {
     font-family: 'Aptos', sans-serif !important;
-    font-size: 1.05rem !important;
+    font-size: 0.96rem !important;
     font-weight: 700 !important;
-    line-height: 1.35 !important;
+    line-height: 1.15 !important;
     color: #161D28 !important;
-    padding: 2px 0 !important;
+    padding: 0 !important;
     display: inline-block !important;
   }
 
@@ -982,48 +1052,59 @@ section {
 
   .site-header .nav-cta {
     display: inline-flex !important;
-    padding: 6px 14px !important;
-    font-size: 0.82rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 5px 10px !important;
+    min-height: 28px !important;
+    font-size: 0.76rem !important;
+    line-height: 1 !important;
     border-radius: 9999px !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 0 #9EACF2, 0 2px 6px rgba(158, 172, 242, 0.22) !important;
+  }
+
+  .site-header .hamburger-rainbow-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .site-header .mobile-nav-toggle {
-    background: transparent !important;
+    background: #FFFFFF !important;
     border: none !important;
     box-shadow: none !important;
     color: #161D28 !important;
-    width: 36px !important;
-    height: 36px !important;
+    width: 30px !important;
+    height: 30px !important;
     padding: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border-radius: 9999px !important;
+    border-radius: 8px !important;
     cursor: pointer;
     transition: background-color 0.15s ease;
   }
   
   .site-header .mobile-nav-toggle:hover {
-    background: rgba(204, 211, 251, 0.25) !important;
+    background: #F4F6FF !important;
   }
 }
 
-/* FLOATING CARD DIRECTLY UNDER TOP BAR */
+/* COMPACT FLOATING CARD DIRECTLY UNDER TOP BAR */
 .mobile-floating-card {
   pointer-events: auto;
-  max-width: 440px;
-  margin: 10px auto 0;
+  max-width: 460px;
+  margin: 8px auto 0;
   width: 100%;
-  border-radius: 28px !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(240, 243, 254, 0.82) 100%) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1px solid rgba(204, 211, 251, 0.75) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(186, 197, 250, 0.8) !important;
   box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.95),
-    0 24px 48px -12px rgba(35, 45, 68, 0.14) !important;
-  padding: 24px 20px 20px !important;
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
+    0 18px 36px -10px rgba(35, 45, 68, 0.15) !important;
+  padding: 12px 12px 14px !important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1032,67 +1113,74 @@ section {
   position: relative;
 }
 
-.mobile-card-links {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.mobile-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
   width: 100%;
-  gap: 2px;
 }
 
 .mobile-card-link {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   text-align: center;
-  padding: 11px 0;
-  color: #161D28;
-  font-size: 1.12rem;
-  font-weight: 500;
-  letter-spacing: -0.015em;
+  padding: 7px 10px;
+  color: #1E2519;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   text-decoration: none;
-  border-radius: 9999px;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 10px;
+  background: #F7F8FD;
+  border: 1px solid #E5E9FA;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
 }
 
 .mobile-card-link:hover,
 .mobile-card-link:active {
   color: var(--periwinkle-dark);
-  background: var(--periwinkle-subtle);
-  transform: scale(1.02);
+  background: #ECEFFE;
+  border-color: #BAC5FA;
 }
 
 .mobile-menu-divider {
-  width: 82%;
+  width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, rgba(204, 210, 251, 0.05) 0%, rgba(186, 197, 250, 0.70) 50%, rgba(204, 210, 251, 0.05) 100%);
-  margin: 3px auto;
+  background: rgba(186, 197, 250, 0.45);
+  margin: 10px 0;
 }
 
-/* SECONDARY CONTACT PILLS */
+/* SECONDARY CONTACT PILLS — SLIM, CENTERED & TEXT-ADJUSTABLE */
 .mobile-card-secondary-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  margin-top: 18px;
+  margin-top: 8px;
 }
 
 .mobile-pill-call {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 11px 14px;
+  gap: 5px;
+  width: fit-content;
+  padding: 6px 14px;
   border-radius: 9999px;
   background: var(--periwinkle-light);
   border: 1px solid var(--periwinkle-border);
   color: var(--periwinkle-text);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(74, 90, 184, 0.12);
-  transition: all 0.2s ease;
+  transition: all 0.16s ease;
 }
 
 .mobile-pill-call:hover {
@@ -1100,20 +1188,21 @@ section {
 }
 
 .mobile-pill-whatsapp {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 11px 14px;
+  gap: 5px;
+  width: fit-content;
+  padding: 6px 14px;
   border-radius: 9999px;
   background: var(--mint);
   border: 1px solid var(--mint-border);
   color: var(--mint-dark);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(120, 189, 110, 0.28);
-  transition: all 0.2s ease;
+  transition: all 0.16s ease;
 }
 
 .mobile-pill-whatsapp:hover {
@@ -1297,7 +1386,7 @@ section {
 
 /* মিডল ডট যুক্ত বাংলা স্লোগান */
 .footer-tagline-bengali {
-  font-family: 'Noto Serif Bengali', 'Kalpurush', Georgia, serif;
+  font-family: 'Kalpurush', 'SolaimanLipi', Georgia, serif;
   font-size: clamp(1.05rem, 2.3vw, 1.35rem);
   font-weight: 600;
   color: #161D28;
@@ -1308,7 +1397,7 @@ section {
 
 /* সার্ভিস ও হটলাইন স্পেক ("Premium Bifold - V1" স্টাইল) */
 .footer-service-spec {
-  font-family: 'Aptos', sans-serif;
+  font-family: 'Aptos', 'Kalpurush', sans-serif;
   font-size: clamp(0.88rem, 1.8vw, 1.05rem);
   font-weight: 500;
   color: #374492;
@@ -1318,7 +1407,7 @@ section {
 
 /* কপিরাইট লাইন (স্ক্রিনশটের বটম স্টাইল) */
 .footer-copyright {
-  font-family: 'Aptos', 'Noto Serif Bengali', sans-serif;
+  font-family: 'Aptos', 'Kalpurush', sans-serif;
   font-size: clamp(0.8rem, 1.4vw, 0.88rem);
   font-weight: 400;
   color: rgba(38, 51, 117, 0.60);
@@ -1554,10 +1643,11 @@ section {
     justify-content: center;
   }
   section {
-    padding: 70px 6%;
+    padding: 32px 5%;
   }
   .cta-strip {
-    padding: 50px 8%;
+    margin: 0 5% 40px;
+    padding: 36px 6%;
   }
 }
 

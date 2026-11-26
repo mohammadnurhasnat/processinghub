@@ -9,10 +9,13 @@ import {
   PhoneCall, 
   Stethoscope, 
   CalendarCheck2, 
-  ShieldCheck 
+  ShieldCheck,
+  Plane,
+  IndianRupee
 } from 'lucide-react';
 import { Hospital } from '../types';
 import { CONFIG } from '../config';
+import { getHospitalExtras } from '../data/hospitalExtras';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -43,6 +46,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
 
   if (!hospital) return null;
 
+  const extras = getHospitalExtras(hospital.id, hospital.city, language);
   const waAppointmentText = `Hello Processing Hub, I need Doctor Appointment & Medical Visa Invitation Letter for *${hospital.name}* (${hospital.location}). Please assist me with the doctor confirmation and visa file processing.`;
 
   return (
@@ -179,6 +183,46 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
               </ul>
             </div>
           )}
+
+          {/* Indicative Treatment Cost Range & Airport/Rail Pickup Guide */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="p-3.5 rounded-xl bg-[#FAF9F5] border border-[#E5E0D4] space-y-2">
+              <h4 className="text-xs font-bold text-[#1E2519] flex items-center gap-1.5">
+                <IndianRupee className="w-3.5 h-3.5 text-[#2E7D32]" />
+                {t('আনুমানিক চিকিৎসা খরচের ধারণা', 'Indicative Treatment Cost Range')}
+              </h4>
+              <div className="text-[11.5px] text-[#3D4737] space-y-1 leading-snug">
+                <div>
+                  <span className="font-semibold text-[#1E2519]">{t('কনসাল্টেশন:', 'Consultation:')}</span>{' '}
+                  {extras.estimatedCosts.consultation}
+                </div>
+                <div>
+                  <span className="font-semibold text-[#1E2519]">{t('ডায়াগনস্টিক:', 'Diagnostics:')}</span>{' '}
+                  {extras.estimatedCosts.diagnosticPackage}
+                </div>
+                <div>
+                  <span className="font-semibold text-[#1E2519]">{t('সার্জারি/প্রসিডিউর:', 'Major Procedure:')}</span>{' '}
+                  {extras.estimatedCosts.majorProcedureRange}
+                </div>
+              </div>
+              <p className="text-[10px] text-[#6B7563] leading-tight">
+                {t(
+                  '* এটি সাধারণ ধারণামাত্র; চূড়ান্ত বিল হাসপাতালের ডিপার্টমেন্ট ও ডাক্তারের মূল্যায়নের ওপর নির্ভরশীল।',
+                  '* Indicative estimates only; final hospital billing depends on medical evaluation and ward selection.'
+                )}
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#F4F8F2] border border-[#CDE0C8] space-y-2">
+              <h4 className="text-xs font-bold text-[#1E5624] flex items-center gap-1.5">
+                <Plane className="w-3.5 h-3.5 text-[#2E7D32]" />
+                {t('এয়ারপোর্ট ও রেল স্টেশন পিকআপ সহায়তা', 'Airport & Rail Pickup Coordination')}
+              </h4>
+              <p className="text-[11.5px] text-[#35533A] leading-relaxed">
+                {extras.airportPickup}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Modal Footer with Direct Actions */}

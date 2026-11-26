@@ -1,6 +1,7 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs/promises';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
@@ -10,9 +11,58 @@ dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+app.set('trust proxy', 1);
 
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+// Per-IP Sliding Window Rate Limiter
+function createRateLimiter(windowMs: number, maxRequests: number, label: string) {
+  const hits = new Map<string, number[]>();
+
+  // Periodic cleanup to keep memory bounded
+  setInterval(() => {
+    const cutoff = Date.now() - windowMs;
+    for (const [ip, timestamps] of hits.entries()) {
+      const fresh = timestamps.filter((t) => t > cutoff);
+      if (fresh.length === 0) {
+        hits.delete(ip);
+      } else {
+        hits.set(ip, fresh);
+      }
+    }
+  }, Math.max(60_000, windowMs)).unref?.();
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = (req.ip || req.socket.remoteAddress || 'unknown').slice(0, 64);
+    const now = Date.now();
+    const cutoff = now - windowMs;
+    const recent = (hits.get(ip) || []).filter((t) => t > cutoff);
+
+    if (recent.length >= maxRequests) {
+      res.setHeader('Retry-After', String(Math.ceil(windowMs / 1000)));
+      return res.status(429).json({
+        error: `Too many requests on ${label}. Please wait a moment and try again.`,
+      });
+    }
+
+    recent.push(now);
+    hits.set(ip, recent);
+    return next();
+  };
+}
+
+const chatRateLimiter = createRateLimiter(60_000, 24, 'chat');
+const leadRateLimiter = createRateLimiter(15 * 60_000, 12, 'lead-submission');
+const trackRateLimiter = createRateLimiter(60_000, 30, 'file-tracking');
+const adminAuthRateLimiter = createRateLimiter(15 * 60_000, 20, 'staff-auth');
+
+async function writeJsonAtomic(filePath: string, payload: unknown): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+  await fs.writeFile(tempPath, JSON.stringify(payload, null, 2), 'utf8');
+  await fs.rename(tempPath, filePath);
+}
 
 // Initialize GoogleGenAI client (lazy or guarded)
 let aiClient: GoogleGenAI | null = null;
@@ -105,9 +155,11 @@ ${languageDirective}
 }
 
 function buildFullWebsiteContext(): string {
-  const servicesBlock = VISA_SERVICES.map((s) =>
-    `• **${s.title}** (${s.category}) — ফি: ${s.price} ${s.per}\n  বিবরণ: ${s.description}\n  কাগজপত্র: ${s.documents.join(' | ')}`
-  ).join('\n');
+  const servicesBlock = VISA_SERVICES.map((s) => {
+    const portLine = s.portNote ? `\n  পোর্ট: ${s.portNote}` : '';
+    const notesLine = s.specialNotes?.length ? `\n  বিশেষ দ্রষ্টব্য: ${s.specialNotes.join(' | ')}` : '';
+    return `• **${s.title}** (${s.category}) — ফি: ${s.price} ${s.per}\n  বিবরণ: ${s.description}\n  কাগজপত্র (সিরিয়াল অনুযায়ী): ${s.documents.map((d, i) => `${i + 1}) ${d}`).join(' | ')}${portLine}${notesLine}`;
+  }).join('\n');
 
   const slotsBlock = SLOT_TYPES.map((st) =>
     `• **${st.name}**: মোট ৳${st.totalFee} (আইভ্যাক সরকারি ফি ৳${st.ivacFee} + স্লট সার্ভিস চার্জ ৳${st.serviceCharge})`
@@ -340,44 +392,56 @@ Official Indian Visa Application Centre (IVAC) notice board prescribes exact doc
    - পেশাগত প্রমাণপত্র (চাকরিজীবীদের NOC ও অফিস আইডি / সরকারি GO / ব্যবসায়ীদের ট্রেড লাইসেন্স / শিক্ষার্থীদের স্টুডেন্ট আইডি)
    - আর্থিক সক্ষমতার প্রমাণ: **$২০০ ডলার পাসপোর্ট এন্ডোর্সমেন্ট অথবা ব্যাংক অ্যাকাউন্টে সমপরিমাণ টাকা থাকা অবস্থায় বিগত ৬ মাসের ব্যাংক স্টেটমেন্ট অথবা স্টেট ব্যাংক অফ ইন্ডিয়া (SBI) ট্রাভেল কার্ড / ইন্টারন্যাশনাল ট্রাভেল কার্ড**।
 
-A. **ট্যুরিস্ট ভিসা (Tourist Visa) ডকুমেন্টস চেকলিস্ট**:
-   - উপরোক্ত কমন ডকুমেন্টস + সম্ভাব্য ভ্রমণ বিবরণ ও হোটেল বুকিং (প্রযোজ্য ক্ষেত্রে)।
+A. **ট্যুরিস্ট ভিসা (Tourist Visa — IVAC নোটিশ বোর্ড সিরিয়াল চেকলিস্ট)**:
+   1) আবেদন পত্র · 2) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 3) ইউটিলিটি বিলের কপি · 4) ব্যাংক স্টেটমেন্ট / ডলার এনডোর্সমেন্ট · 5) পেশাগত প্রমাণপত্র · 6) পাসপোর্টের কপি (পাতা ২, ৩)।
+   - *বিশেষ দ্রষ্টব্য*: সকল কাগজ অবশ্যই উপরের (সিরিয়াল) নম্বর অনুসারে সাজাতে হবে; সকল পুরোনো পাসপোর্ট অবশ্যই জমা দিতে হবে।
 
-B. **মেডিকেল (M-1) ও মেডিকেল অ্যাটেনডেন্ট (M-2) ভিসা চেকলিস্ট**:
-   - **রোগীর (M-1) জন্য**: কমন ডকুমেন্টস + ভারতের স্বীকৃত হাসপাতালের মূল অ্যাপয়েন্টমেন্ট / ডক্টরস ইনভাইটেশন লেটার (MVRN ও অ্যাটেনডেন্টের নামসহ) + আয়ুষ (AYUSH) লেটার + বাংলাদেশের সাম্প্রতিক ডাক্তারের প্রেসক্রিপশন ও মেডিকেল টেস্ট রিপোর্ট।
-   - **অ্যাটেনডেন্টের (M-2) জন্য**: কেবল অ্যাটেনডেন্টের বেসিক কমন ডকুমেন্টস ও রোগীর সাথে সম্পর্কের প্রমাণপত্র লাগবে (**অ্যাটেনডেন্টের আলাদা মেডিকেল টেস্ট রিপোর্ট বা প্রেসক্রিপশন লাগবে না**)।
+B. **মেডিকেল (M-1) ও মেডিকেল অ্যাটেনডেন্ট (M-2) ভিসা (IVAC নোটিশ বোর্ড সিরিয়াল চেকলিস্ট)**:
+   1) আবেদন পত্র · 2) সুনির্দিষ্ট তারিখসহ (Appointment letter & Ayush Letter) · 3) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 4) ইউটিলিটি বিলের কপি · 5) ব্যাংক স্টেটমেন্ট / ডলার এনডোর্সমেন্ট · 6) পেশাগত প্রমাণপত্র · 7) সদ্য মেডিকেলের কাগজ সমূহের কপি · 8) পাসপোর্টের কপি (পাতা ২, ৩)।
+   - *বিশেষ দ্রষ্টব্য*: মেডিকেলের মূল কাগজ সমূহ অবশ্যই সঙ্গে আনতে হবে; সকল কাগজ সিরিয়াল অনুযায়ী সাজাতে হবে; সকল পুরোনো পাসপোর্ট অবশ্যই জমা দিতে হবে। **অ্যাটেনডেন্টের (M-2) আলাদা মেডিকেল টেস্ট রিপোর্ট বা প্রেসক্রিপশন লাগে না** — কেবল সাধারণ ডকুমেন্টস ও রোগীর সাথে সম্পর্কের প্রমাণপত্র লাগে।
 
 C. **ডাবল এন্ট্রি ভিসা — মিসেলেনিয়াস ক্যাটাগরি (Double Entry Visa X-3) চেকলিস্ট**:
-   - কমন ডকুমেন্টস + যে দেশের এম্বাসি ফেস করতে ভারতে যাবেন সেই **এম্বাসির অফিশিয়াল অ্যাপয়েন্টমেন্ট লেটার** + **ওয়ার্ক পারমিট (Work Permit)** সহ ইউরোপগামী বা ৩য় দেশের চুক্তিকৃত কোম্পানির প্রয়োজনীয় কাগজপত্র (Job Contract / Offer / Sponsorship) + কনফার্মড ফ্লাইট/ট্রানজিট রুট ও কভারিং লেটার।
+   1) আবেদন পত্র (X-3) · 2) ৩য়/ইউরোপীয় দেশের এম্বাসির অফিসিয়াল অ্যাপয়েন্টমেন্ট লেটার · 3) ওয়ার্ক পারমিট / চুক্তিপত্র ও কভারিং লেটার · 4) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 5) ইউটিলিটি বিলের কপি · 6) ব্যাংক স্টেটমেন্ট / ডলার এনডোর্সমেন্ট · 7) পেশাগত প্রমাণপত্র · 8) পাসপোর্টের কপি (পাতা ২, ৩)।
+   - *বিশেষ দ্রষ্টব্য*: সকল কাগজ সিরিয়াল অনুযায়ী সাজাতে হবে ও সকল পুরোনো পাসপোর্ট অবশ্যই জমা দিতে হবে।
 
-D. **বিজনেস ভিসা (Business Visa B-1/B-2) চেকলিস্ট**:
-   - কমন ডকুমেন্টস + ভারতীয় কোম্পানির মূল ইনভাইটেশন লেটার + বাংলাদেশি প্রতিষ্ঠানের প্যাডে ফরওয়ার্ডিং লেটার + নবায়নকৃত ট্রেড লাইসেন্স (ইংরেজি অনুবাদসহ) + **চেম্বার অফ কমার্স (Chamber of Commerce)** সদস্য/সুপারিশ সনদ + **টিন (TIN)**, **বিন (BIN)**, **আইআরসি/ইআরসি (IRC/ERC)**, **এলসি (LC)**, **ভ্যাট রিটার্ন (VAT Return)** এবং ব্যক্তিগত ও কোম্পানির বিগত ৬ মাসের ব্যাংক স্টেটমেন্ট।
+D. **বিজনেস ভিসা (Business Visa B-1/B-2 — IVAC নোটিশ বোর্ডের ১৬টি আইটেম)**:
+   1) আবেদন পত্র · 2) ভিসার আমন্ত্রণ পত্র · 3) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 4) ইউটিলিটি বিলের কপি · 5) ব্যক্তিগত ব্যাংক স্টেটমেন্ট · 6) কোম্পানীর ব্যাংক স্টেটমেন্ট · 7) কোম্পানির প্যাডে ভিসার অনুরোধ পত্র · 8) মাসিক বেতনের সনদপত্র · 9) নবায়নকৃত ট্রেড লাইসেন্স · 10) নবায়নকৃত আয়কর পত্র · 11) ভ্যাট এর সনদপত্র · 12) নবায়নকৃত চেম্বার / এসোসিয়েশন এর সদস্যের সনদপত্র · 13) নবায়নকৃত আমদানি ও রপ্তানি সনদপত্র · 14) কোম্পানির সংঘ স্মারক (মেমোরেন্ডাম) · 15) এল সি (L/C) · 16) পাসপোর্ট এর ফটোকপি (পাতা ২, ৩)।
+   - *বিশেষ দ্রষ্টব্য*: সকল কাগজ অবশ্যই উপরের (সিরিয়াল) নম্বর অনুসারে সাজাতে হবে; সকল পুরোনো পাসপোর্ট অবশ্যই জমা দিতে হবে।
 
 E. **স্টুডেন্ট ভিসা (Student Visa S-1) চেকলিস্ট**:
-   - কমন ডকুমেন্টস + ভারতের স্বীকৃত বিশ্ববিদ্যালয়/কলেজের মূল অ্যাডমিশন লেটার ও বোনাফাইড সার্টিফিকেট (কোর্স ও সময়কালসহ) + অভিভাবক/স্পনসরের ব্যাংক সলভেন্সি ও ৬ মাসের ব্যাংক স্টেটমেন্ট + মেডিকেল কলেজের ক্ষেত্রে স্বাস্থ্য ও পরিবার কল্যাণ মন্ত্রণালয়ের NOC + পূর্বের একাডেমিক সার্টিফিকেট ও বর্তমান স্টুডেন্ট আইডি কার্ড।
+   1) আবেদন পত্র (S-1) · 2) ভারতীয় বিশ্ববিদ্যালয়/কলেজের মূল অ্যাডমিশন লেটার ও বোনাফাইড সার্টিফিকেট · 3) পূর্বের একাডেমিক সার্টিফিকেট, মার্কশিট ও স্বাস্থ্য মন্ত্রণালয়ের NOC (মেডিকেলের ক্ষেত্রে) · 4) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 5) ইউটিলিটি বিলের কপি · 6) ব্যাংক সলভেন্সি ও ৬ মাসের ব্যাংক স্টেটমেন্ট / ডলার এনডোর্সমেন্ট · 7) বর্তমান স্টুডেন্ট আইডি কার্ড · 8) পাসপোর্টের কপি (পাতা ২, ৩)।
+   - *বিশেষ দ্রষ্টব্য*: মূল অ্যাডমিশন লেটার সঙ্গে আনতে হবে, কাগজ সিরিয়াল অনুযায়ী সাজাতে হবে ও সকল পুরোনো পাসপোর্ট জমা দিতে হবে।
 
-F. **ট্রানজিট ভিসা (Transit Visa TR) চেকলিস্ট**:
-   - কমন ডকুমেন্টস + গন্তব্য ৩য় দেশের বৈধ ভিসা কপি (যেমন নেপালের ভিসা) + কনফার্মড অনওয়ার্ড ও রিটার্ন বাস/রেল/এয়ার টিকেট + হোটেল বুকিং + অনুমোদিত সীমান্ত পোর্ট (ভুটান: চ্যাংড়াবান্ধা/জয়গাঁ, নেপাল: চ্যাংড়াবান্ধা/রাণীগঞ্জ)।
+F. **ট্রানজিট ভিসা (Transit Visa TR — IVAC নোটিশ বোর্ড সিরিয়াল চেকলিস্ট)**:
+   1) আবেদন পত্র · 2) বাসের টিকেটের কপি · 3) হোটেল বুকিং · 4) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 5) ইউটিলিটি বিলের কপি · 6) ব্যাংক স্টেটমেন্ট / ডলার এনডোর্সমেন্ট · 7) পেশাগত প্রমাণপত্র · 8) পাসপোর্টের কপি (পাতা ২, ৩)।
+   - **পোর্ট**: ভুটান — চেংরাবান্ধা / জয়গা; নেপাল — চেংরাবান্ধা / রানীগঞ্জ (নেপালের ভিসা বাধ্যতামূলক)।
+   - *বিশেষ দ্রষ্টব্য*: বাসের মূল টিকেট অবশ্যই সঙ্গে আনতে হবে; সকল কাগজ সিরিয়াল অনুযায়ী সাজাতে হবে; সকল পুরোনো পাসপোর্ট অবশ্যই জমা দিতে হবে।
 
-G. **এন্ট্রি ভিসা — মিসেলেনিয়াস ক্যাটাগরি (Entry Visa X-Misc) চেকলিস্ট**:
-   - কমন ডকুমেন্টস + X-Misc এন্ট্রি যোগ্যতার মূল প্রমাণপত্র / ইনভাইটেশন লেটার / PIO বা সম্পর্কের সনদ + প্রিন্সিপাল ভিসা ও পাসপোর্টের কপি (ডিপেন্ডেন্ট ক্ষেত্রে)।
+G. **এন্ট্রি ভিসা — মিসেলেনিয়াস ক্যাটাগরি (Entry Visa X-Misc — IVAC নোটিশ বোর্ড সিরিয়াল চেকলিস্ট)**:
+   1) আবেদন পত্র · 2) পাসপোর্টের ফটোকপি (B) · 3) ভিসার ফটোকপি (B) / প্রাসঙ্গিক / সম্পর্কিত সকল কাগজ · 4) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 5) ইউটিলিটি বিলের কপি · 6) ব্যাংক স্টেটমেন্ট · 7) পেশাগত প্রমাণপত্র · 8) পাসপোর্টের কপি (পাতা ২, ৩)।
+   - *বিশেষ দ্রষ্টব্য*: সকল কাগজ অবশ্যই উপরের (সিরিয়াল) নম্বর অনুসারে সাজাতে হবে; সকল পুরোনো পাসপোর্ট অবশ্যই জমা দিতে হবে।
 
 H. **স্পাউস ও ফ্যামিলি ভিসা — মিসেলেনিয়াস ক্যাটাগরি (Spouse Visa X-1) চেকলিস্ট**:
-   - কমন ডকুমেন্টস + নিকাহনামা / সরকারি ম্যারিজ সার্টিফিকেট (ইংরেজি অনুবাদ, MoFA ও ভারতীয় হাইকমিশন সত্যায়িত) + ভারতীয় স্পাউসের পাসপোর্ট / আধার কার্ড / ভোটার আইডি কার্ড ও ভারতীয় ঠিকানার ইউটিলিটি বিল (বা প্রিন্সিপাল ভিসা ও পাসপোর্ট কপি)।
+   1) আবেদন পত্র (X-1) · 2) নিকাহনামা / সরকারি বিবাহ সনদ (ইংরেজি অনুবাদ ও যথাযথ সত্যায়িত) · 3) স্পাউসের ভারতীয় পাসপোর্ট / আধার / ভোটার আইডি ও ঠিকানার প্রমাণ (বা প্রিন্সিপাল ভিসা কপি) · 4) জাতীয় পরিচয় পত্র / জন্ম নিবন্ধন · 5) ইউটিলিটি বিলের কপি · 6) ব্যাংক স্টেটমেন্ট / ডলার এনডোর্সমেন্ট · 7) পেশাগত প্রমাণপত্র (প্রযোজ্য ক্ষেত্রে) · 8) পাসপোর্টের কপি (পাতা ২, ৩)।
 
-I. **ভিসা প্রত্যাখ্যাত / রিজেক্ট হওয়ার সম্ভাব্য ৯টি কারণ**:
-   - ফর্মে ভুল তথ্য পূরণ করা বা জাল/অসম্পূর্ণ ডকুমেন্ট সংযুক্ত করা
-   - পাসপোর্ট ও NID/জন্ম নিবন্ধনে তথ্যের অমিল থাকা বা পূর্বের সকল পুরনো পাসপোর্ট জমা না দেওয়া
-   - ভ্রমণ ভিসা নিয়ে ভারতে Over Stay করা বা আবেদন পত্র ও ইউটিলিটি বিলের ঠিকানায় গরমিল থাকা
-   - পুরনো ছবি বা ২"×২" সাদা ব্যাকগ্রাউন্ড ছাড়া ছবি ব্যবহার করা বা নকল NOC / ভুয়া এন্ডোর্সমেন্ট দেওয়া।
-   *(অফিসিয়াল সহায়তা ই-মেইল: visahelp@hcidhaka.gov.in)*
+I. **ভিসা প্রত্যাখ্যানের সম্ভাব্য ৯টি কারণ (IVAC নোটিশ বোর্ড অনুযায়ী)**:
+   1) আবেদনকারীর ফর্মে কোন ভুল তথ্য পূরণ করলে
+   2) কোন ডকুমেন্ট জাল/নকল সংযুক্ত করলে
+   3) পাসপোর্ট এবং ভোটার আইডি বা জন্ম নিবন্ধনের সাথে কোন গড়মিল থাকলে
+   4) ভ্রমণ ভিসা নিয়ে গিয়ে Over Stay করলে
+   5) আবেদন পত্র এবং বিদ্যুৎ বিলের ঠিকানা গড়মিল থাকলে
+   6) পুরানো ছবি দিয়ে অথবা 2"×2" ছবি ছাড়া আবেদন করলে
+   7) NOC এবং ডলার এনডোর্সমেন্ট নকল দিলে
+   8) পেশাগত তথ্য ভুল দিলে (কলম-এ)
+   9) পুরানো সকল পাসপোর্ট সংযুক্ত না করলে
+   *(অফিসিয়াল নোট: IVAC ভিসা প্রত্যাখ্যান কারণ বলতে পারবে না। বিস্তারিত জানার জন্য ই-মেইল করুন: visahelp@hcidhaka.gov.in)*
 
-J. **বাংলাদেশের বর্তমানে সচল ৫টি আইভ্যাক (IVAC) সেন্টার ও সাময়িকভাবে বন্ধ কেন্দ্রের তথ্য**:
-   - **বর্তমানে খোলা ও সচল ৫টি সেন্টার**: ঢাকা (শুধুমাত্র যমুনা ফিউচার পার্ক — JFP), চট্টগ্রাম, খুলনা, সিলেট ও রাজশাহী।
-   - **সাময়িকভাবে বন্ধ ১১টি সেন্টার**: রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা — এই ১১টি আঞ্চলিক আইভ্যাক সেন্টার **আপাতত সাময়িকভাবে বন্ধ রয়েছে**। তাই গ্রাহকদের অনুরোধ করবে বর্তমানে সচল থাকা উপরের ৫টি সেন্টারের যেকোনো একটি নির্বাচন করে আবেদন ও স্লট বুকিং করতে।
+J. **বাংলাদেশের আইভ্যাক (IVAC) সেন্টার ও সাময়িকভাবে বন্ধ কেন্দ্রের তথ্য**:
+   - **আইভ্যাক (IVAC) সেন্টারসমূহ**: ঢাকা (যমুনা ফিউচার পার্ক — JFP), চট্টগ্রাম, খুলনা, সিলেট ও রাজশাহী।
+   - **সাময়িকভাবে বন্ধ ১১টি সেন্টার**: রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা — এই ১১টি আঞ্চলিক আইভ্যাক সেন্টার **আপাতত সাময়িকভাবে বন্ধ রয়েছে**। তাই গ্রাহকদের অনুরোধ করবে উপরের আইভ্যাক সেন্টারগুলোর যেকোনো একটি নির্বাচন করে আবেদন ও স্লট বুকিং করতে।
 
-K. **SCHEDULE OF CHARGES & Processing Hub Official Rates (সর্বশেষ আপডেটেড ফি তালিকা)**:
-   - সরকারি আইভ্যাক (IVAC) ফি: ১,৫০০ টাকা (অতিরিক্ত পোর্ট এন্ডোর্সমেন্ট / ফর্ম সংশোধন / VAFC চার্জ: ৩০০ টাকা)।
+K. **SCHEDULE OF CHARGES (ALL IVACs) & Processing Hub Official Rates (সর্বশেষ আপডেটেড ফি তালিকা)**:
+   - সরকারি আইভ্যাক (IVAC) ফি: 1) Visa Processing Fees: 1500 TK · 2) Additional Port Endorsement: 300 TK (Maximum 2 Ports) · 3) Online Form Correction (Permitted Fields): 300 TK (Condition Apply) · 4) Visa Application Facilitation: 300 TK (At VAFC Jamuna Future Park)।
    1. **Processing Fee with Slot (সম্পূর্ণ ফাইল প্রসেসিং + স্লট — প্রতিটিতেই ৳১,৫০০ আইভ্যাক সরকারি ফি যুক্ত)**:
       - Medical & Attendant Visa (M-1/M-2): **৳৬,০০০**
       - Tourist Visa: **৳৬,০০০**
@@ -390,10 +454,17 @@ K. **SCHEDULE OF CHARGES & Processing Hub Official Rates (সর্বশেষ 
    2. **Only Slot Booking (শুধুমাত্র স্লট বুকিং — ৳৪,৫০০ থেকে শুরু, প্রতিটিতেই ৳১,৫০০ আইভ্যাক ফি ফিক্সড)**:
       - Medical / Double Entry (X-3) / Business / Student (S-1) / Transit (TR) / Entry (X-Misc) / Spouse (X-1) শুধু স্লট: মোট **৳৪,৫০০** (আইভ্যাক ফি ৳১,৫০০ + স্লট ফি ৳৩,০০০)
       - Tourist Visa শুধু স্লট: মোট **৳৫,৫০০** (আইভ্যাক ফি ৳১,৫০০ + স্লট ফি ৳৪,০০০)
+      - **স্লট বুকিংয়ের প্রয়োজনীয় তথ্য ও আইভ্যাক অফিসিয়াল নিয়ম (সকল ক্যাটাগরির জন্য একই)**: স্লট বুকিংয়ের জন্য কেবল **ওয়েব ফাইল (বাধ্যতামূলক)** এবং **একটি সিম কার্ড** প্রয়োজন—অন্য কোনো কাগজ বা পাসপোর্ট কপি লাগে না। আইভ্যাক (IVAC) সেন্টারের অফিসিয়াল নিয়ম অনুযায়ী একটি সিম কার্ডের অধীনে কেবল একটি অ্যাকাউন্ট খোলা যায় এবং সেই একটি অ্যাকাউন্টে সর্বোচ্চ **৪টি ওয়েব ফাইলের (৪টি ডেট)** স্লট বুকিং করা যায়—এর বেশি করা যাবে না। আবেদনকারী নিজস্ব সিম কার্ড না দিলে আমাদের পক্ষ থেকে সিমের ব্যবস্থা করে অ্যাকাউন্ট খুলে ওয়েব ফাইল আপলোডের মাধ্যমে স্লট বুকিং সম্পন্ন করা হবে; এক্ষেত্রে সিমের জন্য অতিরিক্ত চার্জ প্রযোজ্য হবে।
    3. **Ticket Booking (সকল ধরনের এয়ার/ট্রাভেল টিকেট বুকিং)**:
       - মূল টিকেটের নির্ধারিত মূল্যের সাথে অতিরিক্ত **৳৫৯৯ থেকে শুরু (আলোচনা সাপেক্ষে)** সার্ভিস চার্জ প্রযোজ্য।
    *গুরুত্বপূর্ণ নির্দেশনা*: কাস্টমার যখন কোনো ভিসার খরচ বা ফি জানতে চাইবে, তখন স্পষ্টভাবে **প্রসেসিং + স্লট (আইভ্যাক ফিসহ)** এবং **শুধুমাত্র স্লট (আইভ্যাক ফি ১,৫০০৳ ফিক্সড + স্লট ফি)**—এই দুইটি রেটই পরিষ্কার ও সংক্ষিপ্তভাবে উল্লেখ করবে যাতে কোনো বিভ্রান্তি না থাকে।
    - Hotline/WhatsApp: +8801577464706, Dhaka, Bangladesh.
+
+L. **নতুন ৩টি বিশেষ সেবা ও Chrome এক্সটেনশন (Tracker - Indian Visa Autofill)**:
+   - **নোটারি ও ডকুমেন্ট অনুবাদ সেবা (৳১,২০০+)**: ম্যারিজ সার্টিফিকেট/নিকাহনামা, জন্ম নিবন্ধন, একাডেমিক সনদ, পুলিশ ক্লিয়ারেন্স ও ট্রেড লাইসেন্সের নির্ভুল ইংরেজি অনুবাদ এবং নোটারি পাবলিক সহায়তা।
+   - **ইন্ডিয়ান হাসপাতাল খরচ ও এয়ারপোর্ট পিকআপ গাইড (৳১,৫০০+)**: ভারতের Apollo, Medanta (মেডান্টা), Fortis, Narayana Health, MIOT, CMC, Desun (দেশুন) ইত্যাদি হাসপাতালে কনসালটেশন/ডায়াগনস্টিক/সার্জারির আনুমানিক খরচের ধারণা ও এয়ারপোর্ট/রেলস্টেশন পিকআপ সমন্বয়।
+   - **হোটেল বুকিং ও ট্রেন/বাস ট্রাভেল প্যাকেজ (৳৭৯৯+)**: কলকাতা, দিল্লি, চেন্নাই, ভেলোর, মুম্বাই ও বেঙ্গালুরুতে হাসপাতালের কাছাকাছি ভিসা-সাপোর্টিভ হোটেল বুকিং এবং ঢাকা-কলকাতা/আভ্যন্তরীণ ট্রেন-বাস টিকেট সহায়তা।
+   - **অফিশিয়াল Chrome এক্সটেনশন — Tracker - Indian Visa Autofill (Tracker Smart Autofill)**: ইন্ডিয়ান ভিসা ফর্ম অটোফিল করার জন্য আমাদের তৈরি ক্রোম এক্সটেনশনটির নাম **"Tracker - Indian Visa Autofill"** (ক্রোম ওয়েব স্টোর লিংক: https://chromewebstore.google.com/detail/fbofnjpmmimniffobcfpnfiejgkboiga?utm_source=item-share-cp )। এতে পাসপোর্ট বা পূর্বের ফর্ম (PDF) আপলোড করে কিংবা একবার প্রোফাইল সেভ করে মাত্র এক ক্লিকে (One-Click Auto Mode) ৩০ সেকেন্ডের মধ্যে পুরো মাল্টি-স্টেপ অনলাইন ফর্ম, আংশিক পূরণকৃত ফর্ম ও অ্যাপয়েন্টমেন্ট বুকিং পেজ অটোমেটিক পূরণ করা যায়। এতে ইনস্ট্যান্ট ক্যাপচা সলভার, মাল্টিপল প্রোফাইল ও লোকাল ছবি/ডকুমেন্ট স্টোরেজ রয়েছে এবং সকল তথ্য আবেদনকারীর নিজস্ব ব্রাউজারেই সংরক্ষিত থাকে।
 
 I. **REAL-TIME GOOGLE SEARCH & IVAC APPOINTMENT SLOT RELEASE POLICY (রিয়েল-টাইম সার্চ ও স্লট পলিসি)**:
    • You have real-time Google Search capability enabled via Google Search Grounding (\`googleSearch\`).
@@ -778,25 +849,31 @@ function generateAgentFallbackReply(
         `- **মূল কাগজপত্র:** মূল ও পুরনো পাসপোর্ট, ২×২ ছবি, NID/জন্মনিবন্ধন, ইউটিলিটি বিল, ভারতীয় বিশ্ববিদ্যালয়/কলেজের মূল অ্যাডমিশন ও বোনাফাইড সার্টিফিকেট (মেডিকেলের ক্ষেত্রে স্বাস্থ্য মন্ত্রণালয়ের NOC), ৬ মাসের ব্যাংক সলভেন্সি ও স্টেটমেন্ট এবং একাডেমিক সনদ/স্টুডেন্ট আইডি।`;
   }
 
-  // Notice board queries: Rejection reasons
+  // Notice board queries: Rejection reasons (Official IVAC Notice Board 9 causes)
   if (query.includes('রিজেক্ট') || query.includes('প্রত্যাখ্যান') || query.includes('বাতিল') || query.includes('rejection') || query.includes('reject') || query.includes('refus') || query.includes('ভিসা না পাওয়ার কারণ')) {
     return isEn
-      ? 'Common reasons for Indian Visa rejection:\n\n' +
-        '- Incorrect details on the application form or incomplete/fake documents\n' +
-        '- Mismatches between Passport and NID/Birth Certificate details\n' +
-        '- Failing to submit all previous passports or previous Over Stay in India\n' +
-        '- Address mismatch between the application form and the utility bill\n' +
-        '- Outdated photo or photo without a clean 2"×2" white background\n' +
-        '- Invalid NOC or unverified bank statement/dollar endorsement.\n\n' +
-        '*(Official help email: visahelp@hcidhaka.gov.in)*'
-      : 'ইন্ডিয়ান ভিসা সাধারণত যেসব কারণে রিজেক্ট হয়:\n\n' +
-        '- ফর্মে ভুল তথ্য পূরণ করা বা জাল/অসম্পূর্ণ ডকুমেন্ট সংযুক্ত করা\n' +
-        '- পাসপোর্ট ও NID/জন্ম নিবন্ধনে তথ্যের অমিল থাকা\n' +
-        '- পূর্বের সকল পুরনো পাসপোর্ট জমা না দেওয়া বা ভ্রমণ ভিসা নিয়ে ভারতে Over Stay করা\n' +
-        '- আবেদন পত্র এবং বিদ্যুৎ বিলের ঠিকানায় অমিল থাকা\n' +
-        '- পুরানো ছবি বা ২"×২" সাদা ব্যাকগ্রাউন্ড ছাড়া ছবি দেওয়া\n' +
-        '- জাল NOC বা ভুয়া ব্যাংক/ডলার এন্ডোর্সমেন্ট দেওয়া।\n\n' +
-        '*(অফিসিয়াল সহায়তা ইমেইল: visahelp@hcidhaka.gov.in)*';
+      ? 'Official IVAC Notice Board — 9 Possible Causes of Indian Visa Rejection:\n\n' +
+        '- 1) Filling incorrect details in the application form\n' +
+        '- 2) Attaching any fake/forged document\n' +
+        '- 3) Any mismatch between Passport and Voter ID (NID) or Birth Registration\n' +
+        '- 4) Overstaying in India on a previous travel visa\n' +
+        '- 5) Address mismatch between the application form and electricity bill\n' +
+        '- 6) Applying with an old photo or without a 2"×2" photo\n' +
+        '- 7) Submitting fake NOC or fake dollar endorsement\n' +
+        '- 8) Providing incorrect occupational details (in the occupation column)\n' +
+        '- 9) Failing to attach all previous/old passports\n\n' +
+        '*(IVAC cannot state reasons for rejection. Official email: visahelp@hcidhaka.gov.in)*'
+      : 'অফিশিয়াল IVAC নোটিশ বোর্ড অনুযায়ী ভিসা প্রত্যাখ্যানের সম্ভাব্য ৯টি কারণ:\n\n' +
+        '- ১) আবেদনকারীর ফর্মে কোন ভুল তথ্য পূরণ করলে\n' +
+        '- ২) কোন ডকুমেন্ট জাল/নকল সংযুক্ত করলে\n' +
+        '- ৩) পাসপোর্ট এবং ভোটার আইডি বা জন্ম নিবন্ধনের সাথে কোন গড়মিল থাকলে\n' +
+        '- ৪) ভ্রমণ ভিসা নিয়ে গিয়ে Over Stay করলে\n' +
+        '- ৫) আবেদন পত্র এবং বিদ্যুৎ বিলের ঠিকানা গড়মিল থাকলে\n' +
+        '- ৬) পুরানো ছবি দিয়ে অথবা 2"×2" ছবি ছাড়া আবেদন করলে\n' +
+        '- ৭) NOC এবং ডলার এনডোর্সমেন্ট নকল দিলে\n' +
+        '- ৮) পেশাগত তথ্য ভুল দিলে (কলম-এ)\n' +
+        '- ৯) পুরানো সকল পাসপোর্ট সংযুক্ত না করলে\n\n' +
+        '*(IVAC ভিসা প্রত্যাখ্যান কারণ বলতে পারবে না। বিস্তারিত জানার জন্য ই-মেইল করুন: visahelp@hcidhaka.gov.in)*';
   }
 
   // IVAC Centers / Location queries (5 active IVAC centers + note on 11 temporarily closed centers)
@@ -814,20 +891,20 @@ function generateAgentFallbackReply(
     query.includes('bogra') || query.includes('kushtia') || query.includes('jessore') || query.includes('satkhira')
   ) {
     return isEn
-      ? 'Currently, **5 official IVAC centers** are open and active in Bangladesh:\n\n' +
+      ? 'Official **IVAC centers** in Bangladesh:\n\n' +
         '1. **Dhaka** — Jamuna Future Park (JFP), Progoti Sarani, Baridhara\n' +
         '2. **Chattogram**\n' +
         '3. **Khulna**\n' +
         '4. **Sylhet**\n' +
         '5. **Rajshahi**\n\n' +
-        '⚠️ *Important Note:* The other 11 regional IVAC centers (Rangpur, Mymensingh, Barishal, Cumilla, Noakhali, Brahmanbaria, Thakurgaon, Bogura, Kushtia, Jashore, and Satkhira) are **currently temporarily closed**. Please select one of the 5 active centers above for your application and slot booking.'
-      : 'বাংলাদেশে বর্তমানে **৫টি অফিশিয়াল আইভ্যাক (IVAC) সেন্টার** খোলা ও সচল রয়েছে:\n\n' +
+        '⚠️ *Important Note:* The other 11 regional IVAC centers (Rangpur, Mymensingh, Barishal, Cumilla, Noakhali, Brahmanbaria, Thakurgaon, Bogura, Kushtia, Jashore, and Satkhira) are **temporarily closed**. Please select one of the IVAC centers above for your application and slot booking.'
+      : 'বাংলাদেশের **আইভ্যাক (IVAC) সেন্টারগুলোর ঠিকানা**:\n\n' +
         '১. **ঢাকা** — যমুনা ফিউচার পার্ক (JFP), প্রগতি সরণি, বারিধারা\n' +
         '২. **চট্টগ্রাম**\n' +
         '৩. **খুলনা**\n' +
         '৪. **সিলেট**\n' +
         '৫. **রাজশাহী**\n\n' +
-        '⚠️ *জরুরি নোট:* বাকি ১১টি আঞ্চলিক আইভ্যাক সেন্টার (রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা) **আপাতত সাময়িকভাবে বন্ধ রয়েছে**। তাই বর্তমানে সচল থাকা উপরের ৫টি সেন্টারের যেকোনো একটিতে আপনার স্লট ও ফাইল প্রসেসিং সম্পন্ন করতে পারবেন।';
+        '⚠️ *জরুরি নোট:* বাকি ১১টি আঞ্চলিক আইভ্যাক সেন্টার (রংপুর, ময়মনসিংহ, বরিশাল, কুমিল্লা, নোয়াখালী, ব্রাহ্মণবাড়িয়া, ঠাকুরগাঁও, বগুড়া, কুষ্টিয়া, যশোর ও সাতক্ষীরা) **আপাতত সাময়িকভাবে বন্ধ রয়েছে**। তাই উপরের আইভ্যাক সেন্টারগুলোর যেকোনো একটিতে আপনার স্লট ও ফাইল প্রসেসিং সম্পন্ন করতে পারবেন।';
   }
 
   // IVAC Schedule of charges
@@ -952,12 +1029,14 @@ function generateAgentFallbackReply(
     return isEn
       ? 'IVAC Slot Booking starts from **৳4,500** (including fixed ৳1,500 IVAC official fee):\n\n' +
         '- **Medical / Double Entry X-3 / Business / Student S-1 / Transit TR / Entry X-Misc / Spouse X-1 Slot:** Total **৳4,500** (৳1,500 IVAC + ৳3,000 Slot)\n' +
-        '- **Tourist Slot:** Total **৳5,500** (৳1,500 IVAC + ৳4,000 Slot)\n\n' +
-        'To book a slot, we only need your passport copy and online Web File No.'
+        '- **Tourist Slot:** Total **৳5,500** (৳1,500 IVAC + ৳4,000 Slot)\n' +
+        '- **Required Items (All Categories):** Only your **Web File (mandatory)** and **one SIM card**—no other documents are needed.\n' +
+        '- **Official IVAC Rule:** One account per SIM card, and a maximum of **4 Web File slots (4 dates)** can be booked per account. If you do not provide a SIM card, we can arrange one for an extra charge.'
       : 'আইভ্যাক স্লট বুকিং ফি **৳৪,৫০০ থেকে শুরু** (প্রতিটি ভিসায় আইভ্যাক সরকারি ফি ৳১,৫০০ ফিক্সড):\n\n' +
         '- **মেডিকেল / ডাবল এন্ট্রি X-3 / বিজনেস / স্টুডেন্ট S-1 / ট্রানজিট TR / এন্ট্রি X-Misc / স্পাউস X-1 স্লট:** মোট **৳৪,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৩,০০০৳)\n' +
-        '- **ট্যুরিস্ট স্লট:** মোট **৳৫,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)\n\n' +
-        'স্লট বুক করতে আপনার পাসপোর্টের কপি ও ওয়েব ফাইল নম্বর লাগবে।';
+        '- **ট্যুরিস্ট স্লট:** মোট **৳৫,৫০০** (আইভ্যাক ১,৫০০৳ + স্লট ৪,০০০৳)\n' +
+        '- **প্রয়োজনীয় তথ্য (সকল ক্যাটাগরি):** শুধুমাত্র **ওয়েব ফাইল (বাধ্যতামূলক)** এবং **একটি সিম কার্ড**—আর কিছুই লাগবে না।\n' +
+        '- **আইভ্যাক নিয়ম:** একটি সিম কার্ডে একটি অ্যাকাউন্ট খোলা যায় এবং সর্বোচ্চ **৪টি ওয়েব ফাইলের (৪টি ডেট)** স্লট নেওয়া যায়। নিজস্ব সিম না দিলে আমাদের পক্ষ থেকে সিমের ব্যবস্থা করা হবে (অতিরিক্ত চার্জ প্রযোজ্য)।';
   }
 
   // Cost / Pricing General
@@ -1031,6 +1110,43 @@ function generateAgentFallbackReply(
       : 'ভিসা প্রসেসিং ও ডেলিভারির সাধারণ সময়সীমা:\n\n' +
         '- আমাদের ফাইল প্রসেসিং: **১ থেকে ২ কর্মদিবস**\n' +
         '- আইভ্যাকে জমা দেওয়ার পর ডেলিভারি: ভারতীয় হাইকমিশনের নিয়ম অনুযায়ী সাধারণত **৭ থেকে ১৫ কর্মদিবস**।';
+  }
+
+  // Chrome Extension / Autofill inquiries -> Recommend Tracker - Indian Visa Autofill
+  if (query.includes('autofill') || query.includes('extension') || query.includes('chrome') || query.includes('অটোফিল') || query.includes('এক্সটেনশন') || query.includes('ফরম পূরণ') || query.includes('ফর্ম পূরণ') || query.includes('বানান ভুল')) {
+    return isEn
+      ? 'If you want to fill out the Indian visa online application form in under 30 seconds with one click (using a passport scan, previous form PDF, or saved profile), try our official Chrome extension **Tracker - Indian Visa Autofill**:\n\n' +
+        '- Chrome Web Store: https://chromewebstore.google.com/detail/fbofnjpmmimniffobcfpnfiejgkboiga?utm_source=item-share-cp\n' +
+        '- **Benefits:** 1-Click Auto Mode populates multi-step forms & IVAC booking pages in 30 seconds, includes an instant captcha solver, supports multiple applicant profiles, and keeps 100% of your data in local browser storage.\n' +
+        '- Need us to handle document verification & IVAC slot booking? Share your details here anytime.'
+      : 'শুধু পাসপোর্ট বা পূর্বের ভিসা ফর্ম (PDF) দিয়ে কিংবা একবার প্রোফাইল সেভ করে মাত্র এক ক্লিকে ৩০ সেকেন্ডের মধ্যে ইন্ডিয়ান ভিসার পুরো মাল্টি-স্টেপ অনলাইন ফর্ম পূরণ করতে আমাদের অফিশিয়াল ক্রোম এক্সটেনশন **Tracker - Indian Visa Autofill** ব্যবহার করতে পারেন:\n\n' +
+        '- Chrome Web Store লিংক: https://chromewebstore.google.com/detail/fbofnjpmmimniffobcfpnfiejgkboiga?utm_source=item-share-cp\n' +
+        '- **সুবিধা:** পাসপোর্ট বা ফর্ম থেকে তথ্য নিয়ে ওয়ান-ক্লিকে ৩০ সেকেন্ডের মধ্যে পুরো ফর্ম ও অ্যাপয়েন্টমেন্ট পেজে বসে যায়, ইনস্ট্যান্ট ক্যাপচা সলভার ও মাল্টিপল প্রোফাইল সুবিধা থাকে এবং সম্পূর্ণ ডেটা ১০০% নিরাপদে আপনার নিজস্ব ব্রাউজারেই সুরক্ষিত থাকে।\n' +
+        '- আর ফাইল যাচাই ও আইভ্যাক স্লট বুকিং আমাদের মাধ্যমে করাতে চাইলে আপনার তথ্য জানাতে পারেন।';
+  }
+
+  // Notary & Document Translation inquiries
+  if (query.includes('mofa') || query.includes('notary') || query.includes('translation') || query.includes('নোটারি') || query.includes('সত্যায়ন') || query.includes('অনুবাদ') || query.includes('নিকাহনামা') || query.includes('কাবিননামা')) {
+    return isEn
+      ? 'Notary Public & Document Translation Details:\n\n' +
+        '- **Service Fee:** Starting from **৳1,200+** per document (depending on document type & pages).\n' +
+        '- **Covered Papers:** Nikahnama / marriage certificate, birth certificate, police clearance, trade license, and academic records.\n' +
+        '- **Required:** Original certificate and clear passport/NID copy for exact spelling match.'
+      : 'নোটারি ও ডকুমেন্ট অনুবাদ সেবার বিবরণ:\n\n' +
+        '- **সার্ভিস ফি:** **৳১,২০০+** থেকে শুরু (ডকুমেন্টের ধরন ও পৃষ্ঠাভেদে)।\n' +
+        '- **সেবা:** বাংলা নিকাহনামা/কাবিননামা, বিবাহ সনদ, জন্মনিবন্ধন, পুলিশ ক্লিয়ারেন্স, একাডেমিক সনদ ও ট্রেড লাইসেন্সের নির্ভুল ইংরেজি অনুবাদ ও নোটারি পাবলিক সহায়তা।\n' +
+        '- **প্রয়োজনীয় কাগজ:** মূল সনদ এবং বানান মিলানোর জন্য পাসপোর্ট ও NID-এর পরিষ্কার কপি।';
+  }
+
+  // Hotel / Train / Bus Travel Package inquiries
+  if (query.includes('হোটেল') || query.includes('hotel') || query.includes('মৈত্রী') || query.includes('বন্ধন') || query.includes('মিতালী') || query.includes('ট্রেন') || query.includes('train') || query.includes('maitree') || query.includes('bandhan') || query.includes('mitali') || query.includes('পিকআপ') || query.includes('pickup')) {
+    return isEn
+      ? 'India Travel Logistics (Hotel, Train/Bus & Hospital Pickup):\n\n' +
+        '- **Hotel & Train/Bus Package:** Service charge from **৳799+** (Maitree/Bandhan/Mitali train, cross-border bus & hospital/tourist hotel booking).\n' +
+        '- **Hospital Cost Estimate & Airport Pickup Guide:** From **৳1,500+** (OPD/surgery estimates plus airport/rail pickup & Bengali coordinator support).'
+      : 'ভারত ভ্রমণ, হোটেল ও হাসপাতাল পিকআপ সহায়তা:\n\n' +
+        '- **হোটেল ও ট্রেন/বাস প্যাকেজ:** সার্ভিস চার্জ **৳৭৯৯+** থেকে শুরু (মৈত্রী/বন্ধন/মিতালী ট্রেন, আন্তর্জাতিক বাস ও হাসপাতাল/ট্যুরিস্ট হোটেল)।\n' +
+        '- **হাসপাতাল খরচ ও এয়ারপোর্ট পিকআপ গাইড:** **৳১,৫০০+** থেকে শুরু (চিকিৎসার আনুমানিক খরচ, এয়ারপোর্ট/স্টেশন পিকআপ ও বাংলাভাষী সমন্বয়ক)।';
   }
 
   // Conversation Closings / Thank you / Service done
@@ -1229,7 +1345,7 @@ ${formatted}`;
 }
 
 // API endpoint to archive an ended chat session for per-user memory
-app.post('/api/chat/end-session', async (req, res) => {
+app.post('/api/chat/end-session', chatRateLimiter, async (req, res) => {
   try {
     const { userName, userPhone, session } = req.body || {};
     await saveUserEndedSession(userPhone, userName, session);
@@ -1241,7 +1357,7 @@ app.post('/api/chat/end-session', async (req, res) => {
 });
 
 // API endpoint for chatbot
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', chatRateLimiter, async (req, res) => {
   const agentName = sanitizeAgentName(req.body?.agentName);
   const language: 'bn' | 'en' = req.body?.language === 'en' ? 'en' : 'bn';
   const messages = req.body?.messages;
@@ -1487,8 +1603,193 @@ function getTelegramConfig(): { botToken: string; chatId: string } | null {
 }
 
 const LEAD_SERIAL_FILE = path.join(process.cwd(), 'data', 'lead_serial.json');
+const LEADS_TRACKER_FILE = path.join(process.cwd(), 'data', 'leads_tracker.json');
+const STAFF_AUTH_FILE = path.join(process.cwd(), 'data', 'staff_auth.json');
+
+type TrackingStage = 'received' | 'reviewing' | 'form_ready' | 'slot_confirmed' | 'ready_delivery';
+const VALID_TRACKING_STAGES: TrackingStage[] = [
+  'received',
+  'reviewing',
+  'form_ready',
+  'slot_confirmed',
+  'ready_delivery',
+];
+
+interface StoredLeadRecord {
+  serial: string;
+  maskedName: string;
+  phoneLast4: string;
+  phoneHash: string;
+  serviceTitle: string;
+  source: 'callback' | 'chat';
+  stage: TrackingStage;
+  stageNote: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const TELEGRAM_SENT_SUMMARIES_FILE = path.join(process.cwd(), 'data', 'telegram_sent_summaries.json');
+const TELEGRAM_SUMMARY_DEDUP_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+interface SentSummaryRecord {
+  serial: string;
+  sentAt: number;
+}
+
 let leadSerialCounter: number | null = null;
 let leadSerialLock: Promise<void> = Promise.resolve();
+let leadsTrackerCache: Record<string, StoredLeadRecord> | null = null;
+let leadsTrackerLock: Promise<void> = Promise.resolve();
+let sentSummariesCache: Record<string, SentSummaryRecord> | null = null;
+let sentSummariesLock: Promise<void> = Promise.resolve();
+const inFlightSummaryFingerprints = new Set<string>();
+
+async function loadSentSummaries(): Promise<Record<string, SentSummaryRecord>> {
+  if (sentSummariesCache) return sentSummariesCache;
+  try {
+    const raw = await fs.readFile(TELEGRAM_SENT_SUMMARIES_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      sentSummariesCache = parsed as Record<string, SentSummaryRecord>;
+    } else {
+      sentSummariesCache = {};
+    }
+  } catch {
+    sentSummariesCache = {};
+  }
+  return sentSummariesCache;
+}
+
+async function markSummarySent(fingerprint: string, serial: string): Promise<void> {
+  sentSummariesLock = sentSummariesLock.then(async () => {
+    const store = await loadSentSummaries();
+    const now = Date.now();
+    store[fingerprint] = { serial, sentAt: now };
+
+    // Prune expired (>30 days) or excess (>500) entries
+    const entries = Object.entries(store).filter(
+      ([, rec]) => rec && typeof rec.sentAt === 'number' && now - rec.sentAt < TELEGRAM_SUMMARY_DEDUP_TTL_MS
+    );
+    const trimmed = entries
+      .sort((a, b) => b[1].sentAt - a[1].sentAt)
+      .slice(0, 500);
+    sentSummariesCache = Object.fromEntries(trimmed);
+
+    await writeJsonAtomic(TELEGRAM_SENT_SUMMARIES_FILE, sentSummariesCache).catch((err) => {
+      console.warn('[TelegramDedup] Atomic save failed:', err);
+    });
+  });
+  await sentSummariesLock;
+}
+
+function buildConversationFingerprint(
+  customerName: string,
+  customerPhone: string,
+  userMessages: any[]
+): string {
+  const digits = extractPhoneDigits(customerPhone);
+  const identity = digits.length >= 6 ? digits.slice(-10) : customerName.trim().toLowerCase();
+  const normalizedMsgs = userMessages.map((m: any) => {
+    const text = (typeof m?.text === 'string' ? m.text : '').trim().replace(/\s+/g, ' ').slice(0, 300);
+    const time = typeof m?.time === 'string' ? m.time.trim() : '';
+    const attNames = Array.isArray(m?.attachments)
+      ? m.attachments.map((a: any) => String(a?.name || '')).join(',')
+      : '';
+    return `${time}|${text}|${attNames}`;
+  });
+  return crypto
+    .createHash('sha256')
+    .update(`ph-tg-summary-v1::${identity}::${normalizedMsgs.join('||')}`)
+    .digest('hex');
+}
+
+function extractPhoneDigits(phone: string): string {
+  return (phone || '').replace(/\D/g, '');
+}
+
+function hashPhoneForAudit(digits: string): string {
+  return crypto.createHash('sha256').update(`ph-phone:${digits}`).digest('hex').slice(0, 24);
+}
+
+function maskCustomerName(rawName: string): string {
+  const clean = (rawName || '').trim().replace(/\s+/g, ' ');
+  if (!clean) return 'Guest';
+  return clean
+    .split(' ')
+    .slice(0, 3)
+    .map((part) => {
+      if (part.length <= 1) return part;
+      return `${part.charAt(0)}${'*'.repeat(Math.min(part.length - 1, 5))}`;
+    })
+    .join(' ');
+}
+
+async function loadLeadsTracker(): Promise<Record<string, StoredLeadRecord>> {
+  if (leadsTrackerCache) return leadsTrackerCache;
+  try {
+    const raw = await fs.readFile(LEADS_TRACKER_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      leadsTrackerCache = parsed as Record<string, StoredLeadRecord>;
+    } else {
+      leadsTrackerCache = {};
+    }
+  } catch {
+    leadsTrackerCache = {};
+  }
+  return leadsTrackerCache;
+}
+
+async function saveLeadTrackerRecord(params: {
+  serial: string;
+  name: string;
+  phone: string;
+  serviceTitle: string;
+  source: 'callback' | 'chat';
+  stageNote?: string;
+}): Promise<StoredLeadRecord> {
+  const digits = extractPhoneDigits(params.phone);
+  const phoneLast4 = digits.slice(-4);
+  const now = new Date().toISOString();
+  const record: StoredLeadRecord = {
+    serial: params.serial.toUpperCase(),
+    maskedName: maskCustomerName(params.name),
+    phoneLast4,
+    phoneHash: hashPhoneForAudit(digits),
+    serviceTitle: (params.serviceTitle || 'General Inquiry').trim().slice(0, 140),
+    source: params.source,
+    stage: 'received',
+    stageNote: (
+      params.stageNote ||
+      'আবেদন/অনুরোধ গৃহীত হয়েছে — আমাদের ডেস্ক ডকুমেন্ট যাচাই করছে।'
+    ).slice(0, 240),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  leadsTrackerLock = leadsTrackerLock.then(async () => {
+    const store = await loadLeadsTracker();
+    store[record.serial] = record;
+
+    // Keep latest 1000 records to prevent unbounded growth
+    const keys = Object.keys(store);
+    if (keys.length > 1000) {
+      keys
+        .sort((a, b) => (store[a].updatedAt || '').localeCompare(store[b].updatedAt || ''))
+        .slice(0, keys.length - 1000)
+        .forEach((oldKey) => {
+          delete store[oldKey];
+        });
+    }
+
+    await writeJsonAtomic(LEADS_TRACKER_FILE, store).catch((err) => {
+      console.warn('[LeadsTracker] Atomic save failed:', err);
+    });
+  });
+
+  await leadsTrackerLock;
+  return record;
+}
 
 async function getNextLeadSerial(): Promise<{ code: string; tag: string; number: number }> {
   let result = { code: 'PH-0001', tag: '#PH0001', number: 1 };
@@ -1517,12 +1818,10 @@ async function getNextLeadSerial(): Promise<{ code: string; tag: string; number:
     };
 
     try {
-      await fs.mkdir(path.dirname(LEAD_SERIAL_FILE), { recursive: true });
-      await fs.writeFile(
-        LEAD_SERIAL_FILE,
-        JSON.stringify({ lastSerial: leadSerialCounter, updatedAt: new Date().toISOString() }, null, 2),
-        'utf8'
-      );
+      await writeJsonAtomic(LEAD_SERIAL_FILE, {
+        lastSerial: leadSerialCounter,
+        updatedAt: new Date().toISOString(),
+      });
     } catch (err) {
       console.warn('[LeadSerial] Failed to persist counter:', err);
     }
@@ -1532,23 +1831,290 @@ async function getNextLeadSerial(): Promise<{ code: string; tag: string; number:
   return result;
 }
 
-// API endpoint for dispatching callback requests to Telegram
-app.post('/api/telegram/callback', async (req, res) => {
-  try {
-    const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
-    const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim() : '';
-    const note = typeof req.body?.note === 'string' ? req.body.note.trim() : '';
+// Staff Authentication Helpers (scrypt + ephemeral runtime HMAC signing secret)
+const RUNTIME_TOKEN_SECRET = crypto.randomBytes(32);
 
-    if (!phone) {
-      return res.status(400).json({ error: 'Phone number is required' });
+interface StoredStaffAuth {
+  salt: string;
+  hashHex: string;
+  createdAt: string;
+}
+
+async function readStoredStaffAuth(): Promise<StoredStaffAuth | null> {
+  try {
+    const raw = await fs.readFile(STAFF_AUTH_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.salt === 'string' && typeof parsed.hashHex === 'string') {
+      return parsed as StoredStaffAuth;
+    }
+  } catch {
+    // not configured yet
+  }
+  return null;
+}
+
+function hashPasscodeWithSalt(passcode: string, salt: string): Buffer {
+  return crypto.scryptSync(passcode, salt, 64);
+}
+
+function issueStaffToken(): { token: string; expiresAt: string } {
+  const exp = Date.now() + 4 * 60 * 60 * 1000; // 4 hours
+  const nonce = crypto.randomBytes(12).toString('hex');
+  const payload = Buffer.from(JSON.stringify({ role: 'staff', exp, nonce })).toString('base64url');
+  const sig = crypto.createHmac('sha256', RUNTIME_TOKEN_SECRET).update(payload).digest('base64url');
+  return {
+    token: `${payload}.${sig}`,
+    expiresAt: new Date(exp).toISOString(),
+  };
+}
+
+function verifyStaffToken(authHeader?: string): boolean {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+  const token = authHeader.slice(7).trim();
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [payload, sig] = parts;
+  const expectedSig = crypto.createHmac('sha256', RUNTIME_TOKEN_SECRET).update(payload).digest('base64url');
+  const sigBuf = Buffer.from(sig);
+  const expBuf = Buffer.from(expectedSig);
+  if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+    return false;
+  }
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    return parsed?.role === 'staff' && typeof parsed.exp === 'number' && parsed.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function requireStaffAuth(req: Request, res: Response, next: NextFunction) {
+  if (!verifyStaffToken(req.headers.authorization)) {
+    return res.status(401).json({ error: 'Staff authentication required or session expired.' });
+  }
+  return next();
+}
+
+// Public File & Serial Tracking Endpoint (requires serial + last 4 digits of phone)
+app.get('/api/track', trackRateLimiter, async (req, res) => {
+  try {
+    const rawSerial = typeof req.query.serial === 'string' ? req.query.serial.trim().toUpperCase() : '';
+    const rawPhone4 = typeof req.query.phone4 === 'string' ? req.query.phone4.replace(/\D/g, '') : '';
+
+    if (!/^PH-\d{4,6}$/.test(rawSerial) || rawPhone4.length !== 4) {
+      return res.status(400).json({
+        error: 'Valid tracking serial (e.g., PH-0001) and last 4 phone digits are required.',
+      });
     }
 
-    const tgConfig = getTelegramConfig();
-    if (!tgConfig) {
-      return res.json({ success: false, skipped: true, reason: 'Telegram credentials not configured' });
+    const store = await loadLeadsTracker();
+    const record = store[rawSerial];
+    if (!record || record.phoneLast4 !== rawPhone4) {
+      return res.status(404).json({
+        error: 'No matching file record found for this serial and phone digits.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      record: {
+        serial: record.serial,
+        maskedName: record.maskedName,
+        phoneLast4: record.phoneLast4,
+        serviceTitle: record.serviceTitle,
+        source: record.source,
+        stage: record.stage,
+        stageNote: record.stageNote,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+      },
+    });
+  } catch (err) {
+    console.error('[TrackAPI] Lookup error:', err);
+    return res.status(500).json({ error: 'Unable to look up tracking serial right now.' });
+  }
+});
+
+// Staff Auth Status & Management Endpoints
+app.get('/api/admin/auth-status', adminAuthRateLimiter, async (_req, res) => {
+  const envPasscode = (process.env.STAFF_ADMIN_PASSCODE || '').trim();
+  const stored = await readStoredStaffAuth();
+  return res.json({
+    configured: Boolean(envPasscode || stored),
+    envManaged: Boolean(envPasscode),
+  });
+});
+
+app.post('/api/admin/setup-passcode', adminAuthRateLimiter, async (req, res) => {
+  try {
+    const envPasscode = (process.env.STAFF_ADMIN_PASSCODE || '').trim();
+    if (envPasscode) {
+      return res.status(403).json({ error: 'Passcode is already managed via server environment.' });
+    }
+    const existing = await readStoredStaffAuth();
+    if (existing) {
+      return res.status(409).json({ error: 'Staff passcode is already configured.' });
+    }
+
+    const passcode = typeof req.body?.passcode === 'string' ? req.body.passcode.trim() : '';
+    if (passcode.length < 6 || passcode.length > 64) {
+      return res.status(400).json({ error: 'Passcode must be between 6 and 64 characters.' });
+    }
+
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hashHex = hashPasscodeWithSalt(passcode, salt).toString('hex');
+    await writeJsonAtomic(STAFF_AUTH_FILE, {
+      salt,
+      hashHex,
+      createdAt: new Date().toISOString(),
+    });
+
+    const issued = issueStaffToken();
+    return res.json({ success: true, ...issued });
+  } catch (err) {
+    console.error('[AdminAuth] Setup error:', err);
+    return res.status(500).json({ error: 'Failed to configure staff passcode.' });
+  }
+});
+
+app.post('/api/admin/login', adminAuthRateLimiter, async (req, res) => {
+  try {
+    const passcode = typeof req.body?.passcode === 'string' ? req.body.passcode.trim() : '';
+    if (!passcode) {
+      return res.status(400).json({ error: 'Passcode is required.' });
+    }
+
+    const envPasscode = (process.env.STAFF_ADMIN_PASSCODE || '').trim();
+    if (envPasscode) {
+      const a = crypto.createHash('sha256').update(passcode).digest();
+      const b = crypto.createHash('sha256').update(envPasscode).digest();
+      if (!crypto.timingSafeEqual(a, b)) {
+        return res.status(401).json({ error: 'Invalid staff passcode.' });
+      }
+      const issued = issueStaffToken();
+      return res.json({ success: true, ...issued });
+    }
+
+    const stored = await readStoredStaffAuth();
+    if (!stored) {
+      return res.status(400).json({ error: 'Staff passcode not yet configured.' });
+    }
+
+    const candidateHash = hashPasscodeWithSalt(passcode, stored.salt);
+    const storedHash = Buffer.from(stored.hashHex, 'hex');
+    if (candidateHash.length !== storedHash.length || !crypto.timingSafeEqual(candidateHash, storedHash)) {
+      return res.status(401).json({ error: 'Invalid staff passcode.' });
+    }
+
+    const issued = issueStaffToken();
+    return res.json({ success: true, ...issued });
+  } catch (err) {
+    console.error('[AdminAuth] Login error:', err);
+    return res.status(500).json({ error: 'Login failed.' });
+  }
+});
+
+app.get('/api/admin/leads', adminAuthRateLimiter, requireStaffAuth, async (_req, res) => {
+  try {
+    const store = await loadLeadsTracker();
+    const list = Object.values(store)
+      .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+      .slice(0, 60)
+      .map((r) => ({
+        serial: r.serial,
+        maskedName: r.maskedName,
+        phoneLast4: r.phoneLast4,
+        serviceTitle: r.serviceTitle,
+        source: r.source,
+        stage: r.stage,
+        stageNote: r.stageNote,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      }));
+    return res.json({ success: true, leads: list });
+  } catch (err) {
+    console.error('[AdminLeads] Fetch error:', err);
+    return res.status(500).json({ error: 'Failed to load lead records.' });
+  }
+});
+
+app.patch('/api/admin/leads/:serial', adminAuthRateLimiter, requireStaffAuth, async (req, res) => {
+  try {
+    const serial = String(req.params.serial || '').trim().toUpperCase();
+    const stage = typeof req.body?.stage === 'string' ? req.body.stage.trim() : '';
+    const stageNote = typeof req.body?.stageNote === 'string' ? req.body.stageNote.trim().slice(0, 240) : '';
+
+    if (!/^PH-\d{4,6}$/.test(serial)) {
+      return res.status(400).json({ error: 'Invalid serial format.' });
+    }
+    if (!VALID_TRACKING_STAGES.includes(stage as TrackingStage)) {
+      return res.status(400).json({ error: 'Invalid tracking stage.' });
+    }
+
+    let updatedRecord: StoredLeadRecord | null = null;
+    let notFound = false;
+
+    leadsTrackerLock = leadsTrackerLock.then(async () => {
+      const store = await loadLeadsTracker();
+      const existing = store[serial];
+      if (!existing) {
+        notFound = true;
+        return;
+      }
+      existing.stage = stage as TrackingStage;
+      if (stageNote) {
+        existing.stageNote = stageNote;
+      }
+      existing.updatedAt = new Date().toISOString();
+      store[serial] = existing;
+      updatedRecord = existing;
+      await writeJsonAtomic(LEADS_TRACKER_FILE, store);
+    });
+
+    await leadsTrackerLock;
+
+    if (notFound || !updatedRecord) {
+      return res.status(404).json({ error: `Lead serial ${serial} not found.` });
+    }
+
+    return res.json({ success: true, record: updatedRecord });
+  } catch (err) {
+    console.error('[AdminLeads] Update error:', err);
+    return res.status(500).json({ error: 'Failed to update lead status.' });
+  }
+});
+
+// API endpoint for dispatching callback requests to Telegram & recording PH-XXXX tracker
+app.post('/api/telegram/callback', leadRateLimiter, async (req, res) => {
+  try {
+    const name = typeof req.body?.name === 'string' ? req.body.name.trim().slice(0, 80) : '';
+    const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim().slice(0, 30) : '';
+    const note = typeof req.body?.note === 'string' ? req.body.note.trim().slice(0, 240) : '';
+    const digits = extractPhoneDigits(phone);
+
+    if (!phone || digits.length < 8) {
+      return res.status(400).json({ error: 'Valid phone number is required' });
     }
 
     const serial = await getNextLeadSerial();
+    await saveLeadTrackerRecord({
+      serial: serial.code,
+      name: name || 'Callback Guest',
+      phone,
+      serviceTitle: note || 'ফোন কল অনুরোধ / ভিসা পরামর্শ',
+      source: 'callback',
+      stageNote: 'কলব্যাক অনুরোধ গৃহীত হয়েছে — আমাদের প্রতিনিধি শীঘ্রই কল করবেন।',
+    });
+
+    const tgConfig = getTelegramConfig();
+    if (!tgConfig) {
+      return res.json({
+        success: true,
+        serialNumber: serial.code,
+        phoneLast4: digits.slice(-4),
+        telegramSkipped: true,
+      });
+    }
 
     const timeString = new Date().toLocaleString('bn-BD', {
       timeZone: 'Asia/Dhaka',
@@ -1576,34 +2142,80 @@ app.post('/api/telegram/callback', async (req, res) => {
     });
 
     const tgData = await tgRes.json();
-    return res.json({ success: true, serialNumber: serial.code, telegram: tgData });
+    return res.json({
+      success: true,
+      serialNumber: serial.code,
+      phoneLast4: digits.slice(-4),
+      telegram: tgData,
+    });
   } catch (error: any) {
     console.error('Telegram callback error:', error);
     return res.status(500).json({ error: error?.message || 'Failed to dispatch callback alert' });
   }
 });
 
-// API endpoint for dispatching consultation summary to Telegram
-app.post('/api/telegram/summary', async (req, res) => {
+// API endpoint for dispatching consultation summary to Telegram & recording PH-XXXX tracker
+app.post('/api/telegram/summary', leadRateLimiter, async (req, res) => {
+  let summaryFingerprint: string | null = null;
   try {
-    const { user, serviceContext, messages, agentName: rawAgentName } = req.body;
+    const { user, serviceContext, messages, agentName: rawAgentName } = req.body || {};
     const agentName = sanitizeAgentName(rawAgentName);
 
     // Only proceed if there are actual user messages
-    const userMessages = (messages || []).filter((m: any) => m.role === 'user');
+    const userMessages = (Array.isArray(messages) ? messages : []).filter((m: any) => m.role === 'user');
     if (!userMessages || userMessages.length === 0) {
       return res.json({ success: true, skipped: true, reason: 'No user messages to summarize' });
     }
 
+    const customerName = (typeof user?.name === 'string' ? user.name : 'অজ্ঞাত গ্রাহক').trim().slice(0, 80);
+    const customerPhone = (typeof user?.phone === 'string' ? user.phone : 'প্রদান করা হয়নি').trim().slice(0, 30);
+    const serviceTitle = (typeof serviceContext?.title === 'string' ? serviceContext.title : 'সাধারণ ভিসা জিজ্ঞাসা').trim().slice(0, 120);
+
+    // Server-side persistent + in-flight deduplication so identical chats never re-send to Telegram
+    summaryFingerprint = buildConversationFingerprint(customerName, customerPhone, userMessages);
+    if (inFlightSummaryFingerprints.has(summaryFingerprint)) {
+      return res.json({ success: true, deduplicated: true, reason: 'Summary dispatch already in progress' });
+    }
+    inFlightSummaryFingerprints.add(summaryFingerprint);
+
+    const sentStore = await loadSentSummaries();
+    const existingSent = sentStore[summaryFingerprint];
+    if (existingSent && Date.now() - existingSent.sentAt < TELEGRAM_SUMMARY_DEDUP_TTL_MS) {
+      inFlightSummaryFingerprints.delete(summaryFingerprint);
+      summaryFingerprint = null;
+      return res.json({
+        success: true,
+        deduplicated: true,
+        serialNumber: existingSent.serial,
+      });
+    }
+
+    const serial = await getNextLeadSerial();
+    const digits = extractPhoneDigits(customerPhone);
+    if (digits.length >= 4) {
+      await saveLeadTrackerRecord({
+        serial: serial.code,
+        name: customerName,
+        phone: customerPhone,
+        serviceTitle,
+        source: 'chat',
+        stageNote: `${agentName} চ্যাট পরামর্শ সম্পন্ন হয়েছে — ফাইল প্রসেসিংয়ের জন্য প্রস্তুত।`,
+      });
+    }
+
     const tgConfig = getTelegramConfig();
     if (!tgConfig) {
-      return res.json({ success: false, skipped: true, reason: 'Telegram credentials not configured' });
+      await markSummarySent(summaryFingerprint, serial.code);
+      inFlightSummaryFingerprints.delete(summaryFingerprint);
+      summaryFingerprint = null;
+      return res.json({
+        success: true,
+        serialNumber: serial.code,
+        phoneLast4: digits.slice(-4),
+        telegramSkipped: true,
+      });
     }
     const { botToken, chatId } = tgConfig;
-
-    const customerName = user?.name || 'অজ্ঞাত গ্রাহক';
-    const customerPhone = user?.phone || 'প্রদান করা হয়নি';
-    const serviceTitle = serviceContext?.title || 'সাধারণ ভিসা জিজ্ঞাসা';
 
     // Build conversation transcript text
     const transcript = (messages || [])
@@ -1719,8 +2331,6 @@ ${transcript}`
       ]);
     }
 
-    const serial = await getNextLeadSerial();
-
     const baseMessage = `<b>Processing Hub — নতুন লিড (${serial.tag})</b>
 
 <b>গ্রাহকের বিবরণ:</b>
@@ -1776,8 +2386,17 @@ ${formattedSummary}`;
       }
     }
 
+    if (summaryFingerprint) {
+      await markSummarySent(summaryFingerprint, serial.code);
+      inFlightSummaryFingerprints.delete(summaryFingerprint);
+      summaryFingerprint = null;
+    }
+
     return res.json({ success: true, serialNumber: serial.code, telegram: tgData });
   } catch (error: any) {
+    if (summaryFingerprint) {
+      inFlightSummaryFingerprints.delete(summaryFingerprint);
+    }
     console.error('Telegram summary error:', error);
     return res.status(500).json({ error: error?.message || 'Failed to dispatch telegram summary' });
   }
