@@ -118,24 +118,24 @@ export const AboutUsSection: React.FC<AboutUsSectionProps> = ({
               )}
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-2.5 pt-2">
               {onNavigateServices && (
                 <button
                   type="button"
                   onClick={onNavigateServices}
-                  className="btn-3d-matte-primary px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold inline-flex items-center gap-2 cursor-pointer"
+                  className="btn-3d-matte-primary w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>{t('আমাদের সকল সেবা দেখুন', 'Explore Our Services')}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               )}
               {onNavigateContact && (
                 <button
                   type="button"
                   onClick={onNavigateContact}
-                  className="btn-3d-matte-secondary px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold inline-flex items-center gap-2 cursor-pointer"
+                  className="btn-3d-matte-secondary w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="w-3.5 h-3.5" />
                   <span>{t('অফিসের ঠিকানা ও যোগাযোগ', 'Office Location & Contact')}</span>
                 </button>
               )}
@@ -285,9 +285,9 @@ export const AboutUsSection: React.FC<AboutUsSectionProps> = ({
                 href={CONFIG.chromeExtension.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-3d-matte-primary ext-cta-glow px-4 py-2.5 rounded-[5px] text-xs font-bold inline-flex items-center gap-2 whitespace-nowrap"
+                className="btn-3d-matte-primary ext-cta-glow w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
               >
-                <Puzzle className="w-4 h-4" />
+                <Puzzle className="w-3.5 h-3.5" />
                 <span>{t('Chrome Web Store-এ এক্সটেনশন দেখুন', 'View Extension on Chrome Web Store')}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
@@ -324,7 +324,7 @@ export const AboutUsSection: React.FC<AboutUsSectionProps> = ({
               <button
                 type="button"
                 onClick={onNavigateContact}
-                className="btn-3d-matte-secondary w-full py-2.5 px-4 rounded-full text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                className="btn-3d-matte-secondary w-fit self-start py-1.5 px-3 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <MapPin className="w-3.5 h-3.5" />
                 <span>{t('গুগল ম্যাপ ও যোগাযোগ পেজে যান', 'Go to Google Map & Contact Page')}</span>

@@ -150,13 +150,13 @@ export const HeroExtensionBar: React.FC<HeroExtensionBarProps> = ({ onJumpToTool
               </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
+            <div className="flex items-center gap-2 w-auto justify-end shrink-0 ml-auto">
               {onJumpToTools && (
                 <button
                   type="button"
                   id="hero-jump-tools-btn"
                   onClick={onJumpToTools}
-                  className="px-3.5 py-2 rounded-[5px] text-xs font-semibold bg-white/80 hover:bg-white text-[#1E2E6E] border border-[#BAC5FA]/80 shadow-2xs transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                  className="w-fit px-2.5 py-1.5 leading-tight rounded-[5px] text-xs font-semibold bg-white/80 hover:bg-white text-[#1E2E6E] border border-[#BAC5FA]/80 shadow-2xs transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
                 >
                   <span>{t('ভিসা টুলস হাব', 'Visa Tools Hub')}</span>
                   <ArrowDownRight className="w-3.5 h-3.5" />
@@ -167,7 +167,7 @@ export const HeroExtensionBar: React.FC<HeroExtensionBarProps> = ({ onJumpToTool
                 href={CONFIG.chromeExtension.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-3d-matte-primary ext-cta-glow px-4 py-2 text-xs font-bold rounded-[5px] inline-flex items-center gap-1.5 whitespace-nowrap"
+                className="btn-3d-matte-primary ext-cta-glow w-fit px-2.5 py-1.5 leading-tight text-xs font-bold rounded-[5px] inline-flex items-center gap-1.5 whitespace-nowrap"
               >
                 <span>{t('Chrome-এ যুক্ত করুন', 'Add to Chrome')}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -248,15 +248,15 @@ export const ExtensionSpotlightCard: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <a
             id="tools-extension-install-btn"
             href={CONFIG.chromeExtension.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-3d-matte-primary ext-cta-glow px-4 py-2.5 rounded-[5px] text-xs sm:text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
+            className="btn-3d-matte-primary ext-cta-glow w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
           >
-            <Puzzle className="w-4 h-4" />
+            <Puzzle className="w-3.5 h-3.5" />
             <span>{t('Chrome Web Store থেকে দেখুন', 'Install from Chrome Web Store')}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>

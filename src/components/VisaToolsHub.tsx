@@ -550,9 +550,9 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
                     data-service-name={isBn ? `${selectedCat.bn} (${num(applicantCount)} জন)` : `${selectedCat.en} (${applicantCount})`}
                     data-section={t('ভিসা ফি ক্যালকুলেটর', 'Visa Fee Calculator')}
                     data-whatsapp-title={t('ক্যালকুলেটর বুকিং', 'Calculator Quote')}
-                    className="btn-3d-matte-green w-full py-2.5 rounded-full text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 text-[#124218]"
+                    className="btn-3d-matte-green w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 text-[#124218]"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <MessageCircle className="w-3.5 h-3.5" />
                     <span>{t('এই হিসাবসহ হোয়াটসঅ্যাপ / এজেন্টে পাঠান', 'Send Estimate via WhatsApp / Agent')}</span>
                   </a>
                 </div>
@@ -595,7 +595,7 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
                     </li>
                   </ul>
 
-                  <label className="btn-3d-matte-secondary inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold cursor-pointer">
+                  <label className="btn-3d-matte-secondary w-fit inline-flex items-center gap-1.5 px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold cursor-pointer">
                     <Upload className="w-3.5 h-3.5" />
                     <span>{t('ছবি নির্বাচন করুন (JPG/PNG)', 'Upload Photo (JPG/PNG)')}</span>
                     <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
@@ -682,9 +682,9 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
                       <button
                         type="button"
                         onClick={handleDownloadCroppedPhoto}
-                        className="btn-3d-matte-primary w-full py-2.5 rounded-full text-xs font-bold inline-flex items-center justify-center gap-2 cursor-pointer"
+                        className="btn-3d-matte-primary w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-3.5 h-3.5" />
                         <span>{t('৬০০×৬০০ JPEG ডাউনলোড করুন', 'Download 600×600 JPEG')}</span>
                       </button>
                     </div>
@@ -927,7 +927,7 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-3d-matte-green px-4 py-2 rounded-full text-xs font-bold shrink-0 text-[#124218]"
+                      className="btn-3d-matte-green w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold shrink-0 text-[#124218]"
                     >
                       {t('এজেন্টের সহায়তা নিন', 'Get File Reviewed')}
                     </a>

@@ -171,7 +171,8 @@ nav.scrolled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 22px;
+  padding: 5px 10px;
+  width: fit-content;
   border-radius: 5px;
   text-decoration: none;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.18) 100%);
@@ -205,12 +206,12 @@ nav.scrolled {
 
 .brand-btn .brand-text {
   font-family: 'Aptos', sans-serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1A2416;
   letter-spacing: -0.02em;
-  line-height: 1.35;
-  padding: 2px 0;
+  line-height: 1.15;
+  padding: 0;
   display: inline-block;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
   white-space: nowrap;
@@ -258,8 +259,8 @@ nav.scrolled .brand-btn,
 .nav-menu-capsule {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 8px;
+  gap: 3px;
+  padding: 3px 5px;
   border-radius: 7px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.22) 100%);
   backdrop-filter: blur(20px) saturate(180%);
@@ -289,11 +290,13 @@ nav.scrolled .nav-menu-capsule,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 16px;
+  padding: 5px 10px;
+  width: fit-content;
   border-radius: 5px;
   color: #1E2519;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.84rem;
+  line-height: 1.15;
   letter-spacing: 0.01em;
   text-decoration: none;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 100%);
@@ -338,12 +341,13 @@ nav.scrolled .nav-menu-capsule,
 .nav-cta {
   background: var(--periwinkle);
   color: var(--periwinkle-dark);
-  padding: 6px 14px;
+  padding: 5px 10px;
+  width: fit-content;
   border-radius: 5px;
   font-weight: 700;
-  font-size: 0.82rem;
-  line-height: 1;
-  min-height: 32px;
+  font-size: 0.8rem;
+  line-height: 1.15;
+  min-height: 0;
   border: 1px solid var(--periwinkle-border);
   box-shadow: 0 2px 0 #9EACF2, 0 3px 8px rgba(158, 172, 242, 0.24);
   transition: all 0.15s ease;
@@ -582,17 +586,18 @@ section {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 6px 14px;
+  padding: 6px 10px;
   background: var(--mint);
   color: var(--mint-dark);
-  font-size: 0.8125rem;
+  font-size: 0.78rem;
+  line-height: 1.15;
   font-weight: 700;
-  border-radius: 9999px;
+  border-radius: 5px;
   border: 1px solid var(--mint-border);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  width: auto;
+  width: fit-content;
   box-shadow: 0 2px 0 #78BD6E, 0 3px 8px rgba(120, 189, 110, 0.25);
   transition: all 0.15s ease;
   position: relative;
@@ -1517,6 +1522,7 @@ section {
   border: 1px solid var(--mint-border);
   border-radius: 5px !important;
   font-weight: 700;
+  line-height: 1.15;
   box-shadow: 0 4px 0 #78BD6E, 0 5px 10px rgba(120, 189, 110, 0.25);
   transition: all 0.15s ease;
   position: relative;
@@ -1540,6 +1546,7 @@ section {
   color: #ffffff;
   border: none;
   border-radius: 5px !important;
+  line-height: 1.15;
   box-shadow: 0 4px 0 #8F1F17, 0 5px 10px rgba(143, 31, 23, 0.2);
   transition: all 0.15s ease;
   position: relative;
@@ -1565,6 +1572,7 @@ section {
   border: 1px solid rgba(248, 113, 113, 0.55);
   border-radius: 5px !important;
   font-weight: 700;
+  line-height: 1.15;
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   box-shadow: 
@@ -1602,6 +1610,7 @@ section {
   border: 1px solid var(--mint-border);
   border-radius: 5px !important;
   font-weight: 700;
+  line-height: 1.15;
   box-shadow: 0 4px 0 #78BD6E, 0 5px 10px rgba(120, 189, 110, 0.25);
   transition: all 0.15s ease;
   position: relative;
@@ -1626,6 +1635,7 @@ section {
   border: 1px solid var(--periwinkle-border);
   border-radius: 5px !important;
   font-weight: 700;
+  line-height: 1.15;
   box-shadow: 0 3px 0 #9EACF2, 0 4px 8px rgba(158, 172, 242, 0.25);
   transition: all 0.15s ease;
   position: relative;
@@ -2220,8 +2230,18 @@ a.brand-btn,
 }
 
 #cta-strip #cta-whatsapp-btn,
-.cta-strip .btn-primary,
+.cta-strip .btn-primary {
+  padding: 14px 32px;
+  line-height: 1.6;
+  font-size: 1rem;
+  border-radius: 9999px !important;
+}
+
 #hero-section #hero-reserve-btn {
+  padding: 8px 14px;
+  line-height: 1.2;
+  font-size: 0.92rem;
+  width: fit-content;
   border-radius: 9999px !important;
 }
 

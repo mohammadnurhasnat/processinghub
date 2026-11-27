@@ -171,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={handleToggleSearch}
               aria-expanded={isSearchOpen}
               aria-label={t('গ্লোবাল সার্চ খুলুন', 'Open global search')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[5px] text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+              className={`w-fit inline-flex items-center gap-1.5 px-2.5 py-1.5 leading-tight rounded-[5px] text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 isSearchOpen
                   ? 'bg-[#263375] text-white border-[#1C275F] shadow-xs'
                   : 'bg-white/90 hover:bg-white text-[#263375] border-[#BAC5FA] shadow-2xs'

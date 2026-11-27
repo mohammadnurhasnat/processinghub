@@ -47,10 +47,10 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               type="button"
               id="home-view-all-services-top-btn"
               onClick={onViewAllServices}
-              className="btn-3d-matte-secondary px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold inline-flex items-center gap-2 cursor-pointer"
+              className="btn-3d-matte-secondary w-fit px-2.5 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
             >
               <span>{t('সকল ১৩টি সেবা দেখুন', 'View All 13 Services')}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
@@ -133,15 +133,15 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
       </div>
 
       {previewLimit && onViewAllServices && (
-        <div className="mt-10 flex justify-center">
+        <div className="mt-8 flex justify-center">
           <button
             type="button"
             id="home-view-all-services-bottom-btn"
             onClick={onViewAllServices}
-            className="btn-3d-matte-primary px-7 py-3.5 rounded-full text-sm sm:text-base font-bold inline-flex items-center gap-2.5 cursor-pointer"
+            className="btn-3d-matte-primary w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs sm:text-[13px] font-bold inline-flex items-center gap-1.5 cursor-pointer"
           >
             <span>{t('সকল সেবা ও প্যাকেজ দেখুন', 'View All Visa Services & Packages')}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       )}

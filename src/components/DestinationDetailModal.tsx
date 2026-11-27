@@ -147,12 +147,12 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end flex-nowrap w-full sm:w-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-end flex-wrap sm:flex-nowrap w-auto ml-auto">
             <button
               type="button"
               id="dest-modal-bottom-close-btn"
               onClick={onClose}
-              className="btn-3d-red-glass flex-initial inline-flex items-center justify-center gap-1 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap cursor-pointer"
+              className="btn-3d-red-glass w-fit inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs leading-tight font-bold rounded-[5px] whitespace-nowrap cursor-pointer"
             >
               <X className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>{t('বন্ধ', 'Close')}</span>
@@ -161,7 +161,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
             <a
               id="dest-call-helpline-btn"
               href={`tel:${CONFIG.phone}`}
-              className="btn-3d-matte-secondary flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 px-3.5 py-2 text-xs font-bold rounded-full whitespace-nowrap text-[#1E2519]"
+              className="btn-3d-matte-secondary w-fit inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs leading-tight font-bold rounded-[5px] whitespace-nowrap text-[#1E2519]"
             >
               <PhoneCall className="w-3.5 h-3.5 text-[#2E7D32]" />
               <span>{t('কল করুন', 'Call Now')}</span>
@@ -179,7 +179,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
               data-whatsapp-title={t('ট্যুরিস্ট ভিসা ও ভ্রমণ গন্তব্য', 'Tourist Visa & Destination')}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-3d-matte-green flex-[1.4] sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold rounded-full whitespace-nowrap text-center text-[#124218]"
+              className="btn-3d-matte-green w-fit inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs leading-tight font-bold rounded-[5px] whitespace-nowrap text-center text-[#124218]"
             >
               <span>{t('ভিসা প্রসেসিং করুন', 'Apply for Visa')}</span>
             </a>

@@ -103,7 +103,7 @@ export const GoogleBusinessMapSection: React.FC = () => {
                 href={CONFIG.mapsPlaceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-3d-matte-primary mt-4 px-4 py-2 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
+                className="btn-3d-matte-primary mt-4 w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center gap-1.5"
               >
                 <Navigation className="w-3.5 h-3.5" />
                 <span>{t('Google Maps-এ খুলুন', 'Open in Google Maps')}</span>
@@ -150,39 +150,35 @@ export const GoogleBusinessMapSection: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-2.5 pt-3 border-t border-[#ECEFF9]">
-            {/* Top Row: 50% Get Directions + 50% WhatsApp side-by-side */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <a
-                id="gbp-directions-link"
-                href={CONFIG.mapsDirectionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-3d-matte-primary py-2.5 px-3 rounded-full text-xs font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
-              >
-                <Navigation className="w-3.5 h-3.5 shrink-0" />
-                <span>{t('দিকনির্দেশনা', 'Get Directions')}</span>
-              </a>
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#ECEFF9]">
+            <a
+              id="gbp-directions-link"
+              href={CONFIG.mapsDirectionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-3d-matte-primary w-fit py-1.5 px-2.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+            >
+              <Navigation className="w-3.5 h-3.5 shrink-0" />
+              <span>{t('দিকনির্দেশনা', 'Get Directions')}</span>
+            </a>
 
-              <a
-                id="gbp-whatsapp-link"
-                href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I need Indian Visa processing assistance.')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-2.5 px-3 rounded-full text-xs font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap bg-[#25D366] hover:bg-[#1FB858] text-white border border-[#1DA851] shadow-[0_4px_0_#168B42,0_5px_10px_rgba(37,211,102,0.25)] active:translate-y-[3px] active:shadow-[0_1px_0_#168B42] transition-all cursor-pointer"
-              >
-                <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{t('হোয়াটসঅ্যাপ', 'WhatsApp')}</span>
-              </a>
-            </div>
+            <a
+              id="gbp-whatsapp-link"
+              href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I need Indian Visa processing assistance.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-fit py-1.5 px-2.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap bg-[#25D366] hover:bg-[#1FB858] text-white border border-[#1DA851] shadow-[0_3px_0_#168B42,0_4px_8px_rgba(37,211,102,0.25)] active:translate-y-[2px] active:shadow-[0_1px_0_#168B42] transition-all cursor-pointer"
+            >
+              <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{t('হোয়াটসঅ্যাপ', 'WhatsApp')}</span>
+            </a>
 
-            {/* Bottom Row: Google Reviews */}
             <a
               id="gbp-review-link"
               href={CONFIG.googleReviewUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-3d-matte-secondary w-full py-2.5 px-4 rounded-full text-xs font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+              className="btn-3d-matte-secondary w-fit py-1.5 px-2.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
               <Star className="w-3.5 h-3.5 text-[#D97706] shrink-0" />
               <span>{t('গুগলে রিভিউ দিন (Google Reviews)', 'Leave a Google Review')}</span>

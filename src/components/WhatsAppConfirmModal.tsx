@@ -312,39 +312,37 @@ I would like to get detailed information and processing assistance regarding thi
             </span>
           </div>
 
-          {/* Actions: Talk to Agent + WhatsApp + Cancel */}
-          <div className="pt-2 space-y-2.5">
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                id="modal-talk-to-agent-btn"
-                onClick={handleTalkToAgent}
-                disabled={isSubmitting}
-                className="btn-3d-matte-secondary inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer disabled:opacity-70"
-              >
-                <MessagesSquare className="w-4 h-4 flex-shrink-0" />
-                <span>{t('এজেন্টের সাথে কথা বলুন', 'Talk to Agent')}</span>
-              </button>
-              <button
-                type="submit"
-                id="modal-send-whatsapp-btn"
-                disabled={isSubmitting}
-                className="btn-3d-matte-green inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer disabled:opacity-70"
-              >
-                <Send className="w-4 h-4 flex-shrink-0" />
-                <span>
-                  {isSubmitting
-                    ? t('প্রসেসিং...', 'Processing...')
-                    : t('হোয়াটসঅ্যাপে পাঠান', 'Send on WhatsApp')}
-                </span>
-              </button>
-            </div>
+          {/* Actions: Cancel + Talk to Agent + WhatsApp (Compact, Text-Fitted, Right-Aligned) */}
+          <div className="pt-2 flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
               onClick={closeWhatsAppModal}
-              className="btn-3d-red-glass w-full py-2 text-xs font-bold rounded-xl whitespace-nowrap cursor-pointer"
+              className="btn-3d-red-glass w-fit px-2.5 py-1.5 leading-tight text-xs font-bold rounded-[5px] whitespace-nowrap cursor-pointer"
             >
               {t('বাতিল', 'Cancel')}
+            </button>
+            <button
+              type="button"
+              id="modal-talk-to-agent-btn"
+              onClick={handleTalkToAgent}
+              disabled={isSubmitting}
+              className="btn-3d-matte-secondary w-fit inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 leading-tight rounded-[5px] text-xs font-bold whitespace-nowrap transition-all cursor-pointer disabled:opacity-70"
+            >
+              <MessagesSquare className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>{t('এজেন্টের সাথে কথা বলুন', 'Talk to Agent')}</span>
+            </button>
+            <button
+              type="submit"
+              id="modal-send-whatsapp-btn"
+              disabled={isSubmitting}
+              className="btn-3d-matte-green w-fit inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 leading-tight rounded-[5px] text-xs font-bold whitespace-nowrap transition-all cursor-pointer disabled:opacity-70"
+            >
+              <Send className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>
+                {isSubmitting
+                  ? t('প্রসেসিং...', 'Processing...')
+                  : t('হোয়াটসঅ্যাপে পাঠান', 'Send on WhatsApp')}
+              </span>
             </button>
           </div>
         </form>
