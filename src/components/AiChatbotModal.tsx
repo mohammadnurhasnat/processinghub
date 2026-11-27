@@ -878,6 +878,9 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     setFormError('');
 
     const messageToSend = pendingAgentHandoff.formattedMessage;
+    const handoffAttachments = pendingAgentHandoff.attachments;
+    const instantReply = pendingAgentHandoff.instantAgentReply;
+    const skipAutoSummary = Boolean(pendingAgentHandoff.skipAutoTelegramSummary);
     clearAgentHandoff();
 
     if (handoffSendTimerRef.current) {
@@ -885,7 +888,39 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
     }
     handoffSendTimerRef.current = setTimeout(() => {
       handoffSendTimerRef.current = null;
-      if (isMountedRef.current) {
+      if (!isMountedRef.current) return;
+
+      if (instantReply) {
+        soundEffects.playSendPop();
+        const userMessage: ChatMessage = {
+          id: `user-${Date.now()}`,
+          role: 'user',
+          text: messageToSend,
+          time: formatTimestamp(),
+          attachments: handoffAttachments && handoffAttachments.length > 0 ? handoffAttachments : undefined,
+        };
+        setMessages((prev) => [...prev, userMessage]);
+        hasUnsentUserActivityRef.current = !skipAutoSummary;
+        setShowTypingBubble(true);
+
+        if (typingRevealTimerRef.current) {
+          clearTimeout(typingRevealTimerRef.current);
+        }
+        typingRevealTimerRef.current = setTimeout(() => {
+          typingRevealTimerRef.current = null;
+          if (!isMountedRef.current) return;
+          setShowTypingBubble(false);
+          const assistantMessage: ChatMessage = {
+            id: `assistant-${Date.now()}`,
+            role: 'assistant',
+            text: instantReply,
+            time: formatTimestamp(),
+            isRead: false,
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
+          soundEffects.playReplyChime();
+        }, 700);
+      } else {
         handleSendMessage(messageToSend, nextProfile, assignedAgent);
       }
     }, 260);

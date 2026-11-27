@@ -10,10 +10,21 @@ import {
   MessageCircle,
   ZoomIn,
   RotateCcw,
+  FileText,
+  Calendar,
+  Loader2,
+  Trash2,
+  Sparkles,
+  FileArchive,
 } from 'lucide-react';
 import { CONFIG, getIvacCenters } from '../config';
 import { useLanguage } from '../context/LanguageContext';
 import { ExtensionSpotlightCard } from './ExtensionSpotlightBanner';
+import {
+  compressChatAttachment,
+  convertFilesToTargetPdf350To400KB,
+  TargetPdfCompressionResult,
+} from '../utils/fileCompressor';
 
 export type VisaToolTab = 'calculator' | 'photo' | 'quiz';
 
@@ -116,6 +127,56 @@ const REJECTION_QUIZ_ITEMS = [
   },
 ];
 
+function normalizeBengaliDigits(str: string): string {
+  const bnDigits = '০১২৩৪৫৬৭৮৯';
+  return str.replace(/[০-৯]/g, (ch) => String(bnDigits.indexOf(ch)));
+}
+
+function parseDmyString(raw: string): { date: Date; formattedDmy: string; iso: string } | null {
+  const cleaned = normalizeBengaliDigits(raw).trim();
+  const match = cleaned.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+
+  if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1990 || year > 2100) {
+    return null;
+  }
+
+  const dt = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(dt.getTime()) ||
+    dt.getFullYear() !== year ||
+    dt.getMonth() !== month - 1 ||
+    dt.getDate() !== day
+  ) {
+    return null;
+  }
+
+  const dd = String(day).padStart(2, '0');
+  const mm = String(month).padStart(2, '0');
+  const yyyy = String(year);
+  return {
+    date: dt,
+    formattedDmy: `${dd}/${mm}/${yyyy}`,
+    iso: `${yyyy}-${mm}-${dd}`,
+  };
+}
+
+function formatDmyTyping(val: string): string {
+  const ascii = normalizeBengaliDigits(val);
+  // If user is typing slashes/hyphens manually, allow clean characters
+  if (/[\/\-\.]/.test(ascii)) {
+    return ascii.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);
+  }
+  const digits = ascii.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+}
+
 export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
   activeTab,
   onTabChange,
@@ -159,7 +220,7 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
     };
   }, [calcMode, selectedCat, applicantCount, addEndorsement, addMofaService]);
 
-  // ---------------- TAB 2: 2x2 PHOTO CROPPER & PASSPORT PRE-CHECKER ----------------
+  // ---------------- TAB 2: PHOTO CROPPER, 350-400KB PDF COMPRESSOR & PASSPORT VALIDITY CHECKER ----------------
   const [photoSrc, setPhotoSrc] = useState<string | null>(null);
   const [photoImgObj, setPhotoImgObj] = useState<HTMLImageElement | null>(null);
   const [photoZoom, setPhotoZoom] = useState<number>(1.0);
@@ -175,14 +236,18 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
     origY: 0,
   });
 
-  const [passportExpiryDate, setPassportExpiryDate] = useState<string>('');
-  const [intendedTravelDate, setIntendedTravelDate] = useState<string>(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 14);
-    return d.toISOString().split('T')[0];
-  });
-  const [hasTwoBlankPages, setHasTwoBlankPages] = useState<boolean>(true);
-  const [hasOldPassports, setHasOldPassports] = useState<boolean>(true);
+  // Document & Image -> 350-400 KB PDF Compressor state
+  const [compressorFiles, setCompressorFiles] = useState<File[]>([]);
+  const [isCompressingPdf, setIsCompressingPdf] = useState<boolean>(false);
+  const [compressedPdfResult, setCompressedPdfResult] = useState<TargetPdfCompressionResult | null>(null);
+  const [compressorError, setCompressorError] = useState<string | null>(null);
+
+  // Passport Validity Checker state (DD/MM/YYYY + Passport Photo/PDF Attachment)
+  const [passportExpiryDmy, setPassportExpiryDmy] = useState<string>('');
+  const [attachedPassportFileName, setAttachedPassportFileName] = useState<string | null>(null);
+  const [isExtractingPassport, setIsExtractingPassport] = useState<boolean>(false);
+  const [passportExtractError, setPassportExtractError] = useState<string | null>(null);
+  const hiddenDatePickerRef = useRef<HTMLInputElement | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -254,24 +319,153 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
     a.click();
   };
 
+  // Document & Image Compressor (350-400 KB PDF) handlers
+  const runDocumentCompression = async (filesToProcess: File[]) => {
+    if (filesToProcess.length === 0) return;
+    setIsCompressingPdf(true);
+    setCompressorError(null);
+    try {
+      if (compressedPdfResult?.url) {
+        URL.revokeObjectURL(compressedPdfResult.url);
+      }
+      const res = await convertFilesToTargetPdf350To400KB(filesToProcess);
+      setCompressedPdfResult(res);
+    } catch (err: any) {
+      setCompressorError(
+        err?.message ||
+          t(
+            'ফাইলটি পিডিএফে রূপান্তর করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+            'Failed to convert file to 350–400 KB PDF. Please try again.'
+          )
+      );
+    } finally {
+      setIsCompressingPdf(false);
+    }
+  };
+
+  const handleCompressorFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected: File[] = Array.from(e.target.files || []);
+    if (selected.length === 0) return;
+    const nextFiles: File[] = [...compressorFiles, ...selected];
+    setCompressorFiles(nextFiles);
+    e.target.value = '';
+    await runDocumentCompression(nextFiles);
+  };
+
+  const handleRemoveCompressorFile = async (indexToRemove: number) => {
+    const nextFiles = compressorFiles.filter((_, idx) => idx !== indexToRemove);
+    setCompressorFiles(nextFiles);
+    if (nextFiles.length === 0) {
+      if (compressedPdfResult?.url) {
+        URL.revokeObjectURL(compressedPdfResult.url);
+      }
+      setCompressedPdfResult(null);
+      setCompressorError(null);
+    } else {
+      await runDocumentCompression(nextFiles);
+    }
+  };
+
+  const handleClearCompressorFiles = () => {
+    if (compressedPdfResult?.url) {
+      URL.revokeObjectURL(compressedPdfResult.url);
+    }
+    setCompressorFiles([]);
+    setCompressedPdfResult(null);
+    setCompressorError(null);
+  };
+
+  const handleDownloadCompressedPdf = () => {
+    if (!compressedPdfResult) return;
+    const a = document.createElement('a');
+    a.href = compressedPdfResult.url;
+    a.download = compressedPdfResult.fileName;
+    a.click();
+  };
+
+  // Passport Photo / PDF Attachment handler (auto-detects Expiry Date in DD/MM/YYYY)
+  const handlePassportAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setAttachedPassportFileName(file.name);
+    setIsExtractingPassport(true);
+    setPassportExtractError(null);
+
+    try {
+      const prepared = await compressChatAttachment(file);
+      const response = await fetch('/api/passport/extract-expiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dataUrl: prepared.dataUrl,
+          mimeType: prepared.mimeType,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok && data?.found && data?.expiryDateDmy) {
+        setPassportExpiryDmy(data.expiryDateDmy);
+      } else {
+        setPassportExtractError(
+          t(
+            'পাসপোর্টের ছবি থেকে এক্সপায়ারি ডেট স্পষ্টভাবে পড়া যায়নি। অনুগ্রহ করে নিচে দিন/মাস/বছর (DD/MM/YYYY) ফরম্যাটে তারিখটি লিখুন।',
+            'Could not clearly read the expiry date from the attached file. Please enter the date manually in DD/MM/YYYY format below.'
+          )
+        );
+      }
+    } catch {
+      setPassportExtractError(
+        t(
+          'পাসপোর্ট ফাইল স্ক্যান করতে সমস্যা হয়েছে। অনুগ্রহ করে ম্যানুয়ালি DD/MM/YYYY ফরম্যাটে তারিখ দিন।',
+          'Could not scan passport file automatically. Please enter the expiry date in DD/MM/YYYY format.'
+        )
+      );
+    } finally {
+      setIsExtractingPassport(false);
+    }
+  };
+
+  // Calculate remaining passport validity in Months & Days from today's date
   const passportValidityResult = useMemo(() => {
-    if (!passportExpiryDate) return null;
-    const exp = new Date(passportExpiryDate);
-    const refDate = intendedTravelDate ? new Date(intendedTravelDate) : new Date();
-    if (Number.isNaN(exp.getTime()) || Number.isNaN(refDate.getTime())) return null;
+    const parsed = parseDmyString(passportExpiryDmy);
+    if (!parsed) return null;
 
-    const minReq = new Date(refDate);
-    minReq.setMonth(minReq.getMonth() + 6);
-    const diffDays = Math.floor((exp.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24));
-    const hasSixMonths = exp >= minReq;
+    const exp = parsed.date;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const diffDays = Math.round((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const isExpired = diffDays <= 0;
+
+    let months = 0;
+    let extraDays = 0;
+
+    if (!isExpired) {
+      months = (exp.getFullYear() - today.getFullYear()) * 12 + (exp.getMonth() - today.getMonth());
+      let anchor = new Date(today.getFullYear(), today.getMonth() + months, today.getDate());
+      if (anchor > exp) {
+        months -= 1;
+        anchor = new Date(today.getFullYear(), today.getMonth() + months, today.getDate());
+      }
+      extraDays = Math.max(0, Math.round((exp.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24)));
+    }
+
+    // Red warning triggers when validity is 6 months or less (e.g. expired, 1, 2, 3, 4, 5+ months up to 6 months)
+    const sixMonthLimit = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate());
+    const isSixMonthsOrLess = exp <= sixMonthLimit;
+
     return {
+      formattedDmy: parsed.formattedDmy,
+      iso: parsed.iso,
       diffDays,
-      hasSixMonths,
-      fullyEligible: hasSixMonths && hasTwoBlankPages && hasOldPassports,
+      isExpired,
+      months,
+      extraDays,
+      isSixMonthsOrLess,
     };
-  }, [passportExpiryDate, intendedTravelDate, hasTwoBlankPages, hasOldPassports]);
+  }, [passportExpiryDmy]);
 
-  // ---------------- TAB 4: 9-POINT VISA REJECTION RISK QUIZ ----------------
+  // ---------------- TAB 3: 9-POINT VISA REJECTION RISK QUIZ ----------------
   const [quizAnswers, setQuizAnswers] = useState<Record<string, 'yes' | 'no'>>({});
 
   const quizEvaluation = useMemo(() => {
@@ -285,7 +479,7 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
 
   const tabs: { id: VisaToolTab; icon: React.ComponentType<{ className?: string }>; bn: string; en: string }[] = [
     { id: 'calculator', icon: Calculator, bn: 'ভিসা ফি ক্যালকুলেটর', en: 'Fee Calculator' },
-    { id: 'photo', icon: Camera, bn: '২×২ ছবি ও পাসপোর্ট চেকার', en: '2×2 Photo & Passport' },
+    { id: 'photo', icon: Camera, bn: 'ছবি ও পাসপোর্ট', en: 'Photo & Passport' },
     { id: 'quiz', icon: ShieldAlert, bn: 'রিজেকশন ঝুঁকি যাচাই', en: 'Rejection Risk Check' },
   ];
 
@@ -306,8 +500,8 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
           </h2>
           <p className="text-xs sm:text-sm text-[#4C5565] mt-2 leading-relaxed">
             {t(
-              'ভিসা খরচ হিসাব করুন, ব্রাউজারেই ২×২ ইঞ্চি ছবি ক্রপ ও পাসপোর্টের মেয়াদ যাচাই করুন এবং ভিসা রিজেকশনের ৯টি কারণ মিলিয়ে নিন।',
-              'Calculate exact multi-applicant fees, crop 2×2 inch lab-standard photos locally, and audit your 9 rejection risks.'
+              'ভিসা খরচ হিসাব করুন, ব্রাউজারেই ২×২ ইঞ্চি ছবি ক্রপ, ৩৫০–৪০০ কেবি পিডিএফ কম্প্রেস ও পাসপোর্টের মেয়াদ যাচাই করুন এবং ভিসা রিজেকশনের ৯টি কারণ মিলিয়ে নিন।',
+              'Calculate exact multi-applicant fees, crop 2×2 inch photos, compress documents to 350–400 KB PDF, check passport validity, and audit your 9 rejection risks.'
             )}
           </p>
         </div>
@@ -560,149 +754,335 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
             )}
 
             {/* ============================================================== */}
-            {/* TAB 2: 2x2 INCH PHOTO CROPPER & PASSPORT PRE-CHECKER           */}
+            {/* TAB 2: PHOTO CROPPER, 350-400KB PDF COMPRESSOR & PASSPORT       */}
             {/* ============================================================== */}
             {activeTab === 'photo' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Photo Cropper */}
-                <div className="lg:col-span-6 space-y-3 bg-[#FAF9F5] p-4 rounded-2xl border border-[#E5E0D4]">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-[#1E2519]">
-                      {t('২×২ ইঞ্চি (50×50mm / 600×600px) ছবি ক্রপার', '2×2 Inch (50×50mm / 600×600px) Photo Cropper')}
-                    </h3>
-                    <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded bg-[#E6F4E8] text-[#1D5E29]">
-                      {t('১০০% ব্রাউজার-লোকাল', '100% Browser Local')}
-                    </span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-[#55604C] leading-relaxed">
-                    <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
-                      <span>
-                        {t(
-                          'আপনার ছবি কখনোই সার্ভারে আপলোড হয় না — সম্পূর্ণভাবে আপনার নিজস্ব ব্রাউজারে প্রসেস হয়।',
-                          'Your photo never leaves your device — 100% processed locally in your browser.'
-                        )}
+                {/* LEFT COLUMN: 2x2 Photo Cropper + 350-400 KB Document/Image to PDF Compressor */}
+                <div className="lg:col-span-6 space-y-4">
+                  {/* 1. 2x2 Inch Photo Cropper */}
+                  <div className="space-y-3 bg-[#FAF9F5] p-4 rounded-2xl border border-[#E5E0D4]">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-[#1E2519]">
+                        {t('২×২ ইঞ্চি (50×50mm / 600×600px) ছবি ক্রপার', '2×2 Inch (50×50mm / 600×600px) Photo Cropper')}
+                      </h3>
+                      <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded bg-[#E6F4E8] text-[#1D5E29] shrink-0">
+                        {t('১০০% ব্রাউজার-লোকাল', '100% Browser Local')}
                       </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
-                      <span>
-                        {t(
-                          'সরাসরি ৬০০×৬০০ পিক্সেল (২×২ ইঞ্চি) সাদা ব্যাকগ্রাউন্ড ও হেড অ্যালাইনমেন্ট গাইডসহ ক্রপ করে ডাউনলোড করুন।',
-                          'Crop to exact 600×600px (2×2 inch) JPEG with a plain white background and head alignment guide.'
-                        )}
-                      </span>
-                    </li>
-                  </ul>
+                    </div>
+                    <ul className="space-y-1.5 text-xs text-[#55604C] leading-relaxed">
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
+                        <span>
+                          {t(
+                            'আপনার ছবি কখনোই সার্ভারে আপলোড হয় না — সম্পূর্ণভাবে আপনার নিজস্ব ব্রাউজারে প্রসেস হয়।',
+                            'Your photo never leaves your device — 100% processed locally in your browser.'
+                          )}
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
+                        <span>
+                          {t(
+                            'সরাসরি ৬০০×৬০০ পিক্সেল (২×২ ইঞ্চি) সাদা ব্যাকগ্রাউন্ড ও হেড অ্যালাইনমেন্ট গাইডসহ ক্রপ করে ডাউনলোড করুন।',
+                            'Crop to exact 600×600px (2×2 inch) JPEG with a plain white background and head alignment guide.'
+                          )}
+                        </span>
+                      </li>
+                    </ul>
 
-                  <label className="btn-3d-matte-secondary w-fit inline-flex items-center gap-1.5 px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold cursor-pointer">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>{t('ছবি নির্বাচন করুন (JPG/PNG)', 'Upload Photo (JPG/PNG)')}</span>
-                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                  </label>
+                    <label className="btn-3d-matte-secondary w-fit inline-flex items-center gap-1.5 px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{t('ছবি নির্বাচন করুন (JPG/PNG)', 'Upload Photo (JPG/PNG)')}</span>
+                      <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                    </label>
 
-                  {photoSrc && (
-                    <div className="space-y-3 pt-1">
-                      <div
-                        className="relative w-60 h-60 mx-auto rounded-xl overflow-hidden border-2 border-[#263375] bg-white cursor-move select-none"
-                        onPointerDown={(e) => {
-                          dragStateRef.current = {
-                            active: true,
-                            startX: e.clientX,
-                            startY: e.clientY,
-                            origX: photoOffsetX,
-                            origY: photoOffsetY,
-                          };
-                        }}
-                        onPointerMove={(e) => {
-                          if (!dragStateRef.current.active) return;
-                          setPhotoOffsetX(dragStateRef.current.origX + (e.clientX - dragStateRef.current.startX));
-                          setPhotoOffsetY(dragStateRef.current.origY + (e.clientY - dragStateRef.current.startY));
-                        }}
-                        onPointerUp={() => {
-                          dragStateRef.current.active = false;
-                        }}
-                        onPointerLeave={() => {
-                          dragStateRef.current.active = false;
-                        }}
-                      >
-                        <canvas ref={canvasRef} className="w-full h-full block" />
-                        {/* Non-destructive face alignment overlay */}
-                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                          <div className="w-32 h-40 rounded-full border-2 border-dashed border-[#263375]/55" />
+                    {photoSrc && (
+                      <div className="space-y-3 pt-1">
+                        <div
+                          className="relative w-60 h-60 mx-auto rounded-xl overflow-hidden border-2 border-[#263375] bg-white cursor-move select-none"
+                          onPointerDown={(e) => {
+                            dragStateRef.current = {
+                              active: true,
+                              startX: e.clientX,
+                              startY: e.clientY,
+                              origX: photoOffsetX,
+                              origY: photoOffsetY,
+                            };
+                          }}
+                          onPointerMove={(e) => {
+                            if (!dragStateRef.current.active) return;
+                            setPhotoOffsetX(dragStateRef.current.origX + (e.clientX - dragStateRef.current.startX));
+                            setPhotoOffsetY(dragStateRef.current.origY + (e.clientY - dragStateRef.current.startY));
+                          }}
+                          onPointerUp={() => {
+                            dragStateRef.current.active = false;
+                          }}
+                          onPointerLeave={() => {
+                            dragStateRef.current.active = false;
+                          }}
+                        >
+                          <canvas ref={canvasRef} className="w-full h-full block" />
+                          {/* Non-destructive face alignment overlay */}
+                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                            <div className="w-32 h-40 rounded-full border-2 border-dashed border-[#263375]/55" />
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2 text-xs">
-                        <ZoomIn className="w-4 h-4 text-[#263375]" />
-                        <input
-                          type="range"
-                          min={0.6}
-                          max={2.4}
-                          step={0.05}
-                          value={photoZoom}
-                          onChange={(e) => setPhotoZoom(Number(e.target.value))}
-                          className="flex-1"
-                          aria-label={t('জুম নিয়ন্ত্রণ', 'Zoom level')}
-                        />
+                        <div className="flex items-center gap-2 text-xs">
+                          <ZoomIn className="w-4 h-4 text-[#263375]" />
+                          <input
+                            type="range"
+                            min={0.6}
+                            max={2.4}
+                            step={0.05}
+                            value={photoZoom}
+                            onChange={(e) => setPhotoZoom(Number(e.target.value))}
+                            className="flex-1"
+                            aria-label={t('জুম নিয়ন্ত্রণ', 'Zoom level')}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPhotoZoom(1);
+                              setPhotoOffsetX(0);
+                              setPhotoOffsetY(0);
+                            }}
+                            className="p-1.5 rounded-lg border border-[#D5CFBF] bg-white cursor-pointer"
+                            title={t('রিসেট', 'Reset')}
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {photoWhiteBgScore !== null && (
+                          <div
+                            className={`text-xs px-3 py-2 rounded-xl border ${
+                              photoWhiteBgScore >= 80
+                                ? 'bg-[#E8F5E9] border-[#C5E0C9] text-[#1E5624]'
+                                : 'bg-amber-50 border-amber-200 text-amber-900'
+                            }`}
+                          >
+                            {photoWhiteBgScore >= 80
+                              ? t(
+                                  `সাদা ব্যাকগ্রাউন্ড যাচাই: চমৎকার (${num(photoWhiteBgScore)}%)`,
+                                  `White background check: Good (${photoWhiteBgScore}%)`
+                                )
+                              : t(
+                                  `সতর্কতা: ব্যাকগ্রাউন্ড যথেষ্ট সাদা নয় (${num(photoWhiteBgScore)}%) — ল্যাব প্রিন্টে সাদা ব্যাকগ্রাউন্ড নিশ্চিত করুন।`,
+                                  `Heads up: Background edges look shaded (${photoWhiteBgScore}% white). Ensure plain white background for IVAC print.`
+                                )}
+                          </div>
+                        )}
+
                         <button
                           type="button"
-                          onClick={() => {
-                            setPhotoZoom(1);
-                            setPhotoOffsetX(0);
-                            setPhotoOffsetY(0);
-                          }}
-                          className="p-1.5 rounded-lg border border-[#D5CFBF] bg-white cursor-pointer"
-                          title={t('রিসেট', 'Reset')}
+                          onClick={handleDownloadCroppedPhoto}
+                          className="btn-3d-matte-primary w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <RotateCcw className="w-3.5 h-3.5" />
+                          <Download className="w-3.5 h-3.5" />
+                          <span>{t('৬০০×৬০০ JPEG ডাউনলোড করুন', 'Download 600×600 JPEG')}</span>
                         </button>
                       </div>
+                    )}
+                  </div>
 
-                      {photoWhiteBgScore !== null && (
-                        <div
-                          className={`text-xs px-3 py-2 rounded-xl border ${
-                            photoWhiteBgScore >= 80
-                              ? 'bg-[#E8F5E9] border-[#C5E0C9] text-[#1E5624]'
-                              : 'bg-amber-50 border-amber-200 text-amber-900'
-                          }`}
-                        >
-                          {photoWhiteBgScore >= 80
-                            ? t(
-                                `সাদা ব্যাকগ্রাউন্ড যাচাই: চমৎকার (${num(photoWhiteBgScore)}%)`,
-                                `White background check: Good (${photoWhiteBgScore}%)`
-                              )
-                            : t(
-                                `সতর্কতা: ব্যাকগ্রাউন্ড যথেষ্ট সাদা নয় (${num(photoWhiteBgScore)}%) — ল্যাব প্রিন্টে সাদা ব্যাকগ্রাউন্ড নিশ্চিত করুন।`,
-                                `Heads up: Background edges look shaded (${photoWhiteBgScore}% white). Ensure plain white background for IVAC print.`
-                              )}
-                        </div>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={handleDownloadCroppedPhoto}
-                        className="btn-3d-matte-primary w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>{t('৬০০×৬০০ JPEG ডাউনলোড করুন', 'Download 600×600 JPEG')}</span>
-                      </button>
+                  {/* 2. Document & Photo to PDF Compressor (350-400 KB Output) directly below Photo Cropper */}
+                  <div
+                    id="document-pdf-compressor-card"
+                    className="space-y-3 bg-[#FAF9F5] p-4 rounded-2xl border border-[#E5E0D4]"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-[#1E2519] flex items-center gap-1.5">
+                        <FileArchive className="w-4 h-4 text-[#263375] shrink-0" />
+                        <span>
+                          {t(
+                            'ডকুমেন্ট ও ছবি কম্প্রেসার (৩৫০–৪০০ কেবি পিডিএফ)',
+                            'Document & Photo to PDF Compressor (350–400 KB)'
+                          )}
+                        </span>
+                      </h3>
+                      <span className="text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#EEF1FE] text-[#263375] border border-[#C6D0FB] shrink-0">
+                        {t('৩৫০–৪০০ KB PDF', '350–400 KB PDF')}
+                      </span>
                     </div>
-                  )}
+
+                    <ul className="space-y-1.5 text-xs text-[#55604C] leading-relaxed">
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
+                        <span>
+                          {t(
+                            'যেকোনো সাইজের এক বা একাধিক ছবি (JPG, PNG, WEBP ও সকল ইমেজ ফরম্যাট) অথবা PDF ফাইল একসাথে আপলোড করুন।',
+                            'Upload one or multiple images (JPG, PNG, WEBP, or any image format) and PDF files of any size.'
+                          )}
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
+                        <span>
+                          {t(
+                            'স্বয়ংক্রিয়ভাবে ৩৫০ থেকে ৪০০ কিলোবাইট (350–400 KB) সাইজে কম্প্রেস হয়ে ১টি একক PDF আকারে ডাউনলোডের জন্য প্রস্তুত হবে।',
+                            'Automatically converts and compresses your files into a single 350–400 KB PDF ready to download.'
+                          )}
+                        </span>
+                      </li>
+                    </ul>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="btn-3d-matte-secondary w-fit inline-flex items-center gap-1.5 px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold cursor-pointer">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>
+                          {compressorFiles.length > 0
+                            ? t('+ আরও ছবি / PDF যুক্ত করুন', '+ Add More Photos / PDFs')
+                            : t('ছবি বা পিডিএফ আপলোড করুন (সকল ফরম্যাট)', 'Upload Photo or PDF (All Formats)')}
+                        </span>
+                        <input
+                          id="doc-compressor-file-input"
+                          type="file"
+                          multiple
+                          accept="image/*,application/pdf,.pdf,.jpg,.jpeg,.png,.webp,.bmp,.gif,.avif,.heic"
+                          onChange={handleCompressorFileSelect}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {compressorFiles.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleClearCompressorFiles}
+                          className="btn-3d-red-glass w-fit inline-flex items-center gap-1 px-2.5 py-1.5 leading-tight rounded-[5px] text-xs font-bold cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{t('সব মুছুন', 'Clear All')}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {compressorFiles.length > 0 && (
+                      <div className="space-y-2.5 pt-1">
+                        <div className="rounded-xl bg-white border border-[#E2DDD0] p-2.5 space-y-1.5 max-h-40 overflow-y-auto">
+                          <div className="flex items-center justify-between text-[11px] font-bold text-[#4E5C46] pb-1 border-b border-[#EFECE4]">
+                            <span>
+                              {isBn
+                                ? `নির্বাচিত ফাইল (${num(compressorFiles.length)}টি)`
+                                : `Selected Files (${compressorFiles.length})`}
+                            </span>
+                            <span>
+                              {t('মোট সাইজ:', 'Original Size:')}{' '}
+                              {Math.round(compressorFiles.reduce((a, b) => a + b.size, 0) / 1024)} KB
+                            </span>
+                          </div>
+                          {compressorFiles.map((f, idx) => (
+                            <div
+                              key={`${f.name}-${idx}`}
+                              className="flex items-center justify-between gap-2 text-xs text-[#1E2519] py-1 px-1.5 rounded hover:bg-[#FAF9F5]"
+                            >
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <FileText className="w-3.5 h-3.5 text-[#263375] shrink-0" />
+                                <span className="truncate font-medium">{f.name}</span>
+                                <span className="text-[10.5px] text-[#6B7563] shrink-0">
+                                  ({Math.max(1, Math.round(f.size / 1024))} KB)
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCompressorFile(idx)}
+                                className="text-rose-600 hover:text-rose-800 p-0.5 cursor-pointer"
+                                title={t('বাদ দিন', 'Remove')}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        {isCompressingPdf && (
+                          <div className="flex items-center gap-2 text-xs font-semibold text-[#263375] bg-[#EEF1FE] border border-[#C6D0FB] px-3 py-2.5 rounded-xl">
+                            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                            <span>
+                              {t(
+                                '৩৫০–৪০০ কেবি পিডিএফে কম্প্রেস ও কনভার্ট করা হচ্ছে...',
+                                'Converting & compressing to 350–400 KB PDF...'
+                              )}
+                            </span>
+                          </div>
+                        )}
+
+                        {compressorError && (
+                          <div className="text-xs text-rose-800 bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl">
+                            {compressorError}
+                          </div>
+                        )}
+
+                        {compressedPdfResult && !isCompressingPdf && (
+                          <div className="p-3 rounded-xl bg-[#E8F5E9] border border-[#B9DFBF] space-y-2">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <div className="flex items-center gap-1.5 text-xs font-bold text-[#1B4D20]">
+                                <CheckCircle2 className="w-4 h-4 text-[#2E7D32] shrink-0" />
+                                <span>
+                                  {t('পিডিএফ প্রস্তুত!', 'PDF Ready!')} (
+                                  {Math.round(compressedPdfResult.finalSizeBytes / 1024)} KB •{' '}
+                                  {isBn
+                                    ? `${num(compressedPdfResult.pageCount)} পৃষ্ঠা`
+                                    : `${compressedPdfResult.pageCount} page(s)`}
+                                  )
+                                </span>
+                              </div>
+                              <span className="text-[10.5px] font-bold px-2 py-0.5 rounded bg-white text-[#1E5624] border border-[#A5D6A7]">
+                                350–400 KB Verified
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button
+                                type="button"
+                                id="download-compressed-pdf-btn"
+                                onClick={handleDownloadCompressedPdf}
+                                className="btn-3d-matte-green w-fit px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1.5 text-[#124218] cursor-pointer"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                <span>
+                                  {t(
+                                    `পিডিএফ ডাউনলোড করুন (${Math.round(compressedPdfResult.finalSizeBytes / 1024)} KB)`,
+                                    `Download PDF (${Math.round(compressedPdfResult.finalSizeBytes / 1024)} KB)`
+                                  )}
+                                </span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => runDocumentCompression(compressorFiles)}
+                                className="btn-3d-matte-secondary w-fit px-2.5 py-1.5 leading-tight rounded-[5px] text-xs font-bold inline-flex items-center justify-center gap-1 cursor-pointer"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>{t('পুনরায় প্রসেস', 'Re-process')}</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Passport Validity & Blank Pages Pre-Checker */}
-                <div className="lg:col-span-6 space-y-3 bg-[#F6F8FF] p-4 rounded-2xl border border-[#D8DEFA]">
-                  <h3 className="text-sm font-bold text-[#161D28]">
-                    {t('পাসপোর্ট মেয়াদ ও পৃষ্ঠা প্রি-চেকার', 'Passport Validity & Blank Pages Checker')}
-                  </h3>
+                {/* RIGHT COLUMN: Passport Validity Checker (DD/MM/YYYY + Passport Photo/PDF Attachment) */}
+                <div className="lg:col-span-6 space-y-3.5 bg-[#F6F8FF] p-4 sm:p-5 rounded-2xl border border-[#D8DEFA]">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-bold text-[#161D28]">
+                      {t('পাসপোর্ট ভ্যালিডিটি চেকার', 'Passport Validity Checker')}
+                    </h3>
+                    <span className="text-[10.5px] font-bold px-2 py-0.5 rounded bg-white text-[#263375] border border-[#C6D0FB]">
+                      DD/MM/YYYY
+                    </span>
+                  </div>
+
                   <ul className="space-y-1.5 text-xs text-[#4C5565] leading-relaxed">
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
                       <span>
                         {t(
-                          'আবেদন জমার তারিখ থেকে পাসপোর্টের মেয়াদ কমপক্ষে ৬ মাস (১৮০ দিন) থাকা বাধ্যতামূলক।',
-                          'Passport must have at least 6 months (180 days) remaining validity from submission date.'
+                          'পাসপোর্টের এক্সপায়ারি ডেট (দিন/মাস/বছর — DD/MM/YYYY) লিখুন অথবা সরাসরি পাসপোর্টের ছবি/PDF অ্যাটাচ করে মেয়াদ যাচাই করুন।',
+                          'Enter your Passport Expiry Date in Day/Month/Year (DD/MM/YYYY) format or attach your passport photo/PDF to check remaining validity.'
                         )}
                       </span>
                     </li>
@@ -710,89 +1090,194 @@ export const VisaToolsHub: React.FC<VisaToolsHubProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#263375] shrink-0 mt-[7px]" aria-hidden="true" />
                       <span>
                         {t(
-                          'পাসপোর্টে অন্তত ২টি সম্পূর্ণ খালি পৃষ্ঠা এবং পূর্বের সকল পুরনো পাসপোর্ট সাথে থাকতে হবে।',
-                          'Must contain at least 2 completely blank pages along with all previous old passports.'
+                          'ভিসা আবেদনের জন্য পাসপোর্টের মেয়াদ ৬ মাসের বেশি থাকা প্রয়োজন (৬ মাস বা তার কম থাকলে রিনিউ করার সতর্কবার্তা দেখাবে)।',
+                          'More than 6 months validity is required for visa processing (a red warning is shown if validity is 6 months or less).'
                         )}
                       </span>
                     </li>
                   </ul>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor="passport-expiry-input" className="block text-xs font-bold text-[#1E2519] mb-1">
-                        {t('পাসপোর্ট মেয়াদোত্তীর্ণের তারিখ', 'Passport Expiry Date')}
-                      </label>
+                  {/* Single DD/MM/YYYY Expiry Date Input + Calendar Picker */}
+                  <div className="space-y-2">
+                    <label htmlFor="passport-expiry-dmy-input" className="block text-xs font-bold text-[#1E2519]">
+                      {t(
+                        'পাসপোর্ট মেয়াদোত্তীর্ণের তারিখ (দিন / মাস / বছর — DD/MM/YYYY)',
+                        'Passport Expiry Date (Day / Month / Year — DD/MM/YYYY)'
+                      )}
+                    </label>
+                    <div className="relative flex items-center">
                       <input
-                        id="passport-expiry-input"
-                        type="date"
-                        value={passportExpiryDate}
-                        onChange={(e) => setPassportExpiryDate(e.target.value)}
-                        className="w-full py-2 px-3 rounded-xl border border-[#C6D0FB] bg-white text-xs"
+                        id="passport-expiry-dmy-input"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="DD/MM/YYYY (যেমন: 25/11/2027)"
+                        value={passportExpiryDmy}
+                        onChange={(e) => {
+                          setPassportExtractError(null);
+                          setPassportExpiryDmy(formatDmyTyping(e.target.value));
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const parsed = parseDmyString(passportExpiryDmy);
+                            if (parsed) {
+                              setPassportExpiryDmy(parsed.formattedDmy);
+                            }
+                          }
+                        }}
+                        className="w-full py-2.5 pl-3.5 pr-11 rounded-xl border border-[#B8C4F8] bg-white text-xs sm:text-sm font-semibold text-[#161D28] placeholder:text-[#8490A8] placeholder:font-normal focus:outline-none focus:border-[#263375] focus:ring-2 focus:ring-[#263375]/15"
                       />
-                    </div>
-                    <div>
-                      <label htmlFor="intended-travel-input" className="block text-xs font-bold text-[#1E2519] mb-1">
-                        {t('আবেদন / সম্ভাব্য জমার তারিখ', 'Submission / Travel Date')}
-                      </label>
+
+                      {/* Hidden native date picker synced to DD/MM/YYYY */}
                       <input
-                        id="intended-travel-input"
+                        ref={hiddenDatePickerRef}
                         type="date"
-                        value={intendedTravelDate}
-                        onChange={(e) => setIntendedTravelDate(e.target.value)}
-                        className="w-full py-2 px-3 rounded-xl border border-[#C6D0FB] bg-white text-xs"
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        value={passportValidityResult?.iso || ''}
+                        onChange={(e) => {
+                          const isoVal = e.target.value;
+                          if (!isoVal) return;
+                          const [yyyy, mm, dd] = isoVal.split('-');
+                          if (dd && mm && yyyy) {
+                            setPassportExtractError(null);
+                            setPassportExpiryDmy(`${dd}/${mm}/${yyyy}`);
+                          }
+                        }}
+                        className="sr-only pointer-events-none"
                       />
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const picker = hiddenDatePickerRef.current;
+                          if (!picker) return;
+                          if (typeof (picker as any).showPicker === 'function') {
+                            try {
+                              (picker as any).showPicker();
+                            } catch {
+                              picker.focus();
+                              picker.click();
+                            }
+                          } else {
+                            picker.focus();
+                            picker.click();
+                          }
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-[#263375] hover:bg-[#EEF1FE] cursor-pointer transition-colors"
+                        title={t('ক্যালেন্ডার থেকে তারিখ নির্বাচন করুন (DD/MM/YYYY)', 'Pick date from calendar (DD/MM/YYYY)')}
+                      >
+                        <Calendar className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
 
-                  <div className="space-y-2 pt-1">
-                    <label className="flex items-center gap-2 text-xs text-[#1E2519] cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={hasTwoBlankPages}
-                        onChange={(e) => setHasTwoBlankPages(e.target.checked)}
-                      />
-                      <span>{t('পাসপোর্টে কমপক্ষে ২টি সম্পূর্ণ খালি পৃষ্ঠা আছে', 'Passport has at least 2 completely blank pages')}</span>
-                    </label>
-                    <label className="flex items-center gap-2 text-xs text-[#1E2519] cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={hasOldPassports}
-                        onChange={(e) => setHasOldPassports(e.target.checked)}
-                      />
-                      <span>{t('পূর্বের সকল পুরনো পাসপোর্ট (বা হারানো থাকলে জিডি) সাথে আছে', 'All previous passports (or Police GD if lost) are available')}</span>
-                    </label>
-                  </div>
-
-                  {passportValidityResult && (
-                    <div
-                      className={`p-3.5 rounded-xl border text-xs space-y-1 ${
-                        passportValidityResult.fullyEligible
-                          ? 'bg-[#E8F5E9] border-[#B9DFBF] text-[#1B4D20]'
-                          : 'bg-rose-50 border-rose-200 text-rose-900'
-                      }`}
-                    >
-                      <div className="font-bold flex items-center gap-1.5">
-                        {passportValidityResult.fullyEligible ? (
-                          <CheckCircle2 className="w-4 h-4 text-[#2E7D32]" />
-                        ) : (
-                          <AlertTriangle className="w-4 h-4 text-rose-600" />
-                        )}
+                  {/* Attach Passport Photo / PDF to Auto-Detect Expiry Date */}
+                  <div className="pt-1 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="btn-3d-matte-secondary w-fit inline-flex items-center gap-1.5 px-3 py-1.5 leading-tight rounded-[5px] text-xs font-bold cursor-pointer">
+                        <Upload className="w-3.5 h-3.5 text-[#263375]" />
                         <span>
-                          {passportValidityResult.fullyEligible
-                            ? t('পাসপোর্ট শর্তাবলি পূরণ করেছে!', 'Passport Meets IVAC Validity Requirements!')
-                            : t('সতর্কতা: পাসপোর্ট প্রস্তুতিতে ঘাটতি রয়েছে', 'Action Needed Before Applying')}
+                          {t(
+                            'পাসপোর্ট অ্যাটাচ করুন (ছবি / PDF)',
+                            'Attach Passport (Photo / PDF)'
+                          )}
+                        </span>
+                        <input
+                          id="passport-validity-attach-input"
+                          type="file"
+                          accept="image/*,application/pdf,.pdf,.jpg,.jpeg,.png,.webp"
+                          onChange={handlePassportAttachmentUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {attachedPassportFileName && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#263375] bg-white px-2.5 py-1 rounded-lg border border-[#C6D0FB] max-w-full truncate">
+                          <Sparkles className="w-3 h-3 text-[#263375] shrink-0" />
+                          <span className="truncate">{attachedPassportFileName}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {isExtractingPassport && (
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#263375] bg-white border border-[#C6D0FB] px-3 py-2.5 rounded-xl">
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                        <span>
+                          {t(
+                            'পাসপোর্ট থেকে এক্সপায়ারি ডেট ও অবশিষ্ট মেয়াদ যাচাই করা হচ্ছে...',
+                            'Detecting passport expiry date and remaining validity...'
+                          )}
                         </span>
                       </div>
-                      <p>
-                        {isBn
-                          ? `জমার তারিখ থেকে অবশিষ্ট মেয়াদ: প্রায় ${num(passportValidityResult.diffDays)} দিন`
-                          : `Remaining validity from selected date: ${passportValidityResult.diffDays} days`}
-                      </p>
-                      {!passportValidityResult.hasSixMonths && (
-                        <p className="font-semibold">
+                    )}
+
+                    {passportExtractError && (
+                      <div className="text-xs text-amber-900 bg-amber-50 border border-amber-200 px-3 py-2 rounded-xl">
+                        {passportExtractError}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Validity Output Card in Months & Days + Red Warning for <= 6 Months */}
+                  {passportValidityResult && (
+                    <div
+                      id="passport-validity-result-box"
+                      className={`p-3.5 sm:p-4 rounded-xl border-2 text-xs space-y-2 ${
+                        passportValidityResult.isSixMonthsOrLess
+                          ? 'bg-rose-50 border-rose-400 text-rose-950 shadow-xs'
+                          : 'bg-[#E8F5E9] border-[#81C784] text-[#1B4D20]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 flex-wrap border-b border-current/15 pb-2">
+                        <span className="font-bold text-[11.5px] opacity-85">
+                          {t('এক্সপায়ারি ডেট (DD/MM/YYYY):', 'Expiry Date (DD/MM/YYYY):')}{' '}
+                          <strong className="text-xs sm:text-sm">{passportValidityResult.formattedDmy}</strong>
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded font-bold text-[11px] ${
+                            passportValidityResult.isSixMonthsOrLess
+                              ? 'bg-rose-600 text-white'
+                              : 'bg-[#2E7D32] text-white'
+                          }`}
+                        >
+                          {passportValidityResult.isExpired
+                            ? t('মেয়াদোত্তীর্ণ', 'Expired')
+                            : isBn
+                            ? `অবশিষ্ট মেয়াদ: ${num(passportValidityResult.months)} মাস ${num(passportValidityResult.extraDays)} দিন`
+                            : `Validity: ${passportValidityResult.months} Month(s) ${passportValidityResult.extraDays} Day(s)`}
+                        </span>
+                      </div>
+
+                      <div className="font-bold text-xs sm:text-[13px] flex items-start gap-2">
+                        {passportValidityResult.isSixMonthsOrLess ? (
+                          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4 text-[#2E7D32] shrink-0 mt-0.5" />
+                        )}
+                        <span>
+                          {passportValidityResult.isExpired
+                            ? isBn
+                              ? `এই পাসপোর্টটির মেয়াদ শেষ হয়ে গেছে (${passportValidityResult.formattedDmy})।`
+                              : `This passport has already expired (${passportValidityResult.formattedDmy}).`
+                            : isBn
+                            ? `আপনার পাসপোর্টের মেয়াদ বাকি আছে: ${num(passportValidityResult.months)} মাস ${num(passportValidityResult.extraDays)} দিন (মোট ${num(passportValidityResult.diffDays)} দিন)।`
+                            : `Remaining Passport Validity: ${passportValidityResult.months} Month(s) and ${passportValidityResult.extraDays} Day(s) (${passportValidityResult.diffDays} days total).`}
+                        </span>
+                      </div>
+
+                      {passportValidityResult.isSixMonthsOrLess ? (
+                        <div className="p-2.5 rounded-lg bg-rose-100/90 border border-rose-300 text-rose-950 font-bold leading-relaxed">
                           {t(
-                            '• ৬ মাসের কম মেয়াদ থাকায় নতুন ই-পাসপোর্ট নবায়নের পরামর্শ দেওয়া হচ্ছে।',
-                            '• Less than 6 months left — renew your passport before IVAC submission.'
+                            '⚠️ রেড ওয়ার্নিং: পাসপোর্টে ৬ মাস বা তার কম ভ্যালিডিটি থাকলে ভিসা পাওয়ার সম্ভাবনা অনেকাংশে কমে যায়। তাই ভিসা আবেদনের জন্য পাসপোর্টটি রিনিউ (নবায়ন) করে পুনরায় আবেদন করুন।',
+                            '⚠️ RED WARNING: When passport validity is 6 months or less, the chance of getting a visa decreases significantly. Please renew your passport first and then apply again.'
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[11.5px] font-semibold text-[#1E5624]">
+                          {t(
+                            '✓ আপনার পাসপোর্টের মেয়াদ ৬ মাসের বেশি রয়েছে — আপনি নিশ্চিন্তে ভিসার জন্য আবেদন করতে পারবেন।',
+                            '✓ Your passport has more than 6 months of validity — it is ready for visa application.'
                           )}
                         </p>
                       )}

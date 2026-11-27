@@ -1,11 +1,11 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState, useCallback } from 'react';
-import { CalendarCheck2, FileCheck2, MessageCircle, ChevronRight } from 'lucide-react';
 import { VisaService } from './types';
 import { getVisaServices } from './data/visaData';
 import { Navbar, PageRoute } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { HeroExtensionBar } from './components/ExtensionSpotlightBanner';
 import { ServicesSection } from './components/ServicesSection';
+import { SlotBookingInlineSection } from './components/SlotBookingInlineSection';
 import type { VisaToolTab } from './components/VisaToolsHub';
 import { CtaStrip } from './components/CtaStrip';
 import { Footer } from './components/Footer';
@@ -290,11 +290,6 @@ function AppContent() {
     };
   }, [isAnyModalOpen, isMobileNavOpen]);
 
-  const handleOpenSlotBookingModal = () => {
-    setSelectedServiceId(slotService.id);
-    setActiveServiceContextId(slotService.id);
-  };
-
   const handleJumpToTools = (tab: VisaToolTab = 'calculator') => {
     setActiveToolTab(tab);
     handleNavigatePage('slots');
@@ -438,58 +433,8 @@ function AppContent() {
         {/* 4. SLOTS PAGE (/slots) */}
         {activePage === 'slots' && (
           <div className="pt-28 sm:pt-32 pb-8 space-y-6">
-            {/* Slot Booking Spotlight & Checklist Card */}
-            <section className="w-full max-w-6xl mx-auto px-4 !py-0">
-              <div className="rounded-3xl bg-white/95 border border-[#C6D0FB] p-5 sm:p-8 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                <div className="space-y-3 max-w-3xl">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#1E743B] bg-[#EBF7EE] px-3 py-1 rounded-full border border-[#CDE5D5]">
-                    <CalendarCheck2 className="w-3.5 h-3.5" />
-                    {t('আইভ্যাক (IVAC) অ্যাপয়েন্টমেন্ট ও স্লট বুকিং', 'IVAC Appointment & Slot Booking')}
-                  </span>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#161D28] tracking-tight">
-                    {slotService.title}
-                  </h1>
-                  <p className="text-xs sm:text-sm md:text-base text-[#4A5545] leading-relaxed">
-                    {slotService.description}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                    <div className="px-3 py-1.5 rounded-full bg-[#EEF1FE] border border-[#BAC5FA] text-xs font-bold text-[#263375]">
-                      {t('শুধু স্লট ফি (শুরু): ', 'Slot Fee (Starting): ')}
-                      <span>{slotService.price}</span>{' '}
-                      <span className="font-normal">{slotService.per}</span>
-                    </div>
-                    <div className="px-3 py-1.5 rounded-full bg-[#F2F9F0] border border-[#8ED183] text-xs font-bold text-[#173E12]">
-                      {t('আইভ্যাক ৳১,৫০০ সরকারি ফি অন্তর্ভুক্ত', 'Includes ৳1,500 Official IVAC Fee')}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Swapped Colors, Compact Text-Adjustable (w-fit), Side-by-Side Single Row on Mobile & Desktop */}
-                <div className="flex flex-row flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    id="slots-page-open-checklist-btn"
-                    onClick={handleOpenSlotBookingModal}
-                    className="btn-3d-matte-secondary w-fit px-3.5 py-2 rounded-full text-xs sm:text-[13px] leading-none font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
-                  >
-                    <FileCheck2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>{t('স্লট ও চেকলিস্ট', 'Slot & Checklist')}</span>
-                    <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-                  </button>
-
-                  <a
-                    id="slots-page-whatsapp-btn"
-                    href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I want to book an IVAC appointment slot.')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-3d-matte-primary w-fit px-3.5 py-2 rounded-full text-xs sm:text-[13px] leading-none font-bold inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>{t('হোয়াটসঅ্যাপ কনফার্ম', 'WhatsApp Confirm')}</span>
-                  </a>
-                </div>
-              </div>
-            </section>
+            {/* Full Expanded Visa Slot Booking & Checklist Section (Inline, no Slot & Checklist popup button) */}
+            <SlotBookingInlineSection service={slotService} />
 
             {/* Smart Interactive Visa Tools Hub & Chrome Extension Spotlight */}
             <Suspense fallback={<PageSectionFallback />}>

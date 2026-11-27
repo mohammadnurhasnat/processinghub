@@ -9,7 +9,9 @@ import {
   Compass, 
   ShieldCheck, 
   CalendarCheck2, 
-  Stethoscope
+  Stethoscope,
+  Sparkles,
+  FileCheck2
 } from 'lucide-react';
 import { getDestinations, getHospitals, HOSPITALS, DESTINATIONS } from '../data/visaData';
 import { HOSPITALS_EN, DESTINATIONS_EN } from '../data/visaDataEn';
@@ -17,6 +19,11 @@ import { CONFIG } from '../config';
 import { Destination, Hospital } from '../types';
 import { HospitalDetailModal } from './HospitalDetailModal';
 import { DestinationDetailModal } from './DestinationDetailModal';
+import {
+  MedicalInvitationModal,
+  VERIFIED_HOSPITAL_BRANCHES,
+  MEDICAL_DEPARTMENTS_LIST,
+} from './MedicalInvitationModal';
 import { useLanguage } from '../context/LanguageContext';
 
 const DEPARTMENT_FILTERS = [
@@ -24,10 +31,11 @@ const DEPARTMENT_FILTERS = [
   { id: 'Cardiology', bn: 'কার্ডিওলজি ও হার্ট', en: 'Cardiology & Heart', emoji: '❤️' },
   { id: 'Oncology', bn: 'ক্যান্সার ও অনকোলজি', en: 'Cancer & Oncology', emoji: '🎗️' },
   { id: 'Neurology', bn: 'নিউরোলজি ও ব্রেন', en: 'Neurology & Brain', emoji: '🧠' },
+  { id: 'Gastroenterology', bn: 'গ্যাস্ট্রোএন্টারোলজি', en: 'Gastroenterology', emoji: '🔬' },
+  { id: 'Urology', bn: 'ইউরোলজি ও প্রোস্টেট', en: 'Urology & Prostate', emoji: '🩺' },
+  { id: 'Nephrology', bn: 'কিডনি ও নেফ্রোলজি', en: 'Kidney & Nephrology', emoji: '🧪' },
   { id: 'Organ Transplant', bn: 'অর্গান ট্রান্সপ্লান্ট', en: 'Organ Transplant', emoji: '🫀' },
   { id: 'Orthopedics', bn: 'অর্থোপেডিক্স ও জয়েন্ট', en: 'Orthopedics & Joint', emoji: '🦴' },
-  { id: 'Gastroenterology', bn: 'গ্যাস্ট্রোএন্টারোলজি', en: 'Gastroenterology', emoji: '🔬' },
-  { id: 'Nephrology', bn: 'কিডনি ও নেফ্রোলজি', en: 'Kidney & Nephrology', emoji: '🧪' },
   { id: 'Pediatrics', bn: 'শিশু বিভাগ', en: 'Pediatrics', emoji: '👶' },
 ];
 
@@ -51,6 +59,23 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   const [destFilterQuery, setDestFilterQuery] = useState(externalDestinationQuery || '');
   const [searchQuery, setSearchQuery] = useState(externalSearchQuery || '');
   const [selectedDept, setSelectedDept] = useState('all');
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+
+  // Medical Invitation Modal state
+  const [isMedicalInvitationOpen, setIsMedicalInvitationOpen] = useState(false);
+  const [invitationHospital, setInvitationHospital] = useState<Hospital | null>(null);
+
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target as Node)) {
+        setIsSearchDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (typeof externalDestinationQuery === 'string') {
@@ -102,20 +127,59 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   const destScrollRef = useRef<HTMLDivElement>(null);
   const hospitalScrollRef = useRef<HTMLDivElement>(null);
 
-  // Filter hospitals with bilingual cross-search (matches both BN & EN datasets)
+  // Resolve matching department IDs from bilingual synonyms (e.g., "হার্ট", "হৃদরোগ", "cardiology", "ইউরোলজি", "urology")
+  const matchedDepartmentRecords = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return MEDICAL_DEPARTMENTS_LIST.slice(0, 6);
+    return MEDICAL_DEPARTMENTS_LIST.filter(
+      (dept) =>
+        dept.bn.toLowerCase().includes(q) ||
+        dept.en.toLowerCase().includes(q) ||
+        dept.id.toLowerCase().includes(q) ||
+        dept.keywords
+          .toLowerCase()
+          .split(/\s+/)
+          .some((kw) => kw.includes(q) || q.includes(kw))
+    );
+  }, [searchQuery]);
+
+  // Filter hospitals with enriched bilingual cross-search (matches BN & EN datasets + department synonyms + verified branches)
   const filteredHospitals = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     const bnMap = new Map(HOSPITALS.map((h) => [h.id, h]));
     const enMap = new Map(HOSPITALS_EN.map((h) => [h.id, h]));
 
+    // If user typed a department keyword in Bangla or English, collect canonical department targets
+    const synonymDeptTargets = q
+      ? MEDICAL_DEPARTMENTS_LIST.filter(
+          (dept) =>
+            dept.bn.toLowerCase().includes(q) ||
+            dept.en.toLowerCase().includes(q) ||
+            dept.keywords
+              .toLowerCase()
+              .split(/\s+/)
+              .some((kw) => kw.includes(q) || q.includes(kw))
+        ).map((d) => d.id.toLowerCase())
+      : [];
+
     return hospitals.filter((hospital) => {
       const bnItem = bnMap.get(hospital.id);
       const enItem = enMap.get(hospital.id);
       const candidates = [hospital, bnItem, enItem].filter((item): item is Hospital => Boolean(item));
+      const verifiedRecord = VERIFIED_HOSPITAL_BRANCHES.find((vh) => vh.hospitalId === hospital.id);
 
-      // Department filter (check against canonical English departments as well)
+      // Department filter chip check
       const matchesDept =
         selectedDept === 'all' ||
+        (selectedDept === 'Urology' &&
+          candidates.some((item) =>
+            item.departments.some((d) =>
+              ['urology', 'nephrology', 'kidney', 'organ transplant'].some((k) => d.toLowerCase().includes(k))
+            ) ||
+            item.specialties.some((s) =>
+              ['urology', 'ইউরোলজি', 'কিডনি', 'kidney', 'renal'].some((k) => s.toLowerCase().includes(k))
+            )
+          )) ||
         candidates.some((item) =>
           item.departments.some(
             (d) =>
@@ -126,8 +190,8 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
 
       if (!q) return matchesDept;
 
-      // Cross-language search match across BN and EN fields
-      const matchesQuery = candidates.some(
+      // Direct text match across BN and EN hospital fields
+      const directMatch = candidates.some(
         (item) =>
           item.name.toLowerCase().includes(q) ||
           item.city.toLowerCase().includes(q) ||
@@ -137,7 +201,29 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           item.departments.some((d) => d.toLowerCase().includes(q))
       );
 
-      return matchesDept && matchesQuery;
+      // Verified branch match (both Bangla & English branch names)
+      const branchMatch = verifiedRecord
+        ? verifiedRecord.bnName.toLowerCase().includes(q) ||
+          verifiedRecord.enName.toLowerCase().includes(q) ||
+          verifiedRecord.branches.some(
+            (b) => b.bn.toLowerCase().includes(q) || b.en.toLowerCase().includes(q)
+          )
+        : false;
+
+      // Department synonym match (e.g. user searched "হার্ট" or "ইউরোলজি" or "গ্যাস্ট্রো")
+      const synonymMatch =
+        synonymDeptTargets.length > 0 &&
+        candidates.some((item) =>
+          item.departments.some((d) => {
+            const dl = d.toLowerCase();
+            return (
+              synonymDeptTargets.some((target) => dl.includes(target) || target.includes(dl)) ||
+              (synonymDeptTargets.includes('urology') && (dl.includes('nephrology') || dl.includes('transplant')))
+            );
+          })
+        );
+
+      return matchesDept && (directMatch || branchMatch || synonymMatch);
     });
   }, [hospitals, searchQuery, selectedDept]);
 
@@ -148,6 +234,17 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
         behavior: 'smooth'
       });
     }
+  };
+
+  const handleOpenGeneralInvitation = () => {
+    setInvitationHospital(null);
+    setIsMedicalInvitationOpen(true);
+  };
+
+  const handleOpenHospitalInvitation = (hosp: Hospital) => {
+    setSelectedHospitalId(null);
+    setInvitationHospital(hosp);
+    setIsMedicalInvitationOpen(true);
   };
 
   return (
@@ -321,43 +418,184 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
             </div>
           </div>
 
-          <a
+          <button
+            type="button"
             id="hospital-banner-wa-btn"
-            href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I need an official Doctor Invitation Letter & Appointment for an Indian hospital.')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-3d-matte-green px-3.5 py-1.5 text-xs font-bold whitespace-nowrap self-stretch sm:self-auto text-center"
+            onClick={handleOpenGeneralInvitation}
+            className="btn-3d-matte-green px-3.5 py-1.5 text-xs font-bold whitespace-nowrap self-stretch sm:self-auto text-center cursor-pointer"
           >
             {t('ইনভাইটেশন লেটার নিন', 'Get Invitation Letter')}
-          </a>
+          </button>
         </div>
 
-        {/* Search & Department Filters Box */}
-        <div className="bg-white/85 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-[#E3DFC8] shadow-xs mb-5 space-y-3">
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="w-4 h-4 text-[#7A8772] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              id="hospital-search-input"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t(
-                'রোগের নাম, বিভাগ বা হাসপাতাল খুঁজুন (যেমন: হৃদরোগ, ক্যান্সার, নিউরো, কলকাতা, দিল্লি)...',
-                'Search condition, department, or hospital (e.g. Heart, Cancer, Neuro, Kolkata, Delhi)...'
-              )}
-              className="w-full pl-10 pr-10 py-2 text-xs sm:text-sm bg-[#FAF9F5] border border-[#D5CFBF] rounded-xl text-[#1E2519] placeholder:text-[#8C9685] focus:outline-none focus:border-[#2E7D32] focus:bg-white transition-all"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                id="clear-hospital-search"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8C9685] hover:text-[#1E2519] cursor-pointer"
-                title={t('মুছে ফেলুন', 'Clear search')}
+        {/* Enriched Bilingual Smart Search & Department Filters Box */}
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-[#D4E2D6] shadow-sm mb-5 space-y-3">
+          {/* Smart Bilingual Search Input with Live Autocomplete Dropdown */}
+          <div ref={searchWrapperRef} className="relative">
+            <div className="relative flex items-center">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+                <Search className="w-4 h-4 text-[#2E7D32]" />
+              </div>
+              <input
+                id="hospital-search-input"
+                type="text"
+                value={searchQuery}
+                onFocus={() => setIsSearchDropdownOpen(true)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsSearchDropdownOpen(true);
+                }}
+                placeholder={t(
+                  'বাংলা বা ইংরেজিতে রোগের বিভাগ, হাসপাতাল বা শহর খুঁজুন (যেমন: কার্ডিওলজি, Urology, গ্যাস্ট্রো, অ্যাপোলো, চেন্নাই, কলকাতা)...',
+                  'Search department, hospital, or city in Bangla or English (e.g. Cardiology, Urology, Gastro, Apollo, Chennai, Kolkata)...'
+                )}
+                className="w-full pl-10 pr-24 py-2.5 text-xs sm:text-sm bg-[#F8FAF8] border border-[#C5D8C7] rounded-xl text-[#1E2519] font-medium placeholder:text-[#788873] focus:outline-none focus:border-[#2E7D32] focus:bg-white focus:ring-2 focus:ring-[#2E7D32]/15 transition-all"
+              />
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    id="clear-hospital-search"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedDept('all');
+                    }}
+                    className="p-1 rounded-lg text-[#65715D] hover:text-[#1E2519] hover:bg-[#EFECE4] cursor-pointer transition-colors"
+                    title={t('মুছে ফেলুন', 'Clear search')}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E8F5E9] text-[#1E5624] text-[10px] font-bold border border-[#C8E6C9]">
+                    <Sparkles className="w-2.5 h-2.5 text-[#2E7D32]" />
+                    {t('বাংলা / EN', 'BN / EN')}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Live Autocomplete Suggestion Dropdown */}
+            {isSearchDropdownOpen && (
+              <div
+                id="hospital-smart-search-dropdown"
+                className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white rounded-xl border border-[#CDE0C8] shadow-xl max-h-80 overflow-y-auto divide-y divide-[#EFECE4] text-left"
               >
-                <X className="w-4 h-4" />
-              </button>
+                {/* Matching Medical Departments */}
+                {matchedDepartmentRecords.length > 0 && (
+                  <div className="p-2.5">
+                    <div className="text-[10.5px] font-bold uppercase tracking-wider text-[#5A6B58] px-2 pb-1.5 flex items-center justify-between">
+                      <span>{t('চিকিৎসা ও রোগের বিভাগ (বাংলা ও English)', 'Medical Departments (Bangla & English)')}</span>
+                      <span className="text-[10px] text-[#2E7D32] font-semibold">
+                        {t('ক্লিক করে ফিল্টার করুন', 'Click to filter')}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 px-1">
+                      {matchedDepartmentRecords.slice(0, 8).map((dept) => (
+                        <button
+                          key={dept.id}
+                          type="button"
+                          onClick={() => {
+                            const hasChip = DEPARTMENT_FILTERS.some((df) => df.id === dept.id);
+                            if (hasChip) {
+                              setSelectedDept(dept.id);
+                              setSearchQuery('');
+                            } else {
+                              setSelectedDept('all');
+                              setSearchQuery(isBn ? dept.bn.split('(')[0].trim() : dept.en.split('(')[0].trim());
+                            }
+                            setIsSearchDropdownOpen(false);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F8F4] hover:bg-[#E2F2E5] border border-[#CDE2D0] text-[11px] font-semibold text-[#1B4B27] transition-colors cursor-pointer"
+                        >
+                          <Stethoscope className="w-3 h-3 text-[#2E7D32]" />
+                          <span>{isBn ? dept.bn : dept.en}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Matching Partner Hospitals & Verified Branches */}
+                <div className="p-2.5">
+                  <div className="text-[10.5px] font-bold uppercase tracking-wider text-[#5A6B58] px-2 pb-1.5 flex items-center justify-between">
+                    <span>
+                      {t('হাসপাতাল ও শাখাসমূহ', 'Partner Hospitals & Branches')} ({num(filteredHospitals.length)})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsSearchDropdownOpen(false)}
+                      className="text-[10.5px] text-[#65715D] hover:text-[#1E2519] font-semibold cursor-pointer"
+                    >
+                      {t('বন্ধ করুন ✕', 'Close ✕')}
+                    </button>
+                  </div>
+
+                  {filteredHospitals.length === 0 ? (
+                    <div className="px-3 py-3 text-xs text-[#65715D] flex items-center justify-between gap-2">
+                      <span>
+                        {t(
+                          'তালিকায় সরাসরি মিল পাওয়া যায়নি — তবে আপনি যেকোনো হাসপাতালের জন্য ইনভাইটেশন লেটারের আবেদন করতে পারবেন।',
+                          'No exact filter match — you can still request an invitation letter for any custom hospital.'
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSearchDropdownOpen(false);
+                          handleOpenGeneralInvitation();
+                        }}
+                        className="btn-3d-matte-green px-2.5 py-1 text-[11px] font-bold rounded-[5px] whitespace-nowrap cursor-pointer"
+                      >
+                        {t('ইনভাইটেশন ফর্ম খুলুন', 'Open Invitation Form')}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {filteredHospitals.slice(0, 6).map((hosp) => {
+                        const verifiedRec = VERIFIED_HOSPITAL_BRANCHES.find((v) => v.hospitalId === hosp.id);
+                        return (
+                          <div
+                            key={hosp.id}
+                            className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#F5F8F5] transition-colors"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsSearchDropdownOpen(false);
+                                setSelectedHospitalId(hosp.id);
+                              }}
+                              className="flex items-start gap-2.5 text-left flex-1 min-w-0 cursor-pointer"
+                            >
+                              <Building2 className="w-4 h-4 text-[#2E7D32] mt-0.5 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-[#1E2519] truncate">
+                                  {hosp.name}
+                                </div>
+                                <div className="text-[11px] text-[#5A6854] truncate">
+                                  {hosp.location}
+                                  {verifiedRec ? ` • ${num(verifiedRec.branches.length)}${t('টি শাখা', ' branches')}` : ''}
+                                </div>
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsSearchDropdownOpen(false);
+                                handleOpenHospitalInvitation(hosp);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[5px] bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#14451D] border border-[#A5D6A7] text-[11px] font-bold whitespace-nowrap cursor-pointer transition-colors"
+                            >
+                              <FileCheck2 className="w-3 h-3 text-[#2E7D32]" />
+                              <span>{t('ইনভাইটেশন নিন', 'Get Invitation')}</span>
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 
@@ -421,18 +659,27 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
               {t('কোনো হাসপাতাল পাওয়া যায়নি', 'No matching hospitals found')}
             </p>
             <p className="text-xs text-[#6B7563] mt-1">
-              {t('অন্য কোনো রোগের নাম বা শব্দ দিয়ে আবার চেষ্টা করুন।', 'Try searching with a different condition, city, or hospital name.')}
+              {t('অন্য কোনো রোগের নাম বা শব্দ দিয়ে আবার চেষ্টা করুন অথবা সরাসরি ইনভাইটেশন ফর্মে আপনার হাসপাতালের নাম লিখুন।', 'Try searching with a different condition, city, or hospital name, or enter your hospital manually in the invitation form.')}
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedDept('all');
-              }}
-              className="btn-3d-matte-secondary mt-3 px-3.5 py-1.5 text-xs font-semibold rounded-full"
-            >
-              {t('সকল হাসপাতাল দেখুন', 'Show All Hospitals')}
-            </button>
+            <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedDept('all');
+                }}
+                className="btn-3d-matte-secondary px-3.5 py-1.5 text-xs font-semibold rounded-full cursor-pointer"
+              >
+                {t('সকল হাসপাতাল দেখুন', 'Show All Hospitals')}
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenGeneralInvitation}
+                className="btn-3d-matte-green px-3.5 py-1.5 text-xs font-bold rounded-full cursor-pointer"
+              >
+                {t('ইনভাইটেশন লেটার নিন', 'Get Invitation Letter')}
+              </button>
+            </div>
           </div>
         ) : (
           <div 
@@ -541,6 +788,14 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
       <HospitalDetailModal
         hospital={selectedHospital}
         onClose={() => setSelectedHospitalId(null)}
+        onOpenInvitation={handleOpenHospitalInvitation}
+      />
+
+      {/* Dedicated Medical Visa & Hospital Invitation Letter Modal */}
+      <MedicalInvitationModal
+        isOpen={isMedicalInvitationOpen}
+        onClose={() => setIsMedicalInvitationOpen(false)}
+        initialHospital={invitationHospital}
       />
 
       {/* Destination Detail Pop-up Modal */}
@@ -551,3 +806,4 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     </section>
   );
 };
+

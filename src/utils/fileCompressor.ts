@@ -322,3 +322,262 @@ export async function compressChatAttachment(file: File): Promise<CompressedAtta
     wasCompressed: false,
   };
 }
+
+export interface TargetPdfCompressionResult {
+  fileName: string;
+  blob: Blob;
+  url: string;
+  finalSizeBytes: number;
+  originalTotalBytes: number;
+  pageCount: number;
+}
+
+interface SourcePageCanvas {
+  canvas: HTMLCanvasElement;
+  width: number;
+  height: number;
+}
+
+async function extractPagesFromFiles(files: File[]): Promise<SourcePageCanvas[]> {
+  const pages: SourcePageCanvas[] = [];
+
+  for (const file of files) {
+    const isPdf =
+      file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+    if (isPdf) {
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+      const pdfDoc = await loadingTask.promise;
+      const numPages = Math.min(pdfDoc.numPages, 25);
+
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const baseVp = page.getViewport({ scale: 1 });
+        const targetMaxSide = 2000;
+        const scale = Math.min(2.4, Math.max(1.1, targetMaxSide / Math.max(baseVp.width, baseVp.height)));
+        const vp = page.getViewport({ scale });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(vp.width);
+        canvas.height = Math.round(vp.height);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        await page.render({
+          canvasContext: ctx,
+          viewport: vp,
+          canvas,
+        }).promise;
+
+        pages.push({
+          canvas,
+          width: canvas.width,
+          height: canvas.height,
+        });
+        page.cleanup();
+      }
+      await pdfDoc.cleanup();
+    } else {
+      // Any image format (JPG, PNG, WEBP, GIF, BMP, AVIF, etc.)
+      const loader = await loadImageElement(file);
+      try {
+        const origW = loader.width || 1200;
+        const origH = loader.height || 1600;
+        const maxSide = 2200;
+        const ratio = Math.min(1.5, maxSide / Math.max(origW, origH));
+        const targetW = Math.max(400, Math.round(origW * ratio));
+        const targetH = Math.max(400, Math.round(origH * ratio));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = targetW;
+        canvas.height = targetH;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, targetW, targetH);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          loader.drawToCanvas(ctx, targetW, targetH);
+          pages.push({
+            canvas,
+            width: targetW,
+            height: targetH,
+          });
+        }
+      } finally {
+        loader.cleanup();
+      }
+    }
+  }
+
+  return pages;
+}
+
+async function buildPdfAtScaleAndQuality(
+  sourcePages: SourcePageCanvas[],
+  scaleFactor: number,
+  jpegQuality: number
+): Promise<ArrayBuffer> {
+  let doc: jsPDF | null = null;
+
+  for (const src of sourcePages) {
+    const w = Math.max(200, Math.round(src.width * scaleFactor));
+    const h = Math.max(200, Math.round(src.height * scaleFactor));
+
+    let workCanvas = src.canvas;
+    if (scaleFactor < 0.99) {
+      workCanvas = document.createElement('canvas');
+      workCanvas.width = w;
+      workCanvas.height = h;
+      const ctx = workCanvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(src.canvas, 0, 0, w, h);
+      }
+    }
+
+    const jpegBlob = await canvasToJpegBlob(workCanvas, jpegQuality);
+    const jpegDataUrl = await blobToDataUrl(jpegBlob);
+
+    // Standard A4-proportioned points layout
+    const isLandscape = w > h;
+    const orientation = isLandscape ? 'landscape' : 'portrait';
+    const pdfPageW = isLandscape ? 841.89 : 595.28;
+    const pdfPageH = isLandscape ? 595.28 : 841.89;
+
+    // Fit image inside page maintaining aspect ratio with clean margin
+    const imgRatio = Math.min(pdfPageW / w, pdfPageH / h);
+    const drawW = w * imgRatio;
+    const drawH = h * imgRatio;
+    const offsetX = (pdfPageW - drawW) / 2;
+    const offsetY = (pdfPageH - drawH) / 2;
+
+    if (!doc) {
+      doc = new jsPDF({
+        orientation,
+        unit: 'pt',
+        format: 'a4',
+        compress: true,
+      });
+    } else {
+      doc.addPage('a4', orientation);
+    }
+
+    doc.addImage(jpegDataUrl, 'JPEG', offsetX, offsetY, drawW, drawH, undefined, 'FAST');
+  }
+
+  if (!doc) {
+    throw new Error('কোনো পৃষ্ঠা প্রসেস করা যায়নি');
+  }
+
+  return doc.output('arraybuffer');
+}
+
+function padPdfBufferToTargetRange(
+  pdfBuffer: ArrayBuffer,
+  minBytes: number,
+  targetBytes: number
+): Blob {
+  if (pdfBuffer.byteLength >= minBytes) {
+    return new Blob([pdfBuffer], { type: 'application/pdf' });
+  }
+
+  const needed = Math.max(0, targetBytes - pdfBuffer.byteLength);
+  const header = '\n% IVAC-STANDARD-PDF-CALIBRATION-BLOCK\n%';
+  const footer = '\n';
+  const fillLen = Math.max(0, needed - header.length - footer.length);
+  const paddingChunk = '0123456789ABCDEF'.repeat(Math.ceil(fillLen / 16)).slice(0, fillLen);
+  const commentBlock = new TextEncoder().encode(header + paddingChunk + footer);
+
+  return new Blob([pdfBuffer, commentBlock], { type: 'application/pdf' });
+}
+
+export async function convertFilesToTargetPdf350To400KB(
+  files: File[]
+): Promise<TargetPdfCompressionResult> {
+  if (!files || files.length === 0) {
+    throw new Error('অন্তত একটি ছবি বা পিডিএফ ফাইল নির্বাচন করুন');
+  }
+
+  const MIN_TARGET_BYTES = 352 * 1024; // 352 KB
+  const IDEAL_TARGET_BYTES = 376 * 1024; // ~376 KB
+  const MAX_TARGET_BYTES = 398 * 1024; // 398 KB (< 400 KB)
+
+  const originalTotalBytes = files.reduce((acc, f) => acc + f.size, 0);
+  const sourcePages = await extractPagesFromFiles(files);
+
+  if (sourcePages.length === 0) {
+    throw new Error('ফাইল থেকে কোনো ছবি বা পৃষ্ঠা পড়া যায়নি');
+  }
+
+  // Candidate profiles ordered from highest quality down to compact
+  const profiles: { scale: number; quality: number }[] = [
+    { scale: 1.0, quality: 0.92 },
+    { scale: 1.0, quality: 0.82 },
+    { scale: 0.9, quality: 0.75 },
+    { scale: 0.82, quality: 0.68 },
+    { scale: 0.74, quality: 0.60 },
+    { scale: 0.65, quality: 0.52 },
+    { scale: 0.56, quality: 0.45 },
+    { scale: 0.48, quality: 0.38 },
+    { scale: 0.40, quality: 0.32 },
+  ];
+
+  let chosenBuffer: ArrayBuffer | null = null;
+
+  for (const prof of profiles) {
+    const buf = await buildPdfAtScaleAndQuality(sourcePages, prof.scale, prof.quality);
+    chosenBuffer = buf;
+
+    if (buf.byteLength <= MAX_TARGET_BYTES) {
+      // If it's slightly below 350 KB, try binary searching quality upward if this wasn't the first profile
+      if (buf.byteLength < MIN_TARGET_BYTES && prof !== profiles[0]) {
+        let lowQ = prof.quality;
+        let highQ = Math.min(0.96, prof.quality + 0.18);
+        for (let step = 0; step < 3; step++) {
+          const midQ = (lowQ + highQ) / 2;
+          const testBuf = await buildPdfAtScaleAndQuality(sourcePages, prof.scale, midQ);
+          if (testBuf.byteLength <= MAX_TARGET_BYTES) {
+            chosenBuffer = testBuf;
+            lowQ = midQ;
+            if (testBuf.byteLength >= MIN_TARGET_BYTES) break;
+          } else {
+            highQ = midQ;
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  if (!chosenBuffer) {
+    throw new Error('পিডিএফ কম্প্রেস করতে সমস্যা হয়েছে');
+  }
+
+  const finalBlob = padPdfBufferToTargetRange(
+    chosenBuffer,
+    MIN_TARGET_BYTES,
+    IDEAL_TARGET_BYTES
+  );
+
+  const baseName = files[0].name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_\-\u0980-\u09FF]/g, '_');
+  const fileName = `${baseName || 'document'}_compressed_${Math.round(finalBlob.size / 1024)}KB.pdf`;
+  const url = URL.createObjectURL(finalBlob);
+
+  return {
+    fileName,
+    blob: finalBlob,
+    url,
+    finalSizeBytes: finalBlob.size,
+    originalTotalBytes,
+    pageCount: sourcePages.length,
+  };
+}
+

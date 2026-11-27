@@ -2236,6 +2236,180 @@ app.post('/api/telegram/callback', leadRateLimiter, async (req, res) => {
   }
 });
 
+// API endpoint for dispatching URGENT MEDICAL VISA INVITATION requests + renamed passport attachments to Telegram
+app.post('/api/telegram/medical-invitation', leadRateLimiter, async (req, res) => {
+  try {
+    const { patient, attendants, attachments } = req.body || {};
+
+    const fullName = typeof patient?.fullName === 'string' ? patient.fullName.trim().slice(0, 100) : '';
+    const gender = typeof patient?.gender === 'string' ? patient.gender.trim().slice(0, 40) : '';
+    const passportNumber = typeof patient?.passportNumber === 'string' ? patient.passportNumber.trim().slice(0, 40) : '';
+    const phone = typeof patient?.phone === 'string' ? patient.phone.trim().slice(0, 35) : '';
+    const whatsappPhone = typeof patient?.whatsappPhone === 'string' ? patient.whatsappPhone.trim().slice(0, 35) : '';
+    const address = typeof patient?.address === 'string' ? patient.address.trim().slice(0, 260) : '';
+    const department = typeof patient?.department === 'string' ? patient.department.trim().slice(0, 120) : '';
+    const hospitalName = typeof patient?.hospitalName === 'string' ? patient.hospitalName.trim().slice(0, 160) : '';
+    const branchName = typeof patient?.branchName === 'string' ? patient.branchName.trim().slice(0, 160) : '';
+    const hasPatientPassport = Boolean(patient?.hasPassportFile);
+
+    const digits = extractPhoneDigits(phone || whatsappPhone);
+    if (!fullName || !passportNumber || digits.length < 8) {
+      return res.status(400).json({ error: 'Patient full name, passport number, and valid phone are required.' });
+    }
+
+    const safeAttendants = Array.isArray(attendants) ? attendants.slice(0, 4) : [];
+    const safeAttachments = Array.isArray(attachments) ? attachments.slice(0, 5) : [];
+
+    const serial = await getNextLeadSerial();
+    await saveLeadTrackerRecord({
+      serial: serial.code,
+      name: fullName,
+      phone: phone || whatsappPhone,
+      serviceTitle: `আর্জেন্ট মেডিকেল ভিসা ইনভাইটেশন — ${hospitalName || 'ভারতীয় হাসপাতাল'}${branchName ? ` (${branchName})` : ''}`,
+      source: 'chat',
+      stageNote: 'আর্জেন্ট মেডিকেল ইনভাইটেশন লেটার অনুরোধ গৃহীত হয়েছে — এজেন্ট শীঘ্রই যোগাযোগ করবেন।',
+    });
+
+    const tgConfig = getTelegramConfig();
+    if (!tgConfig) {
+      return res.json({
+        success: true,
+        serialNumber: serial.code,
+        phoneLast4: digits.slice(-4),
+        telegramSkipped: true,
+      });
+    }
+
+    const timeString = new Date().toLocaleString('bn-BD', {
+      timeZone: 'Asia/Dhaka',
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+
+    const ordinalLabelsBn = ['১ম অ্যাটেনডেন্ট (1st Attendant)', '২য় অ্যাটেনডেন্ট (2nd Attendant)', '৩য় অ্যাটেনডেন্ট (3rd Attendant)', '৪র্থ অ্যাটেনডেন্ট (4th Attendant)'];
+
+    let attendantsHtml = '';
+    if (safeAttendants.length === 0) {
+      attendantsHtml = `\n👥 <b>অ্যাটেনডেন্ট (Attendant):</b> নেই (রোগী একা)`;
+    } else {
+      const blocks = safeAttendants.map((att: any, idx: number) => {
+        const attName = typeof att?.fullName === 'string' ? att.fullName.trim().slice(0, 100) : 'উল্লেখ নেই';
+        const attGender = typeof att?.gender === 'string' ? att.gender.trim().slice(0, 40) : 'উল্লেখ নেই';
+        const attPassport = typeof att?.passportNumber === 'string' ? att.passportNumber.trim().slice(0, 40) : 'উল্লেখ নেই';
+        const attAddress = typeof att?.address === 'string' ? att.address.trim().slice(0, 240) : 'উল্লেখ নেই';
+        const attHasFile = Boolean(att?.hasPassportFile);
+        const attFileTag = attHasFile
+          ? `✅ সংযুক্ত (<code>Attendant_${idx + 1}_Passport</code>)`
+          : '⚠️ সংযুক্ত করা হয়নি (ম্যানুয়ালি সংগ্রহ করুন)';
+        return (
+          `👥 <b>${ordinalLabelsBn[idx] || `অ্যাটেনডেন্ট #${idx + 1}`}:</b>\n` +
+          `• <b>নাম:</b> ${escapeHtml(attName)}\n` +
+          `• <b>লিঙ্গ (Gender):</b> ${escapeHtml(attGender)}\n` +
+          `• <b>পাসপোর্ট নং:</b> <code>${escapeHtml(attPassport)}</code>\n` +
+          `• <b>পূর্ণ ঠিকানা:</b> ${escapeHtml(attAddress)}\n` +
+          `• <b>পাসপোর্ট কপি:</b> ${attFileTag}`
+        );
+      });
+      attendantsHtml = `\n\n${blocks.join('\n\n')}`;
+    }
+
+    const patientFileTag = hasPatientPassport
+      ? `✅ সংযুক্ত (<code>Patient_Passport</code>)`
+      : '⚠️ সংযুক্ত করা হয়নি (পরবর্তীতে ম্যানুয়ালি সংগ্রহ করুন)';
+
+    const htmlMessage =
+      `🚨🚨 <b>আর্জেন্ট মেডিকেল ভিসা ইনভাইটেশন</b> 🚨🚨\n` +
+      `<b>(URGENT MEDICAL VISA INVITATION)</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `🔢 <b>সিরিয়াল নং:</b> <code>${serial.code}</code> (${serial.tag})\n` +
+      `🏥 <b>হাসপাতাল:</b> <b>${escapeHtml(hospitalName || 'উল্লেখ করা হয়নি')}</b>\n` +
+      `📍 <b>শাখা / ব্রাঞ্চ:</b> <b>${escapeHtml(branchName || 'উল্লেখ করা হয়নি')}</b>\n` +
+      `🩺 <b>রোগের বিভাগ (Department):</b> <b>${escapeHtml(department || 'উল্লেখ করা হয়নি')}</b>\n\n` +
+      `👤 <b>রোগীর বিবরণ (Patient Details):</b>\n` +
+      `• <b>পূর্ণ নাম:</b> ${escapeHtml(fullName)}\n` +
+      `• <b>লিঙ্গ (Gender):</b> ${escapeHtml(gender || 'উল্লেখ নেই')}\n` +
+      `• <b>পাসপোর্ট নম্বর:</b> <code>${escapeHtml(passportNumber)}</code>\n` +
+      `• <b>মোবাইল নম্বর:</b> <code>${escapeHtml(phone)}</code>\n` +
+      `• <b>হোয়াটসঅ্যাপ নম্বর:</b> <code>${escapeHtml(whatsappPhone || phone)}</code>\n` +
+      `• <b>পূর্ণ ঠিকানা:</b> ${escapeHtml(address || 'উল্লেখ নেই')}\n` +
+      `• <b>পাসপোর্ট কপি:</b> ${patientFileTag}` +
+      `${attendantsHtml}\n\n` +
+      `⏰ <b>সময়:</b> ${escapeHtml(timeString)}\n` +
+      `🌐 <b>উৎস:</b> Processing Hub — Medical Invitation Desk`;
+
+    // Direct WhatsApp inline button for Telegram agent
+    const waRawDigits = extractPhoneDigits(whatsappPhone || phone);
+    let waTarget = waRawDigits;
+    if (waRawDigits.startsWith('0')) {
+      waTarget = `88${waRawDigits}`;
+    } else if (!waRawDigits.startsWith('880') && waRawDigits.length === 10) {
+      waTarget = `880${waRawDigits}`;
+    }
+
+    const inlineKeyboard: Array<Array<{ text: string; url: string }>> = [];
+    if (waTarget && waTarget.length >= 11) {
+      inlineKeyboard.push([
+        {
+          text: '💬 রোগীর WhatsApp-এ যোগাযোগ করুন',
+          url: `https://wa.me/${waTarget}`,
+        },
+      ]);
+    }
+
+    const tgRes = await fetch(`https://api.telegram.org/bot${tgConfig.botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: tgConfig.chatId,
+        text: htmlMessage,
+        parse_mode: 'HTML',
+        reply_markup: inlineKeyboard.length > 0 ? { inline_keyboard: inlineKeyboard } : undefined,
+      }),
+    });
+
+    const tgData = await tgRes.json();
+
+    // If user attached Patient_Passport / Attendant_X_Passport files, send each renamed file directly to Telegram
+    for (const att of safeAttachments) {
+      try {
+        const base64Data = typeof att?.base64Data === 'string' ? att.base64Data.trim() : '';
+        const fileName = typeof att?.fileName === 'string' ? att.fileName.trim() : 'Passport_Copy.jpg';
+        const mimeType = typeof att?.mimeType === 'string' ? att.mimeType.trim() : 'application/octet-stream';
+        const roleLabel = typeof att?.roleLabel === 'string' ? att.roleLabel.trim() : fileName;
+
+        if (!base64Data) continue;
+
+        const fileBuffer = Buffer.from(base64Data, 'base64');
+        const formData = new FormData();
+        formData.append('chat_id', tgConfig.chatId);
+        formData.append(
+          'caption',
+          `🚨 আর্জেন্ট মেডিকেল ইনভাইটেশন পাসপোর্ট কপি\n📎 ফাইল: ${fileName}\n👤 পরিচয়: ${roleLabel}\n🔢 সিরিয়াল: ${serial.code} (${fullName})`
+        );
+        const blob = new Blob([fileBuffer], { type: mimeType });
+        formData.append('document', blob, fileName);
+
+        await fetch(`https://api.telegram.org/bot${tgConfig.botToken}/sendDocument`, {
+          method: 'POST',
+          body: formData,
+        });
+      } catch (fileErr) {
+        console.warn('Failed to send passport document attachment to Telegram:', fileErr);
+      }
+    }
+
+    return res.json({
+      success: true,
+      serialNumber: serial.code,
+      phoneLast4: digits.slice(-4),
+      telegram: tgData,
+    });
+  } catch (error: any) {
+    console.error('Telegram medical invitation error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to dispatch medical invitation alert' });
+  }
+});
+
 // API endpoint for dispatching consultation summary to Telegram & recording PH-XXXX tracker
 app.post('/api/telegram/summary', leadRateLimiter, async (req, res) => {
   let summaryFingerprint: string | null = null;
@@ -2481,6 +2655,93 @@ ${formattedSummary}`;
     }
     console.error('Telegram summary error:', error);
     return res.status(500).json({ error: error?.message || 'Failed to dispatch telegram summary' });
+  }
+});
+
+// Passport Expiry Date OCR Endpoint (extracts only Date of Expiry in DD/MM/YYYY from Passport photo or PDF)
+app.post('/api/passport/extract-expiry', async (req: Request, res: Response) => {
+  try {
+    const { dataUrl, mimeType } = req.body || {};
+    if (!dataUrl || typeof dataUrl !== 'string') {
+      return res.status(400).json({ error: 'Missing passport file dataUrl' });
+    }
+
+    const ai = getAiClient();
+    if (!ai) {
+      return res.status(503).json({
+        error: 'GEMINI_API_KEY is not configured on the server.',
+      });
+    }
+
+    const base64Match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    const resolvedMime = (base64Match?.[1] || mimeType || 'image/jpeg').trim();
+    const rawBase64 = (base64Match?.[2] || dataUrl).trim();
+
+    const promptText = `Look at this passport image or document and find the Passport Date of Expiry (also check the MRZ bottom lines if present).
+Return ONLY a valid JSON object with these exact keys:
+{
+  "found": true or false,
+  "expiryDateDmy": "DD/MM/YYYY",
+  "expiryDateIso": "YYYY-MM-DD"
+}
+Rules:
+- Convert any month name (e.g. 15 AUG 2027, 05 MAR 2026) into numeric DD/MM/YYYY (e.g. "15/08/2027") and YYYY-MM-DD (e.g. "2027-08-15").
+- Day (DD) MUST come first, then Month (MM), then 4-digit Year (YYYY).
+- If no expiry date is visible, set "found": false, "expiryDateDmy": "", "expiryDateIso": "".`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-4-hydrogen',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: resolvedMime,
+              data: rawBase64,
+            },
+          },
+          { text: promptText },
+        ],
+      },
+      config: {
+        responseMimeType: 'application/json',
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+      },
+    });
+
+    const rawText = (response.text || '{}').trim();
+    let parsed: { found?: boolean; expiryDateDmy?: string; expiryDateIso?: string } = {};
+    try {
+      parsed = JSON.parse(rawText);
+    } catch {
+      const matchDmy = rawText.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
+      if (matchDmy) {
+        const [, dd, mm, yyyy] = matchDmy;
+        parsed = {
+          found: true,
+          expiryDateDmy: `${dd}/${mm}/${yyyy}`,
+          expiryDateIso: `${yyyy}-${mm}-${dd}`,
+        };
+      }
+    }
+
+    if (parsed.found && parsed.expiryDateDmy && parsed.expiryDateIso) {
+      return res.json({
+        found: true,
+        expiryDateDmy: parsed.expiryDateDmy,
+        expiryDateIso: parsed.expiryDateIso,
+      });
+    }
+
+    return res.json({
+      found: false,
+      expiryDateDmy: '',
+      expiryDateIso: '',
+    });
+  } catch (error: any) {
+    console.error('[PassportExpiryOCR] Error:', error?.message || error);
+    return res.status(500).json({
+      error: error?.message || 'Failed to extract passport expiry date',
+    });
   }
 });
 

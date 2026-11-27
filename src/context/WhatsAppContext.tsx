@@ -10,6 +10,15 @@ export interface WhatsAppRedirectConfig {
   sourceId?: string;
 }
 
+export interface HandoffAttachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  data?: string;
+  previewUrl?: string;
+}
+
 export interface AgentChatHandoff {
   id: string;
   name: string;
@@ -18,6 +27,9 @@ export interface AgentChatHandoff {
   sectionName?: string;
   serviceTitle?: string;
   formattedMessage: string;
+  attachments?: HandoffAttachment[];
+  instantAgentReply?: string;
+  skipAutoTelegramSummary?: boolean;
 }
 
 interface WhatsAppContextType {

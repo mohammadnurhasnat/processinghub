@@ -22,11 +22,13 @@ import { useLanguage } from '../context/LanguageContext';
 interface HospitalDetailModalProps {
   hospital: Hospital | null;
   onClose: () => void;
+  onOpenInvitation?: (hospital: Hospital) => void;
 }
 
 export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
   hospital,
-  onClose
+  onClose,
+  onOpenInvitation,
 }) => {
   const { language, t, num } = useLanguage();
   const isBn = language === 'bn';
@@ -47,7 +49,6 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
   if (!hospital) return null;
 
   const extras = getHospitalExtras(hospital.id, hospital.city, language);
-  const waAppointmentText = `Hello Processing Hub, I need Doctor Appointment & Medical Visa Invitation Letter for *${hospital.name}* (${hospital.location}). Please assist me with the doctor confirmation and visa file processing.`;
 
   return (
     <div 
@@ -225,7 +226,7 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Footer with Direct Actions */}
+        {/* Modal Footer with Direct Actions (No WhatsApp button — opens MedicalInvitationModal) */}
         <div className="service-modal-footer flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3.5 sm:p-4 bg-[#F8F7F2] border-t border-[#E8E4D8]">
           <div className="flex items-center gap-2 text-xs text-[#4E5C46]">
             <HeartHandshake className="w-4 h-4 text-[#2E7D32] flex-shrink-0" />
@@ -254,22 +255,14 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
               <span>{t('কল করুন', 'Call Now')}</span>
             </a>
 
-            <a
+            <button
+              type="button"
               id="hospital-whatsapp-booking-btn"
-              href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent(waAppointmentText)}`}
-              data-service-name={
-                isBn
-                  ? `মেডিকেল ভিসা ও ${hospital.name} ডাক্তারের অ্যাপয়েন্টমেন্ট`
-                  : `Medical Visa & ${hospital.name} Appointment`
-              }
-              data-section={t('টপ হসপিটাল সেকশন', 'Top Hospitals Section')}
-              data-whatsapp-title={t('মেডিকেল ভিসা ও হাসপাতাল', 'Medical Visa & Hospital')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-3d-matte-green w-fit inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs leading-tight font-bold rounded-[5px] whitespace-nowrap text-center text-[#124218]"
+              onClick={() => onOpenInvitation?.(hospital)}
+              className="btn-3d-matte-green w-fit inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs leading-tight font-bold rounded-[5px] whitespace-nowrap text-center text-[#124218] cursor-pointer"
             >
               <span>{t('অ্যাপয়েন্টমেন্ট নিন', 'Book Appointment')}</span>
-            </a>
+            </button>
           </div>
         </div>
       </div>
