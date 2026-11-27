@@ -17,12 +17,14 @@ import {
   ArrowRight,
   Paperclip,
   FileText,
-  Puzzle
+  Puzzle,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { CONFIG } from '../config';
 import { VisaService } from '../types';
+import { ExtensionAuroraShell } from './ExtensionSpotlightBanner';
 import { soundEffects } from '../utils/soundEffects';
 import { compressChatAttachment } from '../utils/fileCompressor';
 import { useWhatsApp } from '../context/WhatsAppContext';
@@ -1641,25 +1643,32 @@ export const AiChatbotModal: React.FC<AiChatbotModalProps> = ({
                     ))}
                   </div>
 
-                  {/* Subtle Chrome Extension Recommendation */}
-                  <a
+                  {/* Aurora Highlighted Chrome Extension Recommendation */}
+                  <ExtensionAuroraShell
                     id="chatbot-extension-tip"
+                    variant="compact"
                     href={CONFIG.chromeExtension.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2.5 px-3 py-2 rounded-xl bg-[#EEF1FE] hover:bg-[#E4E9FD] border border-[#C6D0FB] flex items-center justify-between gap-2 text-[11.5px] text-[#263375] transition-colors"
+                    className="mt-2.5"
+                    innerClassName="px-3 py-2"
                   >
-                    <span className="flex items-center gap-1.5 font-semibold truncate">
-                      <Puzzle className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">
-                        {t(
-                          `ফর্ম অটোফিল: ${CONFIG.chromeExtension.name}`,
-                          `Form Autofill: ${CONFIG.chromeExtension.name}`
-                        )}
+                    <div className="flex items-center justify-between gap-2 text-[11.5px]">
+                      <span className="flex items-center gap-1.5 font-bold min-w-0">
+                        <span className="ext-aurora-icon-box w-5 h-5 rounded-[5px] text-white inline-flex items-center justify-center shrink-0">
+                          <Puzzle className="w-3 h-3" />
+                        </span>
+                        <Zap className="w-3 h-3 text-[#D97706] fill-[#FACC15] shrink-0" />
+                        <span className="ext-aurora-gradient-text font-extrabold truncate">
+                          {t(
+                            `৩০ সেকেন্ডে অটোফিল: ${CONFIG.chromeExtension.name}`,
+                            `30s Autofill: ${CONFIG.chromeExtension.name}`
+                          )}
+                        </span>
                       </span>
-                    </span>
-                    <ExternalLink className="w-3 h-3 shrink-0" />
-                  </a>
+                      <ExternalLink className="w-3 h-3 text-[#0E7490] shrink-0" />
+                    </div>
+                  </ExtensionAuroraShell>
                 </div>
               )}
 

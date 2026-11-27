@@ -1,11 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, MessagesSquare, Puzzle, ExternalLink } from 'lucide-react';
+import React, { Suspense, lazy, useState, useRef, useEffect } from 'react';
+import { X, MessagesSquare, Puzzle, ExternalLink, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
 import { VisaService } from '../types';
-import { AiChatbotModal } from './AiChatbotModal';
 import { useWhatsApp } from '../context/WhatsAppContext';
 import { useLanguage } from '../context/LanguageContext';
+import { ExtensionAuroraShell } from './ExtensionSpotlightBanner';
+
+const LazyAiChatbotModal = lazy(() =>
+  import('./AiChatbotModal').then((m) => ({ default: m.AiChatbotModal }))
+);
 
 interface FloatingWhatsAppProps {
   serviceContext?: VisaService | null;
@@ -159,32 +163,38 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
               </button>
             </div>
 
-            {/* BOTTOM: Chrome Extension Affiliate / Autofill Button */}
+            {/* BOTTOM: Chrome Extension Affiliate / Autofill Aurora Card */}
             <div className="mt-2.5 pt-2.5 border-t border-[#EAE5DA]">
-              <a
+              <ExtensionAuroraShell
                 id="popup-extension-btn"
+                variant="compact"
                 href={CONFIG.chromeExtension.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsPopupOpen(false)}
-                className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl bg-[#EEF1FE] hover:bg-[#E1E7FD] border border-[#C6D0FB] text-[#263375] transition-all duration-200 group shadow-2xs"
                 title={CONFIG.chromeExtension.name}
+                innerClassName="px-2.5 py-2"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-7 h-7 rounded-lg bg-[#263375] text-white flex items-center justify-center shrink-0">
-                    <Puzzle className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="min-w-0 text-left">
-                    <div className="text-[11px] font-bold text-[#161D28] truncate leading-tight">
-                      {t('ইন্ডিয়ান ভিসা অটোফিল', 'Indian Visa Autofill')}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="ext-aurora-icon-box w-7 h-7 rounded-[6px] text-white flex items-center justify-center shrink-0">
+                      <Puzzle className="w-3.5 h-3.5" />
                     </div>
-                    <div className="text-[9.5px] font-medium text-[#374492] truncate leading-tight mt-0.5">
-                      Tracker Chrome Extension
+                    <div className="min-w-0 text-left">
+                      <div className="text-[11px] font-extrabold leading-tight flex items-center gap-1 min-w-0">
+                        <Zap className="w-3 h-3 text-[#D97706] fill-[#FACC15] shrink-0" />
+                        <span className="ext-aurora-gradient-text truncate">
+                          {t('ইন্ডিয়ান ভিসা অটোফিল', 'Indian Visa Autofill')}
+                        </span>
+                      </div>
+                      <div className="text-[9.5px] font-semibold text-[#243043] truncate leading-tight mt-0.5">
+                        Tracker · {t('৩০ সেকেন্ডে ফর্ম পূরণ', '30s Form Autofill')}
+                      </div>
                     </div>
                   </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-[#1E3A8A] shrink-0 group-hover:translate-x-0.5 transition-transform" />
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-[#263375] shrink-0 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+              </ExtensionAuroraShell>
             </div>
           </motion.div>
         )}
@@ -220,14 +230,18 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
         </button>
       </div>
 
-      {/* Support Chat Modal */}
-      <AiChatbotModal
-        isOpen={isChatbotOpen}
-        onClose={handleCloseChatbot}
-        onOpenWhatsAppDirect={handleOpenWhatsApp}
-        serviceContext={serviceContext}
-        onClearServiceContext={onClearServiceContext}
-      />
+      {/* Support Chat Modal (Lazy-loaded on first open) */}
+      {isChatbotOpen && (
+        <Suspense fallback={null}>
+          <LazyAiChatbotModal
+            isOpen={isChatbotOpen}
+            onClose={handleCloseChatbot}
+            onOpenWhatsAppDirect={handleOpenWhatsApp}
+            serviceContext={serviceContext}
+            onClearServiceContext={onClearServiceContext}
+          />
+        </Suspense>
+      )}
     </>
   );
 };

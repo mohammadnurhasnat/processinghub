@@ -72,6 +72,23 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      cssCodeSplit: true,
+      target: 'es2020',
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react';
+            if (id.includes('motion') || id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('lucide-react')) return 'vendor-icons';
+            if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('pdfjs-dist')) return 'vendor-pdf';
+            if (id.includes('@vis.gl/react-google-maps') || id.includes('@googlemaps')) return 'vendor-maps';
+            if (id.includes('react-markdown') || id.includes('remark') || id.includes('unified') || id.includes('mdast')) return 'vendor-markdown';
+          },
+        },
+      },
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.

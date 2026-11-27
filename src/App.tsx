@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useState, useCallback } from 'react';
 import { CalendarCheck2, FileCheck2, MessageCircle, ChevronRight } from 'lucide-react';
 import { VisaService } from './types';
 import { getVisaServices } from './data/visaData';
@@ -6,22 +6,49 @@ import { Navbar, PageRoute } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { HeroExtensionBar } from './components/ExtensionSpotlightBanner';
 import { ServicesSection } from './components/ServicesSection';
-import { VisaToolsHub, VisaToolTab } from './components/VisaToolsHub';
-import { DestinationsSection } from './components/DestinationsSection';
-import { IvacCentersAndFaqSection } from './components/IvacCentersAndFaqSection';
-import { GoogleBusinessMapSection } from './components/GoogleBusinessMapSection';
-import { AboutUsSection } from './components/AboutUsSection';
+import type { VisaToolTab } from './components/VisaToolsHub';
 import { CtaStrip } from './components/CtaStrip';
 import { Footer } from './components/Footer';
-import { FloatingWhatsApp } from './components/FloatingWhatsApp';
-import { QuickBookModal } from './components/QuickBookModal';
-import { ServiceChecklistModal } from './components/ServiceChecklistModal';
 import { WhatsAppProvider, useWhatsApp } from './context/WhatsAppContext';
 import { Language, LanguageProvider, useLanguage } from './context/LanguageContext';
-import { WhatsAppConfirmModal } from './components/WhatsAppConfirmModal';
 import { useBodyScrollLock } from './hooks/useBodyScrollLock';
 import { updateMetaForService } from './utils/metaTags';
 import { CONFIG } from './config';
+
+// Route-level & modal-level lazy code splitting for fast initial page load
+const VisaToolsHub = lazy(() =>
+  import('./components/VisaToolsHub').then((m) => ({ default: m.VisaToolsHub }))
+);
+const DestinationsSection = lazy(() =>
+  import('./components/DestinationsSection').then((m) => ({ default: m.DestinationsSection }))
+);
+const IvacCentersAndFaqSection = lazy(() =>
+  import('./components/IvacCentersAndFaqSection').then((m) => ({ default: m.IvacCentersAndFaqSection }))
+);
+const GoogleBusinessMapSection = lazy(() =>
+  import('./components/GoogleBusinessMapSection').then((m) => ({ default: m.GoogleBusinessMapSection }))
+);
+const AboutUsSection = lazy(() =>
+  import('./components/AboutUsSection').then((m) => ({ default: m.AboutUsSection }))
+);
+const FloatingWhatsApp = lazy(() =>
+  import('./components/FloatingWhatsApp').then((m) => ({ default: m.FloatingWhatsApp }))
+);
+const QuickBookModal = lazy(() =>
+  import('./components/QuickBookModal').then((m) => ({ default: m.QuickBookModal }))
+);
+const ServiceChecklistModal = lazy(() =>
+  import('./components/ServiceChecklistModal').then((m) => ({ default: m.ServiceChecklistModal }))
+);
+const WhatsAppConfirmModal = lazy(() =>
+  import('./components/WhatsAppConfirmModal').then((m) => ({ default: m.WhatsAppConfirmModal }))
+);
+
+const PageSectionFallback: React.FC = () => (
+  <div className="w-full max-w-6xl mx-auto px-4 py-16 flex items-center justify-center">
+    <div className="w-8 h-8 rounded-full border-2 border-[#BAC5FA] border-t-[#263375] animate-spin" />
+  </div>
+);
 
 function matchServiceFromSubject(subject: string | undefined, language: Language): VisaService | null {
   if (!subject) return null;
@@ -397,11 +424,13 @@ function AppContent() {
         {/* 3. DESTINATIONS PAGE (/destinations) */}
         {activePage === 'destinations' && (
           <div className="pt-20 sm:pt-24">
-            <DestinationsSection
-              externalSearchQuery={deepLinkHospitalQuery}
-              externalDestinationQuery={deepLinkDestinationQuery}
-              onClearExternalDestinationQuery={() => setDeepLinkDestinationQuery('')}
-            />
+            <Suspense fallback={<PageSectionFallback />}>
+              <DestinationsSection
+                externalSearchQuery={deepLinkHospitalQuery}
+                externalDestinationQuery={deepLinkDestinationQuery}
+                onClearExternalDestinationQuery={() => setDeepLinkDestinationQuery('')}
+              />
+            </Suspense>
             <CtaStrip />
           </div>
         )}
@@ -463,22 +492,26 @@ function AppContent() {
             </section>
 
             {/* Smart Interactive Visa Tools Hub & Chrome Extension Spotlight */}
-            <VisaToolsHub
-              activeTab={activeToolTab}
-              onTabChange={setActiveToolTab}
-            />
+            <Suspense fallback={<PageSectionFallback />}>
+              <VisaToolsHub
+                activeTab={activeToolTab}
+                onTabChange={setActiveToolTab}
+              />
 
-            {/* IVAC Centers & Visible FAQ Accordion */}
-            <IvacCentersAndFaqSection externalOpenFaqIdx={deepLinkFaqIdx} />
+              {/* IVAC Centers & Visible FAQ Accordion */}
+              <IvacCentersAndFaqSection externalOpenFaqIdx={deepLinkFaqIdx} />
+            </Suspense>
           </div>
         )}
 
         {/* 5. ABOUT US PAGE (/about) */}
         {activePage === 'about' && (
-          <AboutUsSection
-            onNavigateServices={() => handleNavigatePage('services')}
-            onNavigateContact={() => handleNavigatePage('contact')}
-          />
+          <Suspense fallback={<PageSectionFallback />}>
+            <AboutUsSection
+              onNavigateServices={() => handleNavigatePage('services')}
+              onNavigateContact={() => handleNavigatePage('contact')}
+            />
+          </Suspense>
         )}
 
         {/* 6. CONTACT PAGE (/contact) */}
@@ -499,7 +532,9 @@ function AppContent() {
               </p>
             </div>
 
-            <GoogleBusinessMapSection />
+            <Suspense fallback={<PageSectionFallback />}>
+              <GoogleBusinessMapSection />
+            </Suspense>
           </div>
         )}
       </main>
@@ -507,28 +542,31 @@ function AppContent() {
       {/* Universal Classic Minimalist Footer across all pages */}
       <Footer />
 
-      {/* Floating WhatsApp Action Button with dynamic service context */}
-      <FloatingWhatsApp
-        serviceContext={activeServiceContext}
-        onClearServiceContext={() => setActiveServiceContextId(null)}
-        isChatbotForcedOpen={isForcedChatbotOpen}
-        onCloseForcedChatbot={() => setIsForcedChatbotOpen(false)}
-      />
+      {/* Deferred Floating Support Widget & On-Demand Modals */}
+      <Suspense fallback={null}>
+        <FloatingWhatsApp
+          serviceContext={activeServiceContext}
+          onClearServiceContext={() => setActiveServiceContextId(null)}
+          isChatbotForcedOpen={isForcedChatbotOpen}
+          onCloseForcedChatbot={() => setIsForcedChatbotOpen(false)}
+        />
 
-      {/* Quick Booking Service List & Callback Modal */}
-      <QuickBookModal
-        isOpen={isQuickBookOpen}
-        onClose={() => setIsQuickBookOpen(false)}
-      />
+        {isQuickBookOpen && (
+          <QuickBookModal
+            isOpen={isQuickBookOpen}
+            onClose={() => setIsQuickBookOpen(false)}
+          />
+        )}
 
-      {/* Service Details & Document Checklist Modal */}
-      <ServiceChecklistModal
-        service={selectedService}
-        onClose={() => setSelectedServiceId(null)}
-      />
+        {selectedService && (
+          <ServiceChecklistModal
+            service={selectedService}
+            onClose={() => setSelectedServiceId(null)}
+          />
+        )}
 
-      {/* WhatsApp Confirmation & Redirection Popup Modal */}
-      <WhatsAppConfirmModal />
+        <WhatsAppConfirmModal />
+      </Suspense>
     </div>
   );
 }

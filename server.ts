@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs/promises';
 import crypto from 'crypto';
+import zlib from 'zlib';
 import dotenv from 'dotenv';
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
@@ -10,11 +11,92 @@ import { SLOT_TYPES, VISA_SERVICES, DESTINATIONS, HOSPITALS } from './src/data/v
 dotenv.config();
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+
+function resolvePort(): number {
+  const argv = process.argv.slice(2);
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--port' && argv[i + 1]) {
+      const parsed = Number(argv[i + 1]);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    } else if (argv[i].startsWith('--port=')) {
+      const parsed = Number(argv[i].slice('--port='.length));
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+  }
+  const envPort = Number(process.env.PORT);
+  const nginxPort = Number(process.env.NGINX_PORT);
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    Number.isFinite(envPort) &&
+    Number.isFinite(nginxPort) &&
+    envPort === nginxPort
+  ) {
+    return Number(process.env.DEFAULT_APP_PORT) || 3000;
+  }
+  return Number.isFinite(envPort) && envPort > 0 ? envPort : 3000;
+}
+
+const PORT = resolvePort();
 app.set('trust proxy', 1);
 
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+// Lightweight native Brotli/Gzip compression for API JSON and static text responses
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const acceptEncoding = String(req.headers['accept-encoding'] || '');
+  const supportsBr = acceptEncoding.includes('br');
+  const supportsGzip = acceptEncoding.includes('gzip');
+  if (!supportsBr && !supportsGzip) {
+    next();
+    return;
+  }
+
+  const originalSend = res.send.bind(res);
+  res.send = ((body?: any) => {
+    if (res.headersSent || res.getHeader('Content-Encoding')) {
+      return originalSend(body);
+    }
+
+    const contentType = String(res.getHeader('Content-Type') || '');
+    const isCompressible =
+      typeof body === 'string' ||
+      Buffer.isBuffer(body)
+        ? /json|javascript|text|xml|svg/i.test(contentType) || !contentType
+        : true;
+
+    if (!isCompressible || body == null) {
+      return originalSend(body);
+    }
+
+    const rawBuffer = Buffer.isBuffer(body)
+      ? body
+      : typeof body === 'string'
+        ? Buffer.from(body)
+        : Buffer.from(JSON.stringify(body));
+
+    if (rawBuffer.length < 1024) {
+      return originalSend(body);
+    }
+
+    try {
+      const compressed = supportsBr
+        ? zlib.brotliCompressSync(rawBuffer, {
+            params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 4 },
+          })
+        : zlib.gzipSync(rawBuffer, { level: 6 });
+
+      res.setHeader('Content-Encoding', supportsBr ? 'br' : 'gzip');
+      res.setHeader('Vary', 'Accept-Encoding');
+      res.removeHeader('Content-Length');
+      return originalSend(compressed);
+    } catch {
+      return originalSend(body);
+    }
+  }) as typeof res.send;
+
+  next();
+});
 
 // Per-IP Sliding Window Rate Limiter
 function createRateLimiter(windowMs: number, maxRequests: number, label: string) {
@@ -2447,24 +2529,85 @@ function startKeepAliveHeartbeat() {
 
 // Vite middleware in dev or static files in production
 async function startServer() {
+  let viteInstance: Awaited<ReturnType<typeof createViteServer>> | null = null;
+
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
+    const disableHmr = process.env.DISABLE_HMR === 'true';
+    const vitePromise = createViteServer({
+      server: {
+        middlewareMode: true,
+        hmr: disableHmr ? false : undefined,
+        ws: disableHmr ? false : undefined,
+        watch: disableHmr ? null : undefined,
+      },
       appType: 'spa',
+    })
+      .then((vite) => {
+        viteInstance = vite;
+        return vite;
+      })
+      .catch((err) => {
+        console.error('[Vite] Failed to initialize dev middleware:', err);
+        throw err;
+      });
+
+    app.use((req, res, next) => {
+      if (viteInstance) {
+        viteInstance.middlewares(req, res, next);
+        return;
+      }
+      vitePromise
+        .then((vite) => vite.middlewares(req, res, next))
+        .catch(next);
     });
-    app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(
+      express.static(distPath, {
+        etag: true,
+        lastModified: true,
+        setHeaders(res, filePath) {
+          const normalized = filePath.replace(/\\/g, '/');
+          if (normalized.endsWith('/index.html')) {
+            res.setHeader('Cache-Control', 'no-cache');
+          } else if (
+            normalized.includes('/assets/') ||
+            normalized.includes('/fonts/')
+          ) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          } else {
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+          }
+        },
+      })
+    );
     app.get('*', (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Processing Hub server running on http://0.0.0.0:${PORT}`);
     startKeepAliveHeartbeat();
   });
+
+  const shutdown = () => {
+    server.close(() => {
+      if (viteInstance) {
+        viteInstance.close().finally(() => process.exit(0));
+      } else {
+        process.exit(0);
+      }
+    });
+    setTimeout(() => process.exit(0), 2500).unref?.();
+  };
+
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
 }
 
-startServer();
+startServer().catch((err) => {
+  console.error('Fatal server startup error:', err);
+  process.exit(1);
+});

@@ -11,13 +11,15 @@ import {
   Puzzle,
   ExternalLink,
   AlertCircle,
-  Compass
+  Compass,
+  Zap
 } from 'lucide-react';
 import { VisaService } from '../types';
 import { getSlotTypes } from '../data/visaData';
 import { CONFIG, getIvacCenters, getPhoneDisplay } from '../config';
 import { generateChecklistPdf } from '../utils/generateChecklistPdf';
 import { useLanguage } from '../context/LanguageContext';
+import { ExtensionAuroraShell } from './ExtensionSpotlightBanner';
 
 interface ServiceChecklistModalProps {
   service: VisaService | null;
@@ -326,28 +328,59 @@ export const ServiceChecklistModal: React.FC<ServiceChecklistModalProps> = ({
                   </div>
 
                   {idx === 0 && isVisaFormService && (
-                    <div className="ml-2 sm:ml-6 p-2.5 rounded-xl bg-[#EEF1FE] border border-[#C6D0FB] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                      <div className="flex items-start gap-2 text-[#1E2B6B]">
-                        <Puzzle className="w-4 h-4 text-[#263375] shrink-0 mt-0.5" />
-                        <span>
-                          {t(
-                            `নিজে অনলাইন ভিসা ফর্ম পূরণ করলে সময় বাঁচাতে ও ভুল এড়াতে আমাদের "${CONFIG.chromeExtension.name}" ক্রোম এক্সটেনশন ব্যবহার করতে পারেন।`,
-                            `Filling the online visa form yourself? Use "${CONFIG.chromeExtension.name}" in Chrome to enter fields faster with fewer typos.`
-                          )}
-                        </span>
+                    <ExtensionAuroraShell
+                      variant="compact"
+                      className="ml-1 sm:ml-6"
+                      innerClassName="p-3 sm:p-3.5"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <div className="ext-aurora-icon-box w-8 h-8 rounded-[6px] text-white flex items-center justify-center shrink-0 mt-0.5">
+                            <Puzzle className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="ext-aurora-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-[5px] text-[10px] font-bold">
+                                <Zap className="w-3 h-3 text-[#D97706] fill-[#FACC15] shrink-0" />
+                                <span className="ext-aurora-gradient-text font-extrabold">
+                                  {t('১-ক্লিকে ৩০ সেকেন্ডে অটোফিল', '1-Click 30s Autofill')}
+                                </span>
+                              </span>
+                            </div>
+                            <p className="text-[#1F2A3C] font-medium leading-snug">
+                              {isBn ? (
+                                <>
+                                  নিজে অনলাইন ভিসা ফর্ম পূরণ করলে সময় বাঁচাতে ও ভুল এড়াতে আমাদের{' '}
+                                  <span className="ext-aurora-gradient-text font-extrabold">
+                                    "{CONFIG.chromeExtension.name}"
+                                  </span>{' '}
+                                  ক্রোম এক্সটেনশন ব্যবহার করতে পারেন।
+                                </>
+                              ) : (
+                                <>
+                                  Filling the online visa form yourself? Use{' '}
+                                  <span className="ext-aurora-gradient-text font-extrabold">
+                                    "{CONFIG.chromeExtension.name}"
+                                  </span>{' '}
+                                  in Chrome to enter fields faster with fewer typos.
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <a
+                          id="modal-extension-helper-link"
+                          href={CONFIG.chromeExtension.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="btn-3d-matte-primary ext-cta-glow inline-flex items-center gap-1.5 font-bold px-3 py-1.5 rounded-[5px] text-xs shrink-0 self-start sm:self-auto whitespace-nowrap"
+                        >
+                          <span>{t('Chrome Web Store', 'Chrome Web Store')}</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
                       </div>
-                      <a
-                        id="modal-extension-helper-link"
-                        href={CONFIG.chromeExtension.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 font-bold text-[#263375] bg-white px-2.5 py-1 rounded-full border border-[#BAC5FA] hover:bg-[#F7F8FE] shrink-0 self-start sm:self-auto"
-                      >
-                        <span>{t('Chrome Web Store', 'Chrome Web Store')}</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
+                    </ExtensionAuroraShell>
                   )}
                 </React.Fragment>
               );

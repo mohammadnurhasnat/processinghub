@@ -81,6 +81,8 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                     src={service.image}
                     alt={service.title}
                     loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = CONFIG.fallbackImage;

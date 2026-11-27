@@ -1,7 +1,8 @@
 import React from 'react';
-import { Puzzle, ExternalLink } from 'lucide-react';
+import { Puzzle, ExternalLink, Zap } from 'lucide-react';
 import { CONFIG, getPhoneDisplay } from '../config';
 import { useLanguage } from '../context/LanguageContext';
+import { ExtensionAuroraShell } from './ExtensionSpotlightBanner';
 
 export const Footer: React.FC = () => {
   const { language, t } = useLanguage();
@@ -39,27 +40,35 @@ export const Footer: React.FC = () => {
           )}
         </p>
 
-        {/* Chrome Extension Line right above copyright */}
-        <div className="mb-6 px-3">
-          <a
+        {/* Chrome Extension Aurora Pill right above copyright */}
+        <div className="mb-6 px-3 flex justify-center">
+          <ExtensionAuroraShell
             id="footer-extension-link"
+            variant="footer"
             href={CONFIG.chromeExtension.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex flex-wrap items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-white/80 hover:bg-white border border-[#CCD3FB] text-xs sm:text-[13px] font-semibold text-[#1E2519] shadow-2xs transition-all group"
+            innerClassName="px-4 py-2 sm:px-5 sm:py-2.5"
           >
-            <Puzzle className="w-3.5 h-3.5 text-[#263375] shrink-0" />
-            <span>
-              {t(
-                'নির্ভুল এবং দ্রুত আবেদনের জন্য ব্যবহার করতে পারেন',
-                'For fast and accurate applications, you can use'
-              )}
+            <span className="inline-flex flex-wrap items-center justify-center gap-1.5 text-xs sm:text-[13px] font-semibold text-[#1E2738]">
+              <span className="ext-aurora-icon-box w-5 h-5 rounded-[5px] text-white inline-flex items-center justify-center shrink-0">
+                <Puzzle className="w-3 h-3" />
+              </span>
+              <Zap className="w-3.5 h-3.5 text-[#D97706] fill-[#FACC15] shrink-0" />
+              <span>
+                {t(
+                  'নির্ভুল এবং দ্রুত আবেদনের জন্য ব্যবহার করতে পারেন',
+                  'For fast and accurate applications, you can use'
+                )}
+              </span>
+              <span className="inline-flex items-center gap-1 font-extrabold group-hover:underline">
+                <span className="ext-aurora-gradient-text">
+                  {CONFIG.chromeExtension.name}
+                </span>
+                <ExternalLink className="w-3 h-3 text-[#0E7490] shrink-0" />
+              </span>
             </span>
-            <span className="font-bold text-[#263375] group-hover:underline inline-flex items-center gap-1">
-              {CONFIG.chromeExtension.name}
-              <ExternalLink className="w-3 h-3" />
-            </span>
-          </a>
+          </ExtensionAuroraShell>
         </div>
 
         {/* Copyright */}

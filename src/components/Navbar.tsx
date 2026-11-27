@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import {
   Menu,
   X,
   PhoneCall,
-  MessageCircle,
-  Globe,
   Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
 import { useLanguage } from '../context/LanguageContext';
 import { VisaService } from '../types';
-import { GlobalSearchBar } from './GlobalSearchBar';
+
+const LazyGlobalSearchBar = lazy(() =>
+  import('./GlobalSearchBar').then((m) => ({ default: m.GlobalSearchBar }))
+);
 
 export type PageRoute = 'home' | 'services' | 'destinations' | 'slots' | 'about' | 'contact';
 
@@ -200,33 +201,33 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          {/* Right: Language (desktop), Slim Compact Book Now Pill, Animated Multicolor Border Hamburger */}
+          {/* Right: Language (desktop), Slim Compact Book Now, Animated Multicolor Border Hamburger */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Desktop Top-Nav Language Switcher */}
+            {/* Desktop Top-Nav Language Switcher (Icon-free, matched 6px/5px radius: বাং | EN) */}
             <div
               id="desktop-language-toggle"
               role="group"
               aria-label={t('ভাষা নির্বাচন করুন', 'Select language')}
-              className="hidden md:inline-flex items-center p-0.5 rounded-full bg-white/80 backdrop-blur-md border border-[#BAC5FA] shadow-xs shrink-0"
+              className="hidden md:inline-flex items-center gap-0.5 p-0.5 rounded-[6px] bg-white/85 backdrop-blur-md border border-[#BAC5FA] shadow-xs shrink-0"
             >
               <button
                 type="button"
                 id="desktop-lang-bn"
                 onClick={() => setLanguage('bn')}
-                className={`px-2.5 py-1 rounded-full text-xs font-bold leading-none whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[5px] text-xs font-bold leading-none whitespace-nowrap transition-all cursor-pointer ${
                   language === 'bn'
                     ? 'bg-[#263375] text-white shadow-xs'
                     : 'text-[#263375] hover:bg-[#EEF1FE]'
                 }`}
                 aria-pressed={language === 'bn'}
               >
-                বাংলা
+                বাং
               </button>
               <button
                 type="button"
                 id="desktop-lang-en"
                 onClick={() => setLanguage('en')}
-                className={`px-2.5 py-1 rounded-full text-xs font-bold leading-none whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[5px] text-xs font-bold leading-none whitespace-nowrap transition-all cursor-pointer ${
                   language === 'en'
                     ? 'bg-[#263375] text-white shadow-xs'
                     : 'text-[#263375] hover:bg-[#EEF1FE]'
@@ -294,119 +295,127 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </nav>
 
-        {/* EXPANDABLE ADVANCED GLOBAL SEARCH PANEL (5px border radius) */}
-        <GlobalSearchBar
-          isOpen={isSearchOpen}
-          onClose={() => setIsSearchOpen(false)}
-          onSelectService={onSelectSearchService}
-          onSelectDestination={onSelectSearchDestination}
-          onSelectHospital={onSelectSearchHospital}
-          onSelectFaq={onSelectSearchFaq}
-          onSelectIvac={onSelectSearchIvac}
-        />
+        {/* EXPANDABLE ADVANCED GLOBAL SEARCH PANEL (Lazy-loaded on first open) */}
+        {isSearchOpen && (
+          <Suspense fallback={null}>
+            <LazyGlobalSearchBar
+              isOpen={isSearchOpen}
+              onClose={() => setIsSearchOpen(false)}
+              onSelectService={onSelectSearchService}
+              onSelectDestination={onSelectSearchDestination}
+              onSelectHospital={onSelectSearchHospital}
+              onSelectFaq={onSelectSearchFaq}
+              onSelectIvac={onSelectSearchIvac}
+            />
+          </Suspense>
+        )}
 
-        {/* COMPACT 2-COLUMN MOBILE FLOATING DROPDOWN CARD (Clean text-only page buttons, slim centered bottom actions) */}
+        {/* COMPACT RIGHT-ALIGNED AUTO-FIT MOBILE FLOATING DROPDOWN (Directly under Hamburger) */}
         <AnimatePresence>
           {isMobileNavOpen && (
-            <motion.div
-              key="mobile-nav-dropdown"
-              id="mobile-nav-dropdown"
-              initial={{ opacity: 0, y: -12, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.97 }}
-              transition={{
-                duration: 0.2,
-                ease: [0.16, 1, 0.3, 1]
-              }}
-              style={{ willChange: 'transform, opacity' }}
-              className="mobile-floating-card md:hidden"
-            >
-              {/* 2-Column × 3-Row Clean Text Page Grid */}
-              <div className="mobile-card-grid">
-                {menuItems.map((item) => {
-                  const isActive = activePage === item.page;
-                  return (
-                    <a
-                      key={item.page}
-                      href={item.href}
-                      id={`mobile-link-${item.id}`}
-                      aria-current={isActive ? 'page' : undefined}
-                      onClick={(e) => handlePageSelect(e, item.page)}
-                      className={`mobile-card-link ${
-                        isActive
-                          ? '!bg-[#263375] !text-white !border-[#1C275F] shadow-2xs'
-                          : ''
-                      }`}
-                    >
-                      {item.label}
-                    </a>
-                  );
-                })}
-              </div>
-
-              <div className="mobile-menu-divider" aria-hidden="true" />
-
-              {/* Centered, Slim, Text-Adjustable Language Switcher */}
-              <div
-                id="mobile-language-toggle"
-                role="group"
-                aria-label={t('ভাষা পরিবর্তন', 'Switch language')}
-                className="inline-flex items-center p-0.5 rounded-full bg-[#EEF1FE] border border-[#BAC5FA] w-fit mx-auto"
+            <div className="mobile-dropdown-anchor md:hidden">
+              <motion.div
+                key="mobile-nav-dropdown"
+                id="mobile-nav-dropdown"
+                initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                transition={{
+                  duration: 0.18,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                style={{ willChange: 'transform, opacity' }}
+                className="mobile-floating-card"
               >
-                <button
-                  type="button"
-                  id="mobile-lang-bn"
-                  onClick={() => setLanguage('bn')}
-                  className={`py-1.5 px-3 rounded-full text-[11.5px] leading-none font-bold inline-flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                    language === 'bn'
-                      ? 'bg-[#263375] text-white shadow-2xs'
-                      : 'text-[#263375] hover:bg-white/60'
-                  }`}
-                  aria-pressed={language === 'bn'}
-                >
-                  <Globe className="w-3 h-3" />
-                  <span>বাংলা</span>
-                </button>
-                <button
-                  type="button"
-                  id="mobile-lang-en"
-                  onClick={() => setLanguage('en')}
-                  className={`py-1.5 px-3 rounded-full text-[11.5px] leading-none font-bold inline-flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                    language === 'en'
-                      ? 'bg-[#263375] text-white shadow-2xs'
-                      : 'text-[#263375] hover:bg-white/60'
-                  }`}
-                  aria-pressed={language === 'en'}
-                >
-                  <Globe className="w-3 h-3" />
-                  <span>English</span>
-                </button>
-              </div>
+                {/* Single-Column Serial Right-Aligned Text-Adjustable Page Links */}
+                <div className="mobile-card-list">
+                  {menuItems.map((item) => {
+                    const isActive = activePage === item.page;
+                    return (
+                      <a
+                        key={item.page}
+                        href={item.href}
+                        id={`mobile-link-${item.id}`}
+                        aria-current={isActive ? 'page' : undefined}
+                        onClick={(e) => handlePageSelect(e, item.page)}
+                        className={`mobile-card-link ${
+                          isActive
+                            ? '!bg-[#263375] !text-white !border-[#1C275F] shadow-2xs'
+                            : ''
+                        }`}
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  })}
+                </div>
 
-              {/* Secondary Contact Pills — Centered, Slim & Text-Adjustable */}
-              <div className="mobile-card-secondary-row">
-                <a
-                  href={`tel:${CONFIG.phone}`}
-                  id="mobile-call-pill"
-                  className="mobile-pill-call"
-                >
-                  <PhoneCall className="w-3.5 h-3.5 text-[#374492]" />
-                  <span>{navLabels.callNow}</span>
-                </a>
+                <div className="mobile-menu-divider" aria-hidden="true" />
 
-                <a
-                  href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I am contacting you for Indian Visa Assistance.')}`}
-                  id="mobile-whatsapp-pill"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setIsMobileNavOpen(false)}
-                  className="mobile-pill-whatsapp"
+                {/* Centered, Matched-Corner, Icon-Free Language Switcher (বাং | EN) */}
+                <div
+                  id="mobile-language-toggle"
+                  role="group"
+                  aria-label={t('ভাষা পরিবর্তন', 'Switch language')}
+                  className="inline-flex items-center gap-0.5 p-0.5 rounded-[6px] bg-[#EEF1FE] border border-[#BAC5FA] w-fit mx-auto"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>{navLabels.whatsapp}</span>
-                </a>
-              </div>
-            </motion.div>
+                  <button
+                    type="button"
+                    id="mobile-lang-bn"
+                    onClick={() => setLanguage('bn')}
+                    className={`py-1.5 px-2.5 rounded-[5px] text-[11.5px] leading-none font-bold inline-flex items-center justify-center transition-all cursor-pointer ${
+                      language === 'bn'
+                        ? 'bg-[#263375] text-white shadow-2xs'
+                        : 'text-[#263375] hover:bg-white/70'
+                    }`}
+                    aria-pressed={language === 'bn'}
+                  >
+                    বাং
+                  </button>
+                  <button
+                    type="button"
+                    id="mobile-lang-en"
+                    onClick={() => setLanguage('en')}
+                    className={`py-1.5 px-2.5 rounded-[5px] text-[11.5px] leading-none font-bold inline-flex items-center justify-center transition-all cursor-pointer ${
+                      language === 'en'
+                        ? 'bg-[#263375] text-white shadow-2xs'
+                        : 'text-[#263375] hover:bg-white/70'
+                    }`}
+                    aria-pressed={language === 'en'}
+                  >
+                    EN
+                  </button>
+                </div>
+
+                {/* Side-by-Side Centered Icon-Only Contact Actions (Call + Authentic WhatsApp Icon) */}
+                <div className="mobile-card-secondary-row">
+                  <a
+                    href={`tel:${CONFIG.phone}`}
+                    id="mobile-call-pill"
+                    className="mobile-pill-call"
+                    aria-label={navLabels.callNow}
+                    title={navLabels.callNow}
+                  >
+                    <PhoneCall className="w-4 h-4 text-[#374492] shrink-0" />
+                  </a>
+
+                  <a
+                    href={`https://wa.me/${CONFIG.phone}?text=${encodeURIComponent('Hello Processing Hub, I am contacting you for Indian Visa Assistance.')}`}
+                    id="mobile-whatsapp-pill"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsMobileNavOpen(false)}
+                    className="mobile-pill-whatsapp"
+                    aria-label={navLabels.whatsapp}
+                    title={navLabels.whatsapp}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0" aria-hidden="true">
+                      <path d="M17.6 6.32A7.85 7.85 0 0 0 12.02 4C7.66 4 4.13 7.53 4.13 11.89c0 1.4.37 2.76 1.06 3.96L4 20l4.27-1.12a7.9 7.9 0 0 0 3.75.95h.01c4.36 0 7.89-3.53 7.89-7.89 0-2.11-.82-4.09-2.32-5.62zm-5.58 12.1h-.01a6.55 6.55 0 0 1-3.34-.92l-.24-.14-2.49.65.67-2.43-.16-.25a6.56 6.56 0 0 1-1.01-3.5c0-3.63 2.96-6.58 6.6-6.58 1.76 0 3.42.69 4.66 1.94a6.55 6.55 0 0 1 1.93 4.65c0 3.63-2.96 6.58-6.61 6.58zm3.6-4.93c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.44.1-.13.2-.5.64-.62.77-.11.13-.23.14-.42.05-.2-.1-.83-.31-1.58-.98-.58-.52-.98-1.16-1.09-1.36-.11-.2-.01-.3.09-.4.09-.09.2-.23.3-.35.1-.11.13-.2.2-.33.07-.13.03-.25-.02-.35-.05-.1-.44-1.06-.6-1.45-.16-.38-.32-.33-.44-.33-.11-.01-.24-.01-.37-.01s-.35.05-.53.25c-.18.2-.7.68-.7 1.66s.72 1.93.82 2.06c.1.13 1.41 2.15 3.42 3.02.48.21.85.33 1.14.42.48.15.92.13 1.26.08.38-.06 1.17-.48 1.34-.94.16-.46.16-.86.11-.94-.05-.09-.18-.14-.38-.24z" />
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </header>

@@ -12,9 +12,11 @@ import {
   ExternalLink,
   CheckCircle2,
   ArrowRight,
+  Zap,
 } from 'lucide-react';
 import { CONFIG, getPhoneDisplay } from '../config';
 import { useLanguage } from '../context/LanguageContext';
+import { ExtensionAuroraShell } from './ExtensionSpotlightBanner';
 
 interface AboutUsSectionProps {
   onNavigateServices?: () => void;
@@ -230,36 +232,67 @@ export const AboutUsSection: React.FC<AboutUsSectionProps> = ({
 
         {/* Official Chrome Extension & Office Quick Info Card */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {/* Left: Chrome Extension Info */}
-          <div className="lg:col-span-7 rounded-3xl bg-gradient-to-br from-[#F4F6FF] via-white to-[#F2F6EF] border border-[#C6D0FB] p-6 flex flex-col justify-between gap-4">
-            <div className="space-y-2.5">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#263375] bg-[#EEF1FE] px-3 py-1 rounded-full border border-[#BAC5FA]">
-                <Puzzle className="w-3.5 h-3.5" />
-                <span>{t('আমাদের অফিশিয়াল প্রযুক্তি টুল', 'Our Official Productivity Tool')}</span>
+          {/* Left: Chrome Extension Info (Aurora Highlighted Card) */}
+          <ExtensionAuroraShell
+            id="about-extension-card"
+            variant="about-card"
+            className="lg:col-span-7 h-full"
+            innerClassName="p-6 h-full flex flex-col justify-between gap-4"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="ext-aurora-icon-box w-11 h-11 rounded-[8px] text-white flex items-center justify-center shrink-0">
+                  <Puzzle className="w-5 h-5" />
+                </div>
+                <div className="ext-aurora-badge inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-[5px]">
+                  <Zap className="w-3.5 h-3.5 text-[#D97706] fill-[#FACC15] shrink-0" />
+                  <span>{t('আমাদের অফিশিয়াল প্রযুক্তি টুল', 'Our Official Productivity Tool')}</span>
+                </div>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#161D28]">
+              <h3 className="ext-aurora-gradient-text text-lg sm:text-xl font-extrabold tracking-tight">
                 {CONFIG.chromeExtension.name}
               </h3>
-              <p className="text-xs sm:text-sm text-[#3B4454] leading-relaxed">
-                {t(
-                  'যারা নিজেরাই অনলাইনে ইন্ডিয়ান ভিসার ফর্ম পূরণ করেন, তাদের সময় বাঁচাতে ও টাইপিং ভুল এড়াতে আমরা তৈরি করেছি Tracker - Indian Visa Autofill ক্রোম এক্সটেনশন। পাসপোর্ট বা পূর্বের ফর্ম (PDF) দিয়ে মাত্র এক ক্লিকে ৩০ সেকেন্ডে পুরো ফর্ম অটোফিল করা যায়।',
-                  'For applicants filling out Indian visa forms on their own, we built the Tracker - Indian Visa Autofill Chrome extension. Populate the entire multi-step form in 30 seconds with one click using a passport scan or saved profile.'
+              <p className="text-xs sm:text-sm text-[#243043] font-medium leading-relaxed">
+                {language === 'bn' ? (
+                  <>
+                    যারা নিজেরাই অনলাইনে ইন্ডিয়ান ভিসার ফর্ম পূরণ করেন, তাদের সময় বাঁচাতে ও টাইপিং ভুল এড়াতে আমরা তৈরি করেছি{' '}
+                    <span className="ext-aurora-gradient-text font-extrabold">
+                      Tracker - Indian Visa Autofill
+                    </span>{' '}
+                    ক্রোম এক্সটেনশন। পাসপোর্ট বা পূর্বের ফর্ম (PDF) দিয়ে{' '}
+                    <span className="ext-aurora-gradient-text font-extrabold">
+                      মাত্র এক ক্লিকে ৩০ সেকেন্ডে পুরো ফর্ম অটোফিল
+                    </span>{' '}
+                    করা যায়।
+                  </>
+                ) : (
+                  <>
+                    For applicants filling out Indian visa forms on their own, we built the{' '}
+                    <span className="ext-aurora-gradient-text font-extrabold">
+                      Tracker - Indian Visa Autofill
+                    </span>{' '}
+                    Chrome extension. Populate the entire multi-step form in{' '}
+                    <span className="ext-aurora-gradient-text font-extrabold">
+                      30 seconds with one click
+                    </span>{' '}
+                    using a passport scan or saved profile.
+                  </>
                 )}
               </p>
             </div>
-            <div>
+            <div className="pt-1">
               <a
                 href={CONFIG.chromeExtension.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-3d-matte-primary px-4 py-2.5 rounded-full text-xs font-bold inline-flex items-center gap-2"
+                className="btn-3d-matte-primary ext-cta-glow px-4 py-2.5 rounded-[5px] text-xs font-bold inline-flex items-center gap-2 whitespace-nowrap"
               >
                 <Puzzle className="w-4 h-4" />
                 <span>{t('Chrome Web Store-এ এক্সটেনশন দেখুন', 'View Extension on Chrome Web Store')}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
-          </div>
+          </ExtensionAuroraShell>
 
           {/* Right: Direct Office Info */}
           <div className="lg:col-span-5 rounded-3xl bg-white/95 border border-[#D8DEFA] p-6 flex flex-col justify-between gap-4">

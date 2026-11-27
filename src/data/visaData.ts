@@ -1,5 +1,5 @@
-import { VisaService, SlotType, Destination, Hospital } from '../types';
-import { Language } from '../context/LanguageContext';
+import type { VisaService, SlotType, Destination, Hospital } from '../types';
+import type { Language } from '../context/LanguageContext';
 import { SLOT_TYPES_EN, VISA_SERVICES_EN, DESTINATIONS_EN, HOSPITALS_EN } from './visaDataEn';
 
 export const SLOT_TYPES: SlotType[] = [

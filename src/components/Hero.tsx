@@ -2,9 +2,12 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { CONFIG } from '../config';
 import { useLanguage } from '../context/LanguageContext';
 
-// 12 Compressed WebP Bangladeshi Natural Beauty Assets for Fast Hero Loading
+// 15 Compressed WebP Bangladeshi Natural Beauty Assets for Ultra-Fast Hero Loading
 import saintMartinCheradwip from '../assets/images/hd_saintmartin_cheradwip_1790792435084.webp';
-import saintMartinCorals from '../assets/images/hd_saintmartin_corals_1790792449188.webp';
+import saintMartinSunsetGolden from '../assets/images/hd_saintmartin_sunset_golden_1795759815775.webp';
+import sylhetJaflongRiver from '../assets/images/hd_sylhet_jaflong_river_1795759816834.webp';
+import rangamatiKaptaiLake from '../assets/images/hd_rangamati_kaptai_lake_1795759818421.webp';
+import kuakataSunriseBeach from '../assets/images/hd_kuakata_sunrise_beach_1795759818507.webp';
 import coxBazarMarineDrive from '../assets/images/hd_coxsbazar_marinedrive_1790792461383.webp';
 import coxBazarInaniBeach from '../assets/images/hd_coxsbazar_inani_beach_1790792475767.webp';
 import sreemangalTeaGarden from '../assets/images/hd_sreemangal_teagarden_1790792486507.webp';
@@ -26,6 +29,38 @@ interface HeroSlide {
 }
 
 const ALL_SLIDES: HeroSlide[] = [
+  {
+    id: 'saintmartin-2',
+    image: saintMartinSunsetGolden,
+    locationBn: 'সোনালী সূর্যাস্ত · সেন্টমার্টিন দ্বীপ',
+    locationEn: 'Golden Sunset · Saint Martin’s Island',
+    altBn: 'সেন্টমার্টিন দ্বীপের সোনালী সূর্যাস্ত, প্রবাল সৈকত ও স্বচ্ছ নীল সাগর',
+    altEn: 'Golden hour sunset, coral shoreline and turquoise sea at Saint Martin’s Island'
+  },
+  {
+    id: 'jaflong-1',
+    image: sylhetJaflongRiver,
+    locationBn: 'স্বচ্ছ নদী ও পাহাড় · জাফলং, সিলেট',
+    locationEn: 'Crystal River & Hills · Jaflong, Sylhet',
+    altBn: 'সিলেট জাফলংয়ের স্বচ্ছ নীল নদী, রঙিন পাথর ও সবুজ পাহাড়',
+    altEn: 'Crystal emerald river, smooth pebbles, boats and hills in Jaflong, Sylhet'
+  },
+  {
+    id: 'kaptai-1',
+    image: rangamatiKaptaiLake,
+    locationBn: 'কুয়াশাচ্ছন্ন সকাল · কাপ্তাই লেক, রাঙামাটি',
+    locationEn: 'Misty Morning · Kaptai Lake, Rangamati',
+    altBn: 'রাঙামাটি কাপ্তাই লেকের কুয়াশাচ্ছন্ন সকাল ও সবুজ পাহাড়ের এরিয়াল দৃশ্য',
+    altEn: 'Aerial view of misty morning emerald waters and green hills at Kaptai Lake, Rangamati'
+  },
+  {
+    id: 'kuakata-1',
+    image: kuakataSunriseBeach,
+    locationBn: 'সোনালী সূর্যোদয় · কুয়াকাটা সমুদ্রসৈকত',
+    locationEn: 'Golden Sunrise · Kuakata Sea Beach',
+    altBn: 'কুয়াকাটা সমুদ্রসৈকতে সাগরের দিগন্তে সোনালী সূর্যোদয়',
+    altEn: 'Warm golden sunrise reflecting across calm ocean waves at Kuakata Sea Beach'
+  },
   {
     id: 'sajek-1',
     image: sajekValleyClouds,
@@ -83,14 +118,6 @@ const ALL_SLIDES: HeroSlide[] = [
     altEn: 'Eco wooden resort overlooking Sajek hills'
   },
   {
-    id: 'saintmartin-2',
-    image: saintMartinCorals,
-    locationBn: 'প্রবাল সৈকত · সেন্টমার্টিন দ্বীপ',
-    locationEn: 'Coral Beach · Saint Martin’s Island',
-    altBn: 'সেন্টমার্টিন প্রবাল সৈকত ও স্বচ্ছ সমুদ্র',
-    altEn: 'Coral shoreline and clear sea at Saint Martin’s Island'
-  },
-  {
     id: 'sreemangal-2',
     image: sreemangalLawachara,
     locationBn: 'লাউয়াছড়া রেইনফরেস্ট · শ্রীমঙ্গল',
@@ -141,13 +168,30 @@ export const Hero: React.FC = () => {
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const timerRef = useRef<number | null>(null);
 
+  const initialSlideIndex = sequence[0] ?? 0;
   const activeSlideIndex = sequence[sequenceIndex] ?? 0;
   const nextSlideIndex = sequence[(sequenceIndex + 1) % sequence.length] ?? 0;
   const currentSlide = slides[activeSlideIndex];
 
+  // Only mount Slide 0 on initial paint; remaining slides load progressively in background
   const [mountedSlides, setMountedSlides] = useState<Set<number>>(
-    () => new Set([sequence[0] ?? 0])
+    () => new Set([initialSlideIndex])
   );
+
+  // Inject high-priority preload hint for the exact first visible Hero WebP slide
+  useEffect(() => {
+    const initialImage = slides[initialSlideIndex]?.image;
+    if (!initialImage) return;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = initialImage;
+    link.setAttribute('fetchpriority', 'high');
+    document.head.appendChild(link);
+    return () => {
+      if (link.parentNode) link.parentNode.removeChild(link);
+    };
+  }, [initialSlideIndex, slides]);
 
   const mountSlide = useCallback((idx: number) => {
     setMountedSlides((prev) => {
@@ -158,13 +202,37 @@ export const Hero: React.FC = () => {
     });
   }, []);
 
+  // Defer preloading next slide until browser is idle so first slide paints with zero contention
   useEffect(() => {
     mountSlide(activeSlideIndex);
-    const preloadTimer = window.setTimeout(() => {
+    let cancelled = false;
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+
+    const scheduleNext = () => {
+      if (cancelled) return;
       mountSlide(nextSlideIndex);
-    }, 350);
-    return () => clearTimeout(preloadTimer);
-  }, [activeSlideIndex, nextSlideIndex, mountSlide]);
+    };
+
+    const delayMs = sequenceIndex === 0 ? 1800 : 900;
+    timeoutId = window.setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        idleId = (window as Window & {
+          requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
+        }).requestIdleCallback(scheduleNext, { timeout: 1500 });
+      } else {
+        scheduleNext();
+      }
+    }, delayMs);
+
+    return () => {
+      cancelled = true;
+      if (timeoutId !== null) clearTimeout(timeoutId);
+      if (idleId !== null && 'cancelIdleCallback' in window) {
+        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+      }
+    };
+  }, [activeSlideIndex, nextSlideIndex, sequenceIndex, mountSlide]);
 
   const goToNextSlide = useCallback(() => {
     setSequenceIndex((prev) => (prev + 1) % sequence.length);
@@ -198,10 +266,11 @@ export const Hero: React.FC = () => {
       aria-roledescription="carousel"
       aria-label={t('বাংলাদেশের প্রাকৃতিক সৌন্দর্যের দৃশ্য ও ভিসা সার্ভিস', 'Scenic views of Bangladesh and visa services')}
     >
-      {/* Background Slides Container with Compressed WebP & Progressive Loading */}
+      {/* Background Slides Container with Compressed WebP & Progressive Background Loading */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950 pointer-events-none">
         {slides.map((slide, idx) => {
           const isActive = idx === activeSlideIndex;
+          const isInitial = idx === initialSlideIndex;
           const shouldMount = isActive || mountedSlides.has(idx);
           if (!shouldMount) return null;
 
@@ -218,10 +287,9 @@ export const Hero: React.FC = () => {
                 alt={language === 'bn' ? slide.altBn : slide.altEn}
                 className="w-full h-full object-cover object-center select-none"
                 referrerPolicy="no-referrer"
-                loading={isActive ? 'eager' : 'lazy'}
+                loading={isActive || isInitial ? 'eager' : 'lazy'}
                 fetchPriority={isActive ? 'high' : 'low'}
-                decoding="async"
-                onLoad={isActive ? () => mountSlide(nextSlideIndex) : undefined}
+                decoding={isInitial ? 'sync' : 'async'}
               />
             </div>
           );
@@ -276,12 +344,12 @@ export const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* 12-Slide Progress Indicator Dots */}
+      {/* 15-Slide Progress Indicator Dots */}
       <div
-        className="absolute bottom-6 left-0 right-0 z-30 flex justify-center items-center pointer-events-auto"
+        className="absolute bottom-6 left-0 right-0 z-30 flex justify-center items-center pointer-events-auto px-3"
         aria-label={t('স্লাইড নির্দেশক', 'Slide indicators')}
       >
-        <div className="flex items-center gap-1.5 bg-black/45 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-lg">
+        <div className="flex items-center gap-1 sm:gap-1.5 bg-black/45 backdrop-blur-md px-3 sm:px-4 py-2 rounded-full border border-white/20 shadow-lg max-w-full overflow-x-auto no-scrollbar">
           {sequence.map((slideIndex, sIdx) => {
             const isDotActive = sIdx === sequenceIndex;
             const slideLoc = language === 'bn' ? slides[slideIndex].locationBn : slides[slideIndex].locationEn;
@@ -290,10 +358,10 @@ export const Hero: React.FC = () => {
                 key={slides[slideIndex].id}
                 type="button"
                 onClick={() => setSequenceIndex(sIdx)}
-                className={`h-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
+                className={`hero-dot-btn h-1.5 sm:h-2 rounded-full transition-all duration-300 shrink-0 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
                   isDotActive
-                    ? 'w-7 bg-emerald-400 shadow-md shadow-emerald-400/60'
-                    : 'w-2 bg-white/50 hover:bg-white/90 hover:w-3'
+                    ? 'w-5 sm:w-7 bg-emerald-400 shadow-md shadow-emerald-400/60'
+                    : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/90 hover:w-3'
                 }`}
                 aria-label={t(`স্লাইড ${num(sIdx + 1)} (${slideLoc})`, `Slide ${sIdx + 1} (${slideLoc})`)}
                 title={slideLoc}
